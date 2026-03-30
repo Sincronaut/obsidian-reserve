@@ -13,7 +13,7 @@
 		},
 		"description": {
 			"type": "string",
-			"default": "Elevate your journey with our elite chauffeur service. Our highly trained, security-cleared drivers provide seamless, punctual, and discreet transportation for executives, VIPs, and special events."
+			"default": "Elevate your journey with our elite chauffeur service."
 		},
 		"buttonText": {
 			"type": "string",
@@ -26,6 +26,14 @@
 		"bgUrl": {
 			"type": "string",
 			"default": "/assets/images/cta/chauffeur-bg.webp"
+		},
+		"alignment": {
+			"type": "string",
+			"default": "left"
+		},
+		"hasGoldSmudges": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {
