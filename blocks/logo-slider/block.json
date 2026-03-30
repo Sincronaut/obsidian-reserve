@@ -1,0 +1,17 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/logo-slider",
+	"title": "Obsidian Logo Slider",
+	"category": "design",
+	"icon": "images-alt2",
+	"description": "An infinite horizontally scrolling logo slider.",
+	"style": "file:./style.css",
+	"render": "file:./render.php",
+	"attributes": {
+		"logos": {
+			"type": "array",
+			"default": []
+		}
+	}
+}

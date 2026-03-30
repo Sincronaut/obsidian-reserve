@@ -1,0 +1,89 @@
+.obsidian-logo-slider-section {
+    background-color: #0B0B0B;
+    overflow: hidden;
+    padding: 60px 0;
+    /* Dedicated vertical padding for the brand band */
+    display: flex;
+    align-items: center;
+}
+
+.logo-slider-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+}
+
+/* Optional: Add gradient masks to the edges so logos fade in and out cleanly */
+.logo-slider-container::before,
+.logo-slider-container::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    width: 15%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.logo-slider-container::before {
+    left: 0;
+    background: linear-gradient(to right, #0B0B0B 0%, rgba(11, 11, 11, 0) 100%);
+}
+
+.logo-slider-container::after {
+    right: 0;
+    background: linear-gradient(to left, #0B0B0B 0%, rgba(11, 11, 11, 0) 100%);
+}
+
+.logo-slider-track {
+    display: flex;
+    width: max-content;
+    animation: scrollLogos 15s linear infinite;
+    /* Reduced from 30s for a slightly faster scroll */
+    align-items: center;
+}
+
+@keyframes scrollLogos {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        /* Move it left by exactly half the track width (the duplicated set) */
+        transform: translateX(-50%);
+    }
+}
+
+.logo-slide-item {
+    flex: 0 0 280px; /* Uniform width creates perfectly equal center-to-center spacing */
+    width: 280px;
+    padding: 0 15px; /* Saftey gap to prevent super wide logos from touching */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-slide-item img {
+    max-height: 120px; /* Tall logos cap out here */
+    max-width: 100%; /* Wide logos stretch out here */
+    height: auto;
+    width: auto;
+    object-fit: contain;
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+    .logo-slide-item {
+        padding: 0 30px;
+    }
+
+    .logo-slide-item img {
+        height: 80px;
+        /* Scaled up for mobile as well */
+    }
+
+    .obsidian-logo-slider-section {
+        padding: 40px 0;
+    }
+}
