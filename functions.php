@@ -94,3 +94,6 @@ function obsidian_reserve_register_blocks() {
 	register_block_type( get_stylesheet_directory() . '/blocks/text-img-bg' );
 }
 add_action( 'init', 'obsidian_reserve_register_blocks' );
+
+/* Disable the WordPress Admin Bar on the front-end */
+add_filter( 'show_admin_bar', '__return_false' );
