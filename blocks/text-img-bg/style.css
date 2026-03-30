@@ -1,0 +1,88 @@
+/* ============================================================
+   TEXT IMAGE BACKGROUND (CTA) BLOCK STYLES
+   ============================================================ */
+
+.obsidian-text-img-bg {
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 80vh; /* Expansive tall section */
+    display: flex;
+    align-items: center;
+    padding-top: var(--wp--preset--spacing--section-padding-v);
+    padding-bottom: var(--wp--preset--spacing--section-padding-v);
+    padding-left: var(--wp--preset--spacing--section-padding-h);
+    padding-right: var(--wp--preset--spacing--section-padding-h);
+    overflow: hidden;
+}
+
+/* Dark gradient overlay to make left-aligned text pop */
+.cta-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%);
+    z-index: 1;
+}
+
+.cta-container {
+    max-width: var(--wp--style--global--wide-size);
+    margin: 0 auto;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+.cta-content {
+    max-width: 600px;
+    color: #FFFFFF;
+}
+
+.cta-title {
+    margin-bottom: 24px;
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 700;
+}
+
+.cta-description {
+    margin-bottom: 40px;
+    font-size: 18px;
+    line-height: 1.6;
+    opacity: 0.9;
+}
+
+/* Button Styling matches the Global Design */
+.text-img-bg-button {
+    background-color: #C5A059;
+    color: #000000;
+    padding: 18px 36px;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 4px;
+    display: inline-block;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-transform: none;
+}
+
+.text-img-bg-button:hover {
+    background-color: #B28F4A;
+    transform: translateY(-2px);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 767px) {
+    .obsidian-text-img-bg {
+        min-height: 60vh;
+    }
+    
+    .cta-overlay {
+        background: rgba(0, 0, 0, 0.6); /* Even darker on mobile */
+    }
+    
+    .cta-content {
+        max-width: 100%;
+    }
+}
