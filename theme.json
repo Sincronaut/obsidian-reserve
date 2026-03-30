@@ -32,7 +32,7 @@
 		},
 		"layout": {
 			"contentSize": "720px",
-			"wideSize": "1280px"
+			"wideSize": "1920px"
 		},
 		"spacing": {
 			"defaultSpacingSizes": false,
@@ -53,24 +53,14 @@
 					"slug": "40"
 				},
 				{
-					"name": "Regular",
-					"size": "clamp(24px, 5vw, 48px)",
-					"slug": "50"
+					"name": "Section Padding Vertical",
+					"size": "clamp(10px, 2vw, 30px)",
+					"slug": "section-padding-v"
 				},
 				{
-					"name": "Large",
-					"size": "clamp(32px, 7vw, 64px)",
-					"slug": "60"
-				},
-				{
-					"name": "X-Large",
-					"size": "clamp(48px, 9vw, 96px)",
-					"slug": "70"
-				},
-				{
-					"name": "XX-Large",
-					"size": "clamp(64px, 12vw, 128px)",
-					"slug": "80"
+					"name": "Section Padding Horizontal",
+					"size": "clamp(24px, 10vw, 150px)",
+					"slug": "section-padding-h"
 				}
 			],
 			"units": [
@@ -148,10 +138,10 @@
 		"spacing": {
 			"blockGap": "1.5rem",
 			"padding": {
-				"top": "var:preset|spacing|50",
-				"bottom": "var:preset|spacing|50",
-				"left": "var:preset|spacing|50",
-				"right": "var:preset|spacing|50"
+				"top": "var:preset|spacing|section-padding-v",
+				"bottom": "var:preset|spacing|section-padding-v",
+				"left": "var:preset|spacing|section-padding-h",
+				"right": "var:preset|spacing|section-padding-h"
 			}
 		},
 		"typography": {

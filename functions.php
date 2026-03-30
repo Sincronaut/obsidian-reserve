@@ -82,3 +82,13 @@ function obsidian_reserve_preconnect_google_fonts( $urls, $relation_type ) {
 	return $urls;
 }
 add_filter( 'wp_resource_hints', 'obsidian_reserve_preconnect_google_fonts', 10, 2 );
+
+/**
+ * --------------------------------------------------------------------------
+ * 4. REGISTER CUSTOM BLOCKS
+ * --------------------------------------------------------------------------
+ */
+function obsidian_reserve_register_blocks() {
+	register_block_type( __DIR__ . '/blocks/hero' );
+}
+add_action( 'init', 'obsidian_reserve_register_blocks' );
