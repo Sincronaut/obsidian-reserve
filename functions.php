@@ -41,6 +41,21 @@ function obsidian_reserve_enqueue_styles() {
 		array( 'twentytwentyfive-style' ),
 		wp_get_theme()->get( 'Version' )
 	);
+
+	// Enqueue specific part styles
+	wp_enqueue_style(
+		'obsidian-reserve-header',
+		get_stylesheet_directory_uri() . '/assets/css/header.css',
+		array('child-obsidian-reserve-style'),
+		wp_get_theme()->get( 'Version' )
+	);
+	
+	wp_enqueue_style(
+		'obsidian-reserve-footer',
+		get_stylesheet_directory_uri() . '/assets/css/footer.css',
+		array('child-obsidian-reserve-style'),
+		wp_get_theme()->get( 'Version' )
+	);
 }
 add_action( 'wp_enqueue_scripts', 'obsidian_reserve_enqueue_styles' );
 
@@ -94,3 +109,6 @@ function obsidian_reserve_register_blocks() {
 	register_block_type( get_stylesheet_directory() . '/blocks/text-img-bg' );
 }
 add_action( 'init', 'obsidian_reserve_register_blocks' );
+
+/* Disable the WordPress Admin Bar on the front-end */
+add_filter( 'show_admin_bar', '__return_false' );

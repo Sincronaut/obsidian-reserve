@@ -19,9 +19,12 @@ Tags: blog, booking, block-theme, full-site-editing
    GLOBAL RESETS & BASE STYLES
    ============================================================ */
 
-/* Smooth scrolling for anchor links */
-html {
+/* Smooth scrolling for anchor links and reset structure - FRONT END ONLY */
+body:not(.wp-admin), html {
 	scroll-behavior: smooth;
+	margin: 0;
+	padding: 0;
+	background-color: var(--wp--preset--color--contrast, #0B0B0B);
 }
 
 /* Ensure images are responsive globally */
