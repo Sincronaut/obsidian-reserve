@@ -1,0 +1,46 @@
+{
+	"$schema": "https://schemas.wp.org/wp/6.9/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/hero",
+	"version": "1.0.0",
+	"title": "Obsidian Hero",
+	"category": "design",
+	"icon": "cover-image",
+	"description": "Dynamic premium hero section with booking inputs.",
+	"supports": {
+		"html": false,
+		"anchor": true
+	},
+	"attributes": {
+		"title": {
+			"type": "string",
+			"default": "Uncompromised <span class='text-gold'>Luxury.</span> Delivered."
+		},
+		"description": {
+			"type": "string",
+			"default": "Experience the world’s most exclusive fleet of exotic and executive vehicles. Arrive in absolute elegance."
+		},
+		"buttonText": {
+			"type": "string",
+			"default": "Explore Cars"
+		},
+		"buttonUrl": {
+			"type": "string",
+			"default": "#"
+		},
+		"imageUrl": {
+			"type": "string",
+			"default": ""
+		},
+		"locationLabel": {
+			"type": "string",
+			"default": "Location"
+		},
+		"dateLabel": {
+			"type": "string",
+			"default": "Pick-up / Drop-off Dates"
+		}
+	},
+	"style": "file:./style.css",
+	"render": "file:./render.php"
+}
