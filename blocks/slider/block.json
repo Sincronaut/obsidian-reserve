@@ -1,0 +1,17 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/slider",
+	"title": "Obsidian Slider",
+	"category": "design",
+	"icon": "slides",
+	"description": "A reusable slider block for testimonials or features.",
+	"style": "file:./style.css",
+	"script": "file:./script.js",
+	"render": "file:./render.php",
+	"attributes": {
+		"title": { "type": "string", "default": "" },
+		"subtitle": { "type": "string", "default": "" },
+		"slides": { "type": "array", "default": [] }
+	}
+}
