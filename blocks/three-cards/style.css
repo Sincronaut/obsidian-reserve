@@ -1,0 +1,158 @@
+/* ============================================================
+   THREE CARDS BLOCK STYLES
+   ============================================================ */
+
+.obsidian-three-cards {
+    background-color: #0B0B0B;
+    color: #FFFFFF;
+    position: relative;
+    overflow: hidden;
+    padding-top: var(--wp--preset--spacing--section-padding-v);
+    padding-bottom: var(--wp--preset--spacing--section-padding-v);
+    padding-left: var(--wp--preset--spacing--section-padding-h);
+    padding-right: var(--wp--preset--spacing--section-padding-h);
+}
+
+.three-cards-container {
+    max-width: var(--wp--style--global--wide-size);
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+/* Decorative Smudges */
+.smudge {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background-color: rgba(197, 160, 89, 0.15); /* #C5A05957 ish opacity */
+    filter: blur(150px);
+    border-radius: 50%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.smudge-top-right {
+    top: -200px;
+    right: -200px;
+}
+
+.smudge-bot-left {
+    bottom: -300px;
+    left: -200px;
+}
+
+/* Header Styles */
+.three-cards-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.three-cards-title {
+    margin-bottom: 16px;
+    font-weight: 700;
+}
+
+.three-cards-description {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    opacity: 0.6;
+    font-size: 18px;
+}
+
+/* Grid Layout */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+}
+
+/* Make the last card center and span 1 col instead of 2? 
+   Actually, in the design, it looks like a 2-1 layout. */
+.card-item:nth-child(3) {
+    grid-column: 1 / span 2;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+}
+
+.card-item {
+    background-color: #1A1A1A;
+    border-radius: 12px;
+    padding: 0; /* Removing inner padding to let image reach edges */
+    position: relative;
+    overflow: hidden;
+    min-height: 320px;
+    display: flex;
+    align-items: stretch;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.card-item.img-left {
+    flex-direction: row;
+}
+
+.card-item.img-right {
+    flex-direction: row-reverse;
+}
+
+.card-item:hover {
+    transform: translateY(-5px);
+    border-color: rgba(197, 160, 89, 0.3);
+}
+
+/* Image Column: 100% Height */
+.card-image-column {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    height: 100%;
+}
+
+.card-icon {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Centers the image and fills the 100% height */
+}
+
+/* Text Column */
+.card-text-column {
+    flex: 1.5;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.card-title {
+    color: #C5A059;
+    font-size: 22px;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.card-description {
+    opacity: 0.8;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 991px) {
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card-item:nth-child(3) {
+        grid-column: auto;
+    }
+
+    .card-content {
+        max-width: 100%;
+    }
+}

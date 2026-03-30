@@ -54,7 +54,7 @@
 				},
 				{
 					"name": "Section Padding Vertical",
-					"size": "clamp(10px, 2vw, 30px)",
+					"size": "clamp(20px, 4vw, 150px)",
 					"slug": "section-padding-v"
 				},
 				{
