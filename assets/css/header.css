@@ -1,0 +1,45 @@
+/* ============================================================
+   GLOBAL SITE HEADER (FIXED & BLURRED)
+   ============================================================ */
+.obsidian-site-header {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 105px;
+    background-color: rgba(26, 26, 26, 0.2) !important; /* #1A1A1A at 20% opacity */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Subtle luxury divider */
+}
+
+/* Match navigation links to global paragraph styling (Weight 500) + Gold */
+.obsidian-site-header .obsidian-nav a {
+    color: #C5A059 !important;
+    font-size: var(--wp--preset--typography--font-size--normal, 16px);
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.obsidian-site-header .obsidian-nav a:hover {
+    color: #FFFFFF !important;
+}
+
+/* Specific styling for the Reserve Button in header */
+.header-reserve-btn .wp-block-button__link {
+    background-color: #C5A059 !important;
+    color: #000000 !important;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 20px 28px;
+    border-radius: 4px;
+}
+
+.header-reserve-btn .wp-block-button__link:hover {
+    background-color: #B28F4A !important;
+    color: #FFFFFF !important;
+}

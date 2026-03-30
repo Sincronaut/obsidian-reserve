@@ -54,23 +54,8 @@
     opacity: 0.9;
 }
 
-/* Button Styling matches the Global Design */
-.text-img-bg-button {
-    background-color: #C5A059;
-    color: #000000;
-    padding: 18px 36px;
-    text-decoration: none;
-    font-weight: 600;
-    border-radius: 4px;
-    display: inline-block;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    text-transform: none;
-}
+/* Inheriting Global Button Styles from style.css/theme.json */
 
-.text-img-bg-button:hover {
-    background-color: #B28F4A;
-    transform: translateY(-2px);
-}
 
 /* Mobile Responsiveness */
 @media (max-width: 767px) {

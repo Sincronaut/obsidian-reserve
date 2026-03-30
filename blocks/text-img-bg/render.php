@@ -27,10 +27,12 @@ $bg_image  = strpos($bg_url, 'http') === 0 ? $bg_url : $theme_uri . $bg_url;
 			<?php endif; ?>
 
 			<?php if ( $button_text ) : ?>
-				<div class="cta-button-wrapper">
-					<a href="<?php echo esc_url($button_url); ?>" class="wp-element-button text-img-bg-button">
-						<?php echo esc_html($button_text); ?>
-					</a>
+				<div class="cta-button-wrapper wp-block-buttons">
+					<div class="wp-block-button is-style-solid-gold">
+						<a href="<?php echo esc_url($button_url); ?>" class="wp-block-button__link wp-element-button">
+							<?php echo esc_html($button_text); ?>
+						</a>
+					</div>
 				</div>
 			<?php endif; ?>
 		</div>
