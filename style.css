@@ -3,15 +3,148 @@ Theme Name: child-obsidian-reserve
 Theme URI: 
 Author: 
 Author URI: 
-Description: 
+Description: A dynamic WordPress blog and booking child theme built on Twenty Twenty-Five.
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 5.7
-Version: 
+Version: 1.0.0
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Template: twentytwentyfive
 Text Domain: child-obsidian-reserve
-Tags: 
+Tags: blog, booking, block-theme, full-site-editing
 */
 
+/* ============================================================
+   GLOBAL RESETS & BASE STYLES
+   ============================================================ */
+
+/* Smooth scrolling for anchor links */
+html {
+	scroll-behavior: smooth;
+}
+
+/* Ensure images are responsive globally */
+img {
+	max-width: 100%;
+	height: auto;
+	display: block;
+}
+
+/* ============================================================
+   GLOBAL TYPOGRAPHY REFINEMENTS
+   ============================================================ */
+
+/* Paragraph defaults — 500 weight is set in theme.json,
+   this adds comfortable reading rhythm */
+p {
+	margin-bottom: 1em;
+}
+
+/* Tighten heading margins for clean vertical rhythm */
+h1, h2, h3, h4, h5, h6 {
+	margin-top: 0;
+	margin-bottom: 0.5em;
+}
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+
+/* Visually hidden but accessible to screen readers */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* Full-width section helper */
+.full-bleed {
+	width: 100vw;
+	margin-left: calc(50% - 50vw);
+}
+
+/* ============================================================
+   TRANSITION DEFAULTS
+   ============================================================ */
+
+/* Smooth transitions on interactive elements */
+a,
+button,
+input,
+textarea,
+.wp-block-button__link {
+	transition: all 0.3s ease;
+}
+
+/* ============================================================
+   SELECTION STYLING
+   ============================================================ */
+
+::selection {
+	background-color: #c49e5d;
+	color: #ffffff;
+}
+
+/* ============================================================
+   BUTTON CUSTOMIZATIONS
+   ============================================================ */
+
+/* Global button base styling */
+.wp-block-button__link {
+	text-transform: none; /* Keep text as-is unless you want uppercase */
+	letter-spacing: 0.05em;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+}
+
+/* Base hover: subtle lift */
+.wp-block-button__link:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.wp-block-button__link:active {
+	transform: translateY(0);
+}
+
+/* Solid Gold Hover Treatment */
+.is-style-solid-gold .wp-block-button__link:hover {
+	background-color: #AF8E4D !important; /* Slightly darker gold shade for hover effect */
+	color: #FFFFFF !important;
+}
+
+/* Outline Gold Hover Treatment */
+.is-style-outline-gold .wp-block-button__link:hover {
+	background-color: #C5A059 !important;
+	color: #FFFFFF !important;
+}
+
+/* ============================================================
+   SCROLLBAR STYLING (Webkit)
+   ============================================================ */
+
+::-webkit-scrollbar {
+	width: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: var(--wp--preset--color--base);
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--wp--preset--color--accent-4);
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: #c49e5d;
+}
