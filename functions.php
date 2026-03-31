@@ -109,6 +109,7 @@ function obsidian_reserve_register_blocks() {
 	register_block_type( get_stylesheet_directory() . '/blocks/text-img-bg' );
 	register_block_type( get_stylesheet_directory() . '/blocks/slider' );
 	register_block_type( get_stylesheet_directory() . '/blocks/logo-slider' );
+	register_block_type( get_stylesheet_directory() . '/blocks/img-text' );
 }
 add_action( 'init', 'obsidian_reserve_register_blocks' );
 

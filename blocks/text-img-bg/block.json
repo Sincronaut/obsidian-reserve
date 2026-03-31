@@ -42,6 +42,10 @@
 		"overlayType": {
 			"type": "string",
 			"default": "gradient"
+		},
+		"smudgePosition": {
+			"type": "string",
+			"default": "default"
 		}
 	},
 	"supports": {

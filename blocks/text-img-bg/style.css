@@ -71,7 +71,7 @@
 }
 
 .cta-layout-center .cta-content {
-    max-width: 900px;
+    max-width: 1200px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -83,7 +83,7 @@
 }
 
 .cta-layout-center .cta-description {
-    max-width: 650px;
+    max-width: 1100px;
 }
 
 /* ============================================================
@@ -110,6 +110,17 @@
 
 .obsidian-text-img-bg.has-gold-smudges::after {
     right: -400px; /* Bleed in from the right */
+}
+
+/* Diagonal Smudge Variant */
+.obsidian-text-img-bg.has-gold-smudges.smudge-pos-diagonal::before {
+    top: 50px;
+    transform: translateY(-50%);
+}
+
+.obsidian-text-img-bg.has-gold-smudges.smudge-pos-diagonal::after {
+    top: calc(100% - 50px);
+    transform: translateY(-50%);
 }
 
 /* Mobile Responsiveness */
