@@ -8,8 +8,6 @@
 }
 
 .obsidian-slider-header h2 {
-    font-size: clamp(2rem, 4vw, 2.5rem);
-    font-weight: 700;
     margin-bottom: 16px;
     color: #FFFFFF;
 }
@@ -20,7 +18,6 @@
 
 .obsidian-slider-header p {
     color: rgba(255, 255, 255, 0.7);
-    font-size: var(--wp--preset--typography--font-size--normal, 16px);
     line-height: 1.6;
     margin: 0;
 }
@@ -158,7 +155,6 @@
 
 .quote-text {
     color: rgba(255, 255, 255, 0.85);
-    font-size: 16px;
     line-height: 1.8;
     margin-bottom: 30px;
 }
