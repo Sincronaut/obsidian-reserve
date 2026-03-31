@@ -1,0 +1,40 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/img-text",
+	"version": "1.0.0",
+	"title": "Image Text",
+	"category": "theme",
+	"description": "An image on the left with content on the right.",
+	"attributes": {
+		"eyebrow": {
+			"type": "string",
+			"default": "OBSIDIAN PROTOCOL : HUMAN EXCELLENCE"
+		},
+		"title": {
+			"type": "string",
+			"default": "<span class='text-gold'>Masters</span> of the Drive."
+		},
+		"description": {
+			"type": "string",
+			"default": "<p>Our service extends far beyond the steering wheel. The Obsidian Reserve chauffeur and concierge teams are highly vetted, security-cleared professionals trained in white-glove hospitality and secure transit. Whether you are navigating the intricate avenues of Makati or requiring a discreet escort to a private event, our personnel ensure your journey is effortless.</p>"
+		},
+		"buttonText": {
+			"type": "string",
+			"default": "Request Concierge Support"
+		},
+		"buttonUrl": {
+			"type": "string",
+			"default": "#"
+		},
+		"imageUrl": {
+			"type": "string",
+			"default": "/assets/images/about/driver.webp"
+		}
+	},
+	"supports": {
+		"html": false
+	},
+	"style": "file:./style.css",
+	"render": "file:./render.php"
+}
