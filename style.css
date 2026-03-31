@@ -25,6 +25,7 @@ body:not(.wp-admin), html {
 	margin: 0;
 	padding: 0;
 	background-color: var(--wp--preset--color--contrast, #0B0B0B);
+	scrollbar-gutter: stable; /* Prevents layout shift when scrollbar appears */
 }
 
 /* Ensure images are responsive globally */
@@ -60,8 +61,10 @@ main.wp-site-blocks > * + * {
    ---------------------------------------------------- */
 body {
 	max-width: 1920px;
-	margin: 0 auto;
+	width: 100%;
+	margin: 0 auto !important;
 	background-color: #0B0B0B;
+	position: relative;
 }
 
 /* ============================================================

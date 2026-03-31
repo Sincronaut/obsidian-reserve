@@ -180,37 +180,204 @@
 }
 
 @media (max-width: 900px) {
+    .wp-block-child-obsidian-reserve-slider {
+        overflow: hidden;
+    }
+
+    .obsidian-slider-header {
+        margin-bottom: 32px;
+    }
+
     .slide-inner {
         flex-direction: column;
+        min-height: auto;
+        width: min(100%, 420px);
+        margin: 0 auto;
+        padding: 32px 24px 40px;
+        border-radius: 18px;
     }
+    
     .slide-image {
-        width: 100%;
-        height: 350px;
+        width: 180px;
+        height: 180px;
+        margin: 0 auto 28px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
     }
+    
     .slide-content {
         width: 100%;
-        padding: 40px;
+        padding: 0 0 36px;
+        align-items: center;
+        text-align: center;
     }
+
+    .slide-content::after {
+        bottom: -210px;
+        right: 50%;
+        width: 360px;
+        height: 360px;
+        transform: translateX(50%);
+        filter: blur(180px);
+    }
+    
+    .quote-icon {
+        display: none;
+    }
+
+    .quote-text {
+        max-width: 22ch;
+        margin: 0 auto 24px;
+        font-size: 1.7rem;
+        line-height: 1.65;
+        text-align: center;
+        position: relative;
+    }
+
+    .quote-text::before,
+    .quote-text::after {
+        position: absolute;
+        top: -4px;
+        color: #C5A059;
+        font-family: Georgia, serif;
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .quote-text::before {
+        content: "\201C";
+        left: -12px;
+    }
+
+    .quote-text::after {
+        content: "\201D";
+        right: -12px;
+    }
+
+    .quote-divider {
+        margin-bottom: 24px;
+    }
+
+    .quote-name {
+        font-size: 22px;
+        text-align: center;
+        margin-inline: auto;
+    }
+
+    .quote-title {
+        text-align: center;
+        margin-inline: auto;
+    }
+    
     .obsidian-slider-wrapper {
         position: relative;
         flex-direction: column;
     }
+
+    /* Completely hide navigation arrows on mobile as per user request */
     .slider-nav {
+        display: none !important;
+    }
+
+    /* Reposition dots to act as standard mobile indicators beneath the content */
+    .slide-dots {
         position: absolute;
-        top: 350px;
-        transform: translateY(-50%);
-        padding: 10px;
-        background: rgba(0,0,0,0.5);
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        gap: 12px;
     }
-    .slider-nav.prev-slide {
-        left: 10px;
-        margin: 0;
+    
+    .slide-dots .dot {
+        width: 10px;
+        height: 10px;
+        background-color: rgba(255,255,255,0.2);
     }
-    .slider-nav.next-slide {
-        right: 10px;
-        margin: 0;
+    
+    .slide-dots .dot.active {
+        background-color: #C5A059;
+    }
+}
+
+@media (max-width: 600px) {
+    .obsidian-slider-header h2 {
+        margin-bottom: 12px;
+    }
+
+    .obsidian-slider-header p {
+        font-size: 14px;
+    }
+
+    .slider-slide {
+        padding-inline: 4px;
+    }
+
+    .slide-inner {
+        width: min(100%, 340px);
+        padding: 28px 18px 32px;
+        border-radius: 16px;
+    }
+
+    .slide-image {
+        width: 150px;
+        height: 150px;
+        margin-bottom: 24px;
+    }
+
+    .slide-content {
+        padding: 0 0 28px;
+    }
+
+    .quote-icon {
+        font-size: 32px;
+        margin-bottom: 8px;
+    }
+
+    .quote-text {
+        max-width: 18ch;
+        font-size: 15px;
+        margin-bottom: 20px;
+        line-height: 1.75;
+        margin-inline: auto;
+    }
+
+    .quote-text::before,
+    .quote-text::after {
+        font-size: 24px;
+    }
+
+    .quote-text::before {
+        left: -6px;
+    }
+
+    .quote-text::after {
+        right: -6px;
+    }
+
+    .quote-divider {
+        margin-bottom: 20px;
+    }
+
+    .quote-name {
+        font-size: 18px;
+        margin-bottom: 6px;
+    }
+
+    .quote-title {
+        font-size: 12px;
+        max-width: 18ch;
+        margin-inline: auto;
+    }
+
+    .slide-dots {
+        bottom: 16px;
+        gap: 10px;
+    }
+
+    .slide-dots .dot {
+        width: 8px;
+        height: 8px;
     }
 }
