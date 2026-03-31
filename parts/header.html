@@ -3,32 +3,57 @@
     style="padding-left:var(--wp--preset--spacing--section-padding-h);padding-right:var(--wp--preset--spacing--section-padding-h)">
     <!-- wp:html -->
     <a href="/" class="obsidian-logo-link">
-        <img src="/wp-content/themes/child-obsidian-reserve/assets/images/logo.webp" alt="Obsidian Reserve" 
-            style="max-width: 350px; height: 105px; object-fit: contain; display: block;">
+        <img class="obsidian-site-logo-img" src="/wp-content/themes/child-obsidian-reserve/assets/images/logo.webp" alt="Obsidian Reserve">
     </a>
     <!-- /wp:html -->
 
     <!-- wp:html -->
-    <nav class="obsidian-nav">
-        <ul style="display: flex; gap: 32px; list-style: none; margin: 0; padding: 0;">
-            <li><a href="#">Home</a></li>
-            <li><a href="#">Location</a></li>
-            <li><a href="#">Blog</a></li>
-            <li><a href="#">How it Works</a></li>
-            <li><a href="#">Fleet</a></li>
-            <li><a href="#">About Us</a></li>
-            <li><a href="#">Contact Us</a></li>
-        </ul>
-    </nav>
-    <!-- /wp:html -->
+    <div class="obsidian-nav-wrapper">
+        <nav class="obsidian-nav">
+            <ul style="list-style: none; margin: 0; padding: 0;">
+                <li><a href="/">Home</a></li>
+                <li><a href="/location/">Location</a></li>
+                <li><a href="/blog/">Blog</a></li>
+                <li><a href="/how-it-works/">How it Works</a></li>
+                <li><a href="/fleet/">Fleet</a></li>
+                <li><a href="/about-us/">About Us</a></li>
+                <li><a href="/contact-us/">Contact Us</a></li>
+            </ul>
+        </nav>
 
-    <!-- wp:buttons {"className":"header-reserve-btn"} -->
-    <div class="wp-block-buttons header-reserve-btn">
-        <!-- wp:button -->
-        <div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="#">Reserve a Vehicle</a>
+        <div class="wp-block-buttons header-reserve-btn">
+            <div class="wp-block-button">
+                <a class="wp-block-button__link wp-element-button" href="#">Reserve a Vehicle</a>
+            </div>
         </div>
-        <!-- /wp:button -->
     </div>
-    <!-- /wp:buttons -->
+
+    <!-- Mobile Hamburger Toggle button & Backdrop Overlay -->
+    <button class="obsidian-mobile-toggle" aria-label="Toggle site menu">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="obsidian-nav-overlay"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleBtn = document.querySelector('.obsidian-mobile-toggle');
+            const navWrapper = document.querySelector('.obsidian-nav-wrapper');
+            const overlay = document.querySelector('.obsidian-nav-overlay');
+
+            function toggleMobileMenu() {
+                toggleBtn.classList.toggle('is-active');
+                navWrapper.classList.toggle('is-active');
+                overlay.classList.toggle('is-active');
+                // Lock background scrolling when menu floats open
+                document.body.style.overflow = navWrapper.classList.contains('is-active') ? 'hidden' : '';
+            }
+
+            if(toggleBtn) {
+                toggleBtn.addEventListener('click', toggleMobileMenu);
+                overlay.addEventListener('click', toggleMobileMenu);
+            }
+        });
+    </script>
+    <!-- /wp:html -->
 </header>
 <!-- /wp:group -->
