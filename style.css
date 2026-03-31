@@ -34,9 +34,34 @@ img {
 	display: block;
 }
 
+/* Remove focus boxes/outlines on click globally across the site */
+a:focus,
+button:focus,
+img:focus,
+input:focus,
+select:focus,
+textarea:focus,
+.wp-block-button__link:focus,
+*:focus-visible {
+	outline: none !important;
+	box-shadow: none !important;
+}
+* {
+	-webkit-tap-highlight-color: transparent;
+}
+
 /* Remove default Gutenberg block gap between root full-bleed sections */
 main.wp-site-blocks > * + * {
 	margin-top: 0 !important;
+}
+
+/* ----------------------------------------------------
+   GLOBAL RESETS, TYPOGRAPHY & LAYOUTS
+   ---------------------------------------------------- */
+body {
+	max-width: 1920px;
+	margin: 0 auto;
+	background-color: #0B0B0B;
 }
 
 /* ============================================================

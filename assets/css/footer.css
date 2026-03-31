@@ -167,3 +167,41 @@
     font-style: italic;
     margin: 0;
 }
+
+/* --- Tablet Responsive --- */
+@media (max-width: 1024px) {
+    .footer-bg-wrapper img {
+        object-fit: contain;
+        width: 70%;
+        height: auto;
+        margin: 0 auto;
+        opacity: 0.12;
+    }
+}
+
+/* --- Mobile Responsive / Text Center --- */
+@media (max-width: 768px) {
+    .footer-columns {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 60px;
+    }
+
+    .footer-nav {
+        align-items: center;
+    }
+
+    .footer-newsletter {
+        align-items: center;
+    }
+
+    .footer-content-wrapper {
+        text-align: center;
+    }
+
+    .footer-bg-wrapper img {
+        width: 60%;
+        opacity: 0.15;
+    }
+}
