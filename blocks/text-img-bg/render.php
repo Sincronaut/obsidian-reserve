@@ -9,9 +9,10 @@ $button_text = $attributes['buttonText'] ?? '';
 $button_url  = $attributes['buttonUrl'] ?? '#';
 $bg_url      = $attributes['bgUrl'] ?? '';
 $alignment    = $attributes['alignment'] ?? 'left';
-$has_smudges  = $attributes['hasGoldSmudges'] ?? false;
-$title_tag    = $attributes['titleTag'] ?? 'h2';
-$overlay_type = $attributes['overlayType'] ?? 'gradient';
+$has_smudges    = $attributes['hasGoldSmudges'] ?? false;
+$smudge_pos     = $attributes['smudgePosition'] ?? 'default';
+$title_tag      = $attributes['titleTag'] ?? 'h2';
+$overlay_type   = $attributes['overlayType'] ?? 'gradient';
 
 $theme_uri = get_stylesheet_directory_uri();
 $bg_image  = '';
@@ -21,7 +22,7 @@ if ( ! empty( $bg_url ) ) {
 
 $classes = 'obsidian-text-img-bg cta-layout-' . esc_attr($alignment);
 if ( $has_smudges ) {
-    $classes .= ' has-gold-smudges';
+    $classes .= ' has-gold-smudges smudge-pos-' . esc_attr($smudge_pos);
 }
 
 $style_attr = '';
@@ -44,7 +45,7 @@ if ( $bg_image ) {
 			<?php endif; ?>
 
 			<?php if ( $description ) : ?>
-				<p class="cta-description"><?php echo wp_kses_post( $description ); ?></p>
+				<div class="cta-description"><?php echo wp_kses_post( $description ); ?></div>
 			<?php endif; ?>
 
 			<?php if ( $button_text ) : ?>
