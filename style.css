@@ -34,6 +34,11 @@ img {
 	display: block;
 }
 
+/* Remove default Gutenberg block gap between root full-bleed sections */
+main.wp-site-blocks > * + * {
+	margin-top: 0 !important;
+}
+
 /* ============================================================
    GLOBAL TYPOGRAPHY REFINEMENTS
    ============================================================ */

@@ -1,0 +1,157 @@
+/* ============================================================
+   STANDARD BLOCK STYLES
+   ============================================================ */
+
+.obsidian-standard-block {
+    position: relative;
+    padding-top: var(--wp--preset--spacing--section-padding-v);
+    padding-bottom: var(--wp--preset--spacing--section-padding-v);
+    background-color: transparent;
+    overflow: hidden; /* Contains the smudges so they don't break layout */
+    display: flex;
+    justify-content: center;
+}
+
+/* Base Smudge Layer */
+.obsidian-standard-block::before,
+.obsidian-standard-block::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    background-color: rgba(243, 244, 246, 0.5); /* #F3F4F6 50% opacity */
+    filter: blur(250px); /* Heavy white blur effect */
+    width: 600px;
+    height: 600px;
+}
+
+/* Top Left Smudge */
+.obsidian-standard-block::before {
+    top: -200px;
+    left: -200px;
+}
+
+/* Bottom Right Smudge */
+.obsidian-standard-block::after {
+    bottom: -200px;
+    right: -200px;
+}
+
+/* Cards Grid */
+.standard-cards-container {
+    position: relative;
+    z-index: 2; /* Sits above the smudges */
+    display: grid;
+    gap: 30px;
+    grid-template-columns: 1fr 1fr;
+    max-width: 1400px; /* Wide but constrained area */
+    width: 100%;
+}
+
+/* Card Container Styling */
+.standard-card {
+    border: 2px solid #C5A059; /* Strict requirement */
+    background-color: transparent; /* Allows smudges and body BG to breathe through */
+    border-radius: 6px;
+    padding: clamp(40px, 5vw, 60px) clamp(24px, 4vw, 50px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden; /* Ensure background icon doesn't bleed out of the border */
+}
+
+/* Full Width Top Card */
+.standard-card.standard-card-full {
+    grid-column: 1 / -1;
+}
+
+/* Base Background Icon Layer */
+.standard-card-bg-img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 150%; 
+    min-width: 0;
+    min-height: 0;
+    max-width: none !important; /* Critical override */
+    max-height: none !important; /* Critical override */
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 0.15; 
+    z-index: 0;
+    pointer-events: none; 
+}
+
+/* 1st Card: Very big image covering most of the card */
+.standard-cards-container .standard-card:nth-child(1) .standard-card-bg-img {
+    width: auto;
+    height: 350%; /* Massive vertical scaler */
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%); /* Forced dead center */
+}
+
+/* 2nd Card: Pinned to the left side */
+.standard-cards-container .standard-card:nth-child(2) .standard-card-bg-img {
+    width: auto; 
+    height: 180%; 
+    left: 0; 
+    top: 50%;
+    transform: translate(-30%, -50%); /* Left clipped */
+}
+
+/* 3rd Card: Pinned to the right side */
+.standard-cards-container .standard-card:nth-child(3) .standard-card-bg-img {
+    width: auto;
+    height: 180%; 
+    left: auto;
+    right: 0; 
+    top: 50%;
+    transform: translate(30%, -50%); /* Right clipped */
+}
+
+/* Inner Text Isolation Layer */
+.standard-card-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 800px; /* Constrain reading width inside full cards */
+    margin: 0 auto;
+}
+
+/* Typography Overrides */
+.standard-card h2 {
+    color: #C5A059; /* Gold Titles */
+    margin-bottom: 20px;
+    /* Inherits font-size and weight globally */
+}
+
+.standard-card p {
+    color: #FFFFFF;
+    margin-bottom: 30px;
+    opacity: 0.95;
+    /* Inherits normal paragraph sizing globally */
+}
+
+/* Inheriting Global Button Styles (outline-gold) from style.css/theme.json */
+
+/* Mobile Responsiveness */
+@media (max-width: 900px) {
+    .standard-cards-container {
+        grid-template-columns: 1fr; /* Stack all cards */
+    }
+    
+    .obsidian-standard-block::before,
+    .obsidian-standard-block::after {
+        width: 300px;
+        height: 300px;
+        filter: blur(150px);
+    }
+}
