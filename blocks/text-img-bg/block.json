@@ -34,6 +34,14 @@
 		"hasGoldSmudges": {
 			"type": "boolean",
 			"default": false
+		},
+		"titleTag": {
+			"type": "string",
+			"default": "h2"
+		},
+		"overlayType": {
+			"type": "string",
+			"default": "gradient"
 		}
 	},
 	"supports": {

@@ -8,8 +8,10 @@ $description = $attributes['description'] ?? '';
 $button_text = $attributes['buttonText'] ?? '';
 $button_url  = $attributes['buttonUrl'] ?? '#';
 $bg_url      = $attributes['bgUrl'] ?? '';
-$alignment   = $attributes['alignment'] ?? 'left';
-$has_smudges = $attributes['hasGoldSmudges'] ?? false;
+$alignment    = $attributes['alignment'] ?? 'left';
+$has_smudges  = $attributes['hasGoldSmudges'] ?? false;
+$title_tag    = $attributes['titleTag'] ?? 'h2';
+$overlay_type = $attributes['overlayType'] ?? 'gradient';
 
 $theme_uri = get_stylesheet_directory_uri();
 $bg_image  = '';
@@ -31,18 +33,18 @@ if ( $bg_image ) {
 ?>
 
 <section <?php echo get_block_wrapper_attributes(['class' => $classes]); ?> style="<?php echo $style_attr; ?>">
-	<?php if ( $bg_image && $alignment === 'left' ) : ?>
-		<div class="cta-overlay"></div>
+	<?php if ( $bg_image && $overlay_type !== 'none' ) : ?>
+		<div class="cta-overlay <?php echo esc_attr($overlay_type); ?>"></div>
 	<?php endif; ?>
 	
 	<div class="cta-container">
 		<div class="cta-content">
 			<?php if ( $title ) : ?>
-				<h2 class="cta-title"><?php echo wp_kses_post( $title ); ?></h2>
+				<<?php echo esc_attr($title_tag); ?> class="cta-title"><?php echo wp_kses_post( $title ); ?></<?php echo esc_attr($title_tag); ?>>
 			<?php endif; ?>
 
 			<?php if ( $description ) : ?>
-				<p class="cta-description"><?php echo esc_html( $description ); ?></p>
+				<p class="cta-description"><?php echo wp_kses_post( $description ); ?></p>
 			<?php endif; ?>
 
 			<?php if ( $button_text ) : ?>
