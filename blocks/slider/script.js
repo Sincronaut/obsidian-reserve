@@ -38,6 +38,28 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // Add Touch Swiping Logic
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        slider.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        
+        slider.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchEndX < touchStartX - 50 && nextBtn) {
+                // Swiped Left - Next
+                currentIndex = (currentIndex < totalSlides - 1) ? currentIndex + 1 : 0;
+                updateSlider();
+            }
+            if (touchEndX > touchStartX + 50 && prevBtn) {
+                // Swiped Right - Prev
+                currentIndex = (currentIndex > 0) ? currentIndex - 1 : totalSlides - 1;
+                updateSlider();
+            }
+        }, { passive: true });
+
         // Add dot click events
         slider.querySelectorAll('.dot').forEach((dot, index) => {
             const dotIndex = index % totalSlides;

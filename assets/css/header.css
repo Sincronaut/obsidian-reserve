@@ -4,8 +4,9 @@
 .obsidian-site-header {
     position: fixed !important;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
+    right: 0;
+    margin: 0 auto;
     width: 100%;
     max-width: 1920px;
     min-height: 105px;
@@ -78,8 +79,9 @@
     display: none;
 }
 
-/* --- Mobile & Tablet Drawer (Right Side) --- */
-@media (max-width: 1024px) {
+/* --- Mobile & Tablet Drawer (Right Side) ---
+   Covers iPad Mini/Air/Pro widths in DevTools while staying touch-focused. */
+@media (max-width: 1366px) and (pointer: coarse) {
 
     /* Reduce header height on mobile */
     .obsidian-site-header {

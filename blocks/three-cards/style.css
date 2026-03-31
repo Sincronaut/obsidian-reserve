@@ -150,7 +150,21 @@
         grid-column: auto;
     }
 
-    .card-content {
-        max-width: 100%;
+    .card-item,
+    .card-item.img-left,
+    .card-item.img-right {
+        flex-direction: column !important;
+        text-align: center;
+    }
+
+    .card-image-column {
+        height: 250px;
+        width: 100%;
+        flex: none; /* Strip flex stretch */
+    }
+
+    .card-text-column {
+        padding: 30px 20px;
+        align-items: center; /* Center content vertically relative to card */
     }
 }
