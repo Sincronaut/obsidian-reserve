@@ -26,7 +26,7 @@ function obsidian_reserve_enqueue_styles() {
 		null
 	);
 
-	// Parent theme styleshee
+	// Parent theme stylesheet
 	wp_enqueue_style(
 		'twentytwentyfive-style',
 		get_template_directory_uri() . '/style.css',
