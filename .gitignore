@@ -14,12 +14,8 @@
 # Except the child-obsidian-reserve theme itself
 !/themes/child-obsidian-reserve/
 
-# Except the plugins directory (to enter it)
+# Track the entire plugins directory
 !/plugins/
-/plugins/*
-
-# Except our custom booking plugin
-!/plugins/obsidian-booking/
 
 # Allow root files
 !/.gitignore
