@@ -6,10 +6,13 @@
     position: relative;
     padding-top: var(--wp--preset--spacing--section-padding-v);
     padding-bottom: var(--wp--preset--spacing--section-padding-v);
+    padding-left: clamp(20px, 5vw, 60px);
+    padding-right: clamp(20px, 5vw, 60px);
     background-color: transparent;
     overflow: hidden; /* Contains the smudges so they don't break layout */
     display: flex;
     justify-content: center;
+    box-sizing: border-box;
 }
 
 /* Base Smudge Layer */
@@ -71,7 +74,7 @@
 /* Base Background Icon Layer */
 .standard-card-bg-img {
     position: absolute;
-    top: 50%;
+    top: 55%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 100%;
@@ -92,8 +95,8 @@
     width: auto;
     height: 350%; /* Massive vertical scaler */
     left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%); /* Forced dead center */
+    top: 55%;
+    transform: translate(-50%, -50%);
 }
 
 /* 2nd Card: Pinned to the left side */
@@ -101,8 +104,8 @@
     width: auto; 
     height: 180%; 
     left: 0; 
-    top: 50%;
-    transform: translate(-30%, -50%); /* Left clipped */
+    top: 55%;
+    transform: translate(-30%, -50%);
 }
 
 /* 3rd Card: Pinned to the right side */
@@ -111,8 +114,8 @@
     height: 180%; 
     left: auto;
     right: 0; 
-    top: 50%;
-    transform: translate(30%, -50%); /* Right clipped */
+    top: 55%;
+    transform: translate(30%, -50%);
 }
 
 /* Inner Text Isolation Layer */
@@ -153,5 +156,18 @@
         width: 300px;
         height: 300px;
         filter: blur(150px);
+    }
+
+    /* Scale down background images to fit within the stacked cards */
+    .standard-cards-container .standard-card:nth-child(1) .standard-card-bg-img {
+        height: 180%; 
+    }
+    
+    .standard-cards-container .standard-card:nth-child(2) .standard-card-bg-img,
+    .standard-cards-container .standard-card:nth-child(3) .standard-card-bg-img {
+        height: 120%; 
+        left: 50%;
+        right: auto;
+        transform: translate(-50%, -50%); /* Center instead of pinning to sides */
     }
 }
