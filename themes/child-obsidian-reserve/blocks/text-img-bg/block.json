@@ -1,0 +1,56 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/text-img-bg",
+	"version": "1.0.0",
+	"title": "Text Image Background",
+	"category": "theme",
+	"description": "A section with a full-width background image and a left-aligned text content area.",
+	"attributes": {
+		"title": {
+			"type": "string",
+			"default": "Prefer to be <span class='text-gold'>Driven?</span>"
+		},
+		"description": {
+			"type": "string",
+			"default": "Elevate your journey with our elite chauffeur service."
+		},
+		"buttonText": {
+			"type": "string",
+			"default": "Book a Chauffeur"
+		},
+		"buttonUrl": {
+			"type": "string",
+			"default": "#"
+		},
+		"bgUrl": {
+			"type": "string",
+			"default": "/assets/images/cta/chauffeur-bg.webp"
+		},
+		"alignment": {
+			"type": "string",
+			"default": "left"
+		},
+		"hasGoldSmudges": {
+			"type": "boolean",
+			"default": false
+		},
+		"titleTag": {
+			"type": "string",
+			"default": "h2"
+		},
+		"overlayType": {
+			"type": "string",
+			"default": "gradient"
+		},
+		"smudgePosition": {
+			"type": "string",
+			"default": "default"
+		}
+	},
+	"supports": {
+		"html": false
+	},
+	"style": "file:./style.css",
+	"render": "file:./render.php"
+}

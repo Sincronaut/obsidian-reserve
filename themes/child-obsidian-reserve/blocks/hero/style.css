@@ -1,0 +1,250 @@
+/* ============================================================
+   HERO BLOCK STYLES
+   ============================================================ */
+
+.obsidian-hero {
+    background-color: #000000;
+    color: #FFFFFF;
+    position: relative;
+    overflow: hidden;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    /* Inherit Separate Global V/H Master Padding */
+    padding-top: var(--wp--preset--spacing--section-padding-v);
+    padding-bottom: var(--wp--preset--spacing--section-padding-v);
+    padding-left: var(--wp--preset--spacing--section-padding-h);
+    padding-right: var(--wp--preset--spacing--section-padding-h);
+}
+
+.hero-container {
+    max-width: var(--wp--style--global--wide-size);
+    margin: 0 auto;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--wp--preset--spacing--section-padding-h); /* Using horizontal gap for consistency */
+    align-items: center;
+}
+
+/* Left Side: Text & Form */
+.hero-content {
+    z-index: 2;
+}
+
+.hero-title {
+    margin-bottom: 24px;
+    /* Typography inherits from Global theme.json */
+}
+
+/* Specific Gold Highlight Class */
+.text-gold {
+    color: #C5A059;
+}
+
+.hero-description {
+    max-width: 500px;
+    margin-bottom: 48px;
+    opacity: 0.8;
+}
+
+/* Booking Form Elements */
+.hero-booking-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 420px;
+}
+
+.booking-field {
+    position: relative;
+    width: 100%;
+}
+
+.booking-select {
+    width: 100%;
+    background-color: #1A1A1A;
+    /* Dark contrast color */
+    border: 1px solid #333;
+    border-radius: 5px;
+    color: #999;
+    padding: 18px 48px;
+    font-family: var(--wp--preset--font-family--montserrat);
+    font-size: 14px;
+    font-weight: 400;
+    appearance: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.booking-select:focus {
+    border-color: #C5A059;
+    outline: none;
+    color: #FFFFFF;
+}
+
+.field-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #FFFFFF;
+    pointer-events: none;
+}
+
+.select-arrow {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #FFFFFF;
+    pointer-events: none;
+}
+
+/* Right Side: Image (Bleeds off Edge) */
+.hero-image-side {
+    position: absolute;
+    right: -33%;
+    /* Pushed further right because the image is now much larger */
+    top: 60%;
+    transform: translateY(-50%);
+    width: 1500px;
+    z-index: 1;
+    pointer-events: none;
+    /* Allows interactions with things behind it if overlapping */
+}
+
+/* Gradient Mask to hide the hard left edge of the smoke */
+.hero-image-side::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 300px; /* Adjust this to control how much "feathering" you want */
+    height: 100%;
+    background: linear-gradient(to right, #000000 0%, transparent 100%);
+    z-index: 2;
+}
+
+.hero-image {
+    width: 100%;
+    height: auto;
+    max-width: none;
+    /* Allow it to be its full 1047px size */
+    object-fit: cover;
+    filter: drop-shadow(-20px 0 50px rgba(0, 0, 0, 0.5));
+}
+
+/* Inherit Global Button Styles (already set in theme.json/css) */
+.hero-booking-form .wp-block-button {
+    margin-top: 12px;
+}
+
+/* Tablet layout tuning */
+@media (min-width: 992px) and (max-width: 1366px) and (pointer: coarse) {
+    .hero-image-side {
+        right: -85%;
+    }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 991px) {
+    .obsidian-hero {
+        min-height: auto;
+        padding-top: 10px;
+        padding-bottom: 90px;
+        justify-content: flex-start;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .hero-container {
+        grid-template-columns: 1fr;
+        text-align: center;
+        position: relative;
+        padding-top: 90px;
+        justify-items: center;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 5;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 360px;
+        margin: 0 auto;
+    }
+
+    .hero-image-side {
+        position: absolute;
+        width: min(150vw, 520px);
+        left: 53.5%;
+        top: 24%;
+        transform: translateX(-50%);
+        z-index: 1;
+        pointer-events: none;
+        opacity: 0.6; /* Slight dimming for text legibility */
+        display: flex;
+        justify-content: center;
+    }
+
+    .hero-image-side::before {
+        display: none;
+    }
+
+    .hero-image {
+        display: block;
+        filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.8));
+        margin: 0 auto;
+        object-position: center center;
+    }
+
+    .hero-description {
+        max-width: 320px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 20px;
+        margin-bottom: 28px;
+        text-align: center;
+    }
+    
+    .hero-booking-form {
+        margin-left: auto;
+        margin-right: auto;
+        width: 100%;
+        max-width: 330px;
+        padding: 0;
+        align-items: center;
+    }
+
+    .booking-field,
+    .hero-booking-form .wp-block-button,
+    .hero-booking-form .button-wrapper {
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero-booking-form .wp-block-button__link {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+
+    .hero-title {
+        max-width: 340px;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+    }
+}

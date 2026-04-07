@@ -1,0 +1,34 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/contact",
+	"title": "Contact Block",
+	"category": "theme",
+	"description": "A comprehensive contact form and info layout.",
+	"attributes": {
+		"headerTitle": { "type": "string", "default": "" },
+		"headerDesc": { "type": "string", "default": "" },
+		"card1Icon": { "type": "string", "default": "" },
+		"card1Title": { "type": "string", "default": "" },
+		"card1Desc": { "type": "string", "default": "" },
+		"card1Detail": { "type": "string", "default": "" },
+		"card2Icon": { "type": "string", "default": "" },
+		"card2Title": { "type": "string", "default": "" },
+		"card2Desc": { "type": "string", "default": "" },
+		"card2Detail": { "type": "string", "default": "" },
+		"card3Icon": { "type": "string", "default": "" },
+		"card3Title": { "type": "string", "default": "" },
+		"card3Desc": { "type": "string", "default": "" },
+		"card3Detail": { "type": "string", "default": "" },
+		"formTitle": { "type": "string", "default": "" },
+		"formDesc": { "type": "string", "default": "" },
+		"formBtnText": { "type": "string", "default": "" },
+		"footerTitle": { "type": "string", "default": "" },
+		"footerDesc": { "type": "string", "default": "" }
+	},
+	"supports": {
+		"html": false
+	},
+	"style": "file:./style.css",
+	"render": "file:./render.php"
+}

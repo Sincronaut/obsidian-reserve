@@ -1,0 +1,45 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/three-cards",
+	"version": "1.0.0",
+	"title": "Three Cards Section",
+	"category": "theme",
+	"description": "A luxury section with a title, description, and three distinct feature cards.",
+	"attributes": {
+		"title": {
+			"type": "string",
+			"default": "The <span class='text-gold'>Art</span> of Arrival."
+		},
+		"description": {
+			"type": "string",
+			"default": "Experience the world’s most distinguished fleet of executive and exotic vehicles."
+		},
+		"cards": {
+			"type": "array",
+			"default": [
+				{
+					"title": "Guaranteed Make & Model",
+					"description": "No compromises. No 'or similar' clauses. The exact exotic or executive car you reserve is the one waiting for you.",
+					"iconUrl": "/assets/images/icons/key-icon.svg"
+				},
+				{
+					"title": "White-Glove Delivery",
+					"description": "Skip the counter. We deliver your vehicle directly to your hotel, private estate, or aviation tarmac at your exact requested time.",
+					"iconUrl": "/assets/images/icons/delivery-icon.svg"
+				},
+				{
+					"title": "Absolute Discretion",
+					"description": "From tinted windows to encrypted booking profiles, we ensure absolute privacy for our high-profile and executive clientele.",
+					"iconUrl": "/assets/images/icons/shield-icon.svg"
+				}
+			]
+		}
+	},
+	"supports": {
+		"html": false
+	},
+	"style": "file:./style.css",
+	"viewScript": "file:./script.js",
+	"render": "file:./render.php"
+}

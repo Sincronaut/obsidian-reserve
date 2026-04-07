@@ -1,0 +1,32 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/standard",
+	"title": "Standard Block",
+	"category": "theme",
+	"description": "A 3-card layout detailing standards with gold accents and background icons.",
+	"attributes": {
+		"card1Title": { "type": "string", "default": "" },
+		"card1Desc": { "type": "string", "default": "" },
+		"card1BtnText": { "type": "string", "default": "" },
+		"card1BtnUrl": { "type": "string", "default": "" },
+		"card1Img": { "type": "string", "default": "" },
+
+		"card2Title": { "type": "string", "default": "" },
+		"card2Desc": { "type": "string", "default": "" },
+		"card2BtnText": { "type": "string", "default": "" },
+		"card2BtnUrl": { "type": "string", "default": "" },
+		"card2Img": { "type": "string", "default": "" },
+
+		"card3Title": { "type": "string", "default": "" },
+		"card3Desc": { "type": "string", "default": "" },
+		"card3BtnText": { "type": "string", "default": "" },
+		"card3BtnUrl": { "type": "string", "default": "" },
+		"card3Img": { "type": "string", "default": "" }
+	},
+	"supports": {
+		"html": false
+	},
+	"style": "file:./style.css",
+	"render": "file:./render.php"
+}

@@ -1,0 +1,148 @@
+/* ============================================================
+   TEXT IMAGE BACKGROUND (CTA) BLOCK STYLES
+   ============================================================ */
+
+.obsidian-text-img-bg {
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 80vh; /* Expansive tall section */
+    display: flex;
+    align-items: center;
+    padding-top: var(--wp--preset--spacing--section-padding-v);
+    padding-bottom: var(--wp--preset--spacing--section-padding-v);
+    padding-left: var(--wp--preset--spacing--section-padding-h);
+    padding-right: var(--wp--preset--spacing--section-padding-h);
+    overflow: hidden;
+}
+
+/* Dark gradient or solid overlay to make text pop */
+.cta-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.cta-overlay:not(.dark):not(.none), /* Graceful fallback */
+.cta-overlay.gradient {
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%);
+}
+
+.cta-overlay.dark {
+    background: rgba(0, 0, 0, 0.7); /* Deep dark overlay for centered text legibility */
+}
+
+.cta-container {
+    max-width: var(--wp--style--global--wide-size);
+    margin: 0 auto;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+.cta-content {
+    max-width: 600px;
+    color: #FFFFFF;
+}
+
+.cta-title {
+    margin-bottom: 24px;
+}
+
+.cta-description {
+    margin-bottom: 40px;
+    opacity: 0.9;
+}
+
+/* Inheriting Global Button Styles from style.css/theme.json */
+
+/* ============================================================
+   CENTERED CTA CONFIGURATION
+   ============================================================ */
+.cta-layout-center .cta-container {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    z-index: 2;
+}
+
+.cta-layout-center .cta-content {
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Base style adjustments for text when centered */
+.cta-layout-center .cta-title {
+    margin-bottom: 30px;
+}
+
+.cta-layout-center .cta-description {
+    max-width: 1100px;
+}
+
+/* ============================================================
+   GOLD SMUDGES BORDER EFFECTS
+   ============================================================ */
+.obsidian-text-img-bg.has-gold-smudges::before,
+.obsidian-text-img-bg.has-gold-smudges::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: clamp(300px, 50vw, 800px);
+    height: clamp(300px, 50vw, 800px);
+    background-color: rgba(197, 160, 89, 0.45);
+    filter: blur(clamp(100px, 15vw, 350px));
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.obsidian-text-img-bg.has-gold-smudges::before {
+    left: clamp(-400px, -25vw, -100px); /* Bleed in from the left */
+}
+
+.obsidian-text-img-bg.has-gold-smudges::after {
+    right: clamp(-400px, -25vw, -100px); /* Bleed in from the right */
+}
+
+/* Diagonal Smudge Variant */
+.obsidian-text-img-bg.has-gold-smudges.smudge-pos-diagonal::before {
+    top: 50px;
+    transform: translateY(-50%);
+}
+
+.obsidian-text-img-bg.has-gold-smudges.smudge-pos-diagonal::after {
+    top: calc(100% - 50px);
+    transform: translateY(-50%);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 767px) {
+    .obsidian-text-img-bg {
+        min-height: 60vh;
+    }
+    
+    .cta-overlay {
+        background: rgba(0, 0, 0, 0.6); /* Even darker on mobile */
+    }
+    
+    .cta-content {
+        max-width: 100%;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .cta-container {
+        display: flex;
+        justify-content: center;
+    }
+}

@@ -1,0 +1,56 @@
+# ============================================================
+# Obsidian Reserve — wp-content .gitignore
+# Repo root is wp-content/
+# Strategy: Ignore everything, whitelist by drilling down.
+# ============================================================
+
+# Ignore everything by default
+/*
+
+# Except the themes directory (to enter it)
+!/themes/
+/themes/*
+
+# Except the child-obsidian-reserve theme itself
+!/themes/child-obsidian-reserve/
+
+# Except the plugins directory (to enter it)
+!/plugins/
+/plugins/*
+
+# Except our custom booking plugin
+!/plugins/obsidian-booking/
+
+# Allow root files
+!/.gitignore
+!/index.php
+
+# ── Still ignore junk inside tracked projects ────────────────
+
+# Node / build artifacts
+themes/child-obsidian-reserve/node_modules/
+themes/child-obsidian-reserve/dist/
+plugins/obsidian-booking/node_modules/
+plugins/obsidian-booking/dist/
+
+# IDE / Editor config
+.vscode/
+.idea/
+*.code-workspace
+
+# SFTP credentials (never commit these)
+sftp.json
+sftp-config.json
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+debug.log
+
+# Environment
+.env
+.env.*

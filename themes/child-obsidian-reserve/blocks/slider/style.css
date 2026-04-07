@@ -1,0 +1,583 @@
+.wp-block-child-obsidian-reserve-slider {
+    background-color: #0B0B0B;
+}
+
+.obsidian-slider-header {
+    max-width: var(--wp--preset--layout--content-size, 800px);
+    margin-bottom: 60px;
+}
+
+.obsidian-slider-header h2 {
+    margin-bottom: 16px;
+    color: #FFFFFF;
+}
+
+.obsidian-slider-header h2 .highlight-gold {
+    color: #C5A059;
+}
+
+.obsidian-slider-header p {
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.obsidian-slider-wrapper {
+    position: relative;
+    max-width: 1500px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+}
+
+.slider-nav {
+    background: transparent;
+    border: none;
+    color: #FFFFFF;
+    cursor: pointer;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease;
+    z-index: 10;
+}
+
+.slider-nav:hover {
+    color: #C5A059;
+}
+
+.slider-nav.prev-slide {
+    margin-right: 40px; /* Increased margin for wider layout */
+}
+
+.slider-nav.next-slide {
+    margin-left: 40px; /* Increased margin for wider layout */
+}
+
+.slider-track-container {
+    overflow: hidden;
+    flex: 1;
+}
+
+.slider-track {
+    display: flex;
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.slider-slide {
+    flex: 0 0 100%;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.slide-inner {
+    display: flex;
+    flex-direction: row;	
+    border: 1px solid #C5A059;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0B0B0B;
+    position: relative;
+    min-height: 650px; /* Increased height significantly */
+}
+
+.slide-image {
+    width: 38%; /* Slightly adjusted image ratio */
+    position: relative;
+}
+
+.slide-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.slide-dots {
+    position: absolute;
+    bottom: 30px; /* Lifted up slightly for the bigger card */
+    left: 30px;
+    display: flex;
+    gap: 8px;
+    z-index: 2;
+}
+
+.slide-dots .dot {
+    width: 8px; /* Slightly larger dots */
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(255,255,255,0.4);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.slide-dots .dot.active {
+    background-color: #3B82F6; 
+}
+
+.slide-content {
+    width: 62%;
+    padding: 80px 100px; /* Dramatically increased padding for luxury spacing inside big card */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+}
+
+/* Gold Smudge strictly on the lower right corner matching Figma specs */
+.slide-content::after {
+    content: '';
+    position: absolute;
+    bottom: -150px;
+    right: -150px;
+    width: 600px;
+    height: 600px;
+    background-color: rgba(197, 160, 89, 0.78);
+    filter: blur(450px);
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.slide-content > * {
+    position: relative;
+    z-index: 1;
+}
+
+.quote-icon {
+    color: #C5A059;
+    font-size: 70px;
+    line-height: 1;
+    font-family: Georgia, serif;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.quote-text {
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.8;
+    margin-bottom: 30px;
+}
+
+.quote-divider {
+    width: 24px;
+    height: 2px;
+    background-color: #31548B;
+    margin-bottom: 30px;
+}
+
+.quote-name {
+    color: #FFFFFF;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.quote-title {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+    margin: 0;
+}
+
+@media (max-width: 900px) {
+    .wp-block-child-obsidian-reserve-slider {
+        overflow: hidden;
+    }
+
+    .obsidian-slider-header {
+        margin-bottom: 32px;
+    }
+
+    .slide-inner {
+        flex-direction: column;
+        min-height: auto;
+        width: min(100%, 420px);
+        margin: 0 auto;
+        padding: 32px 24px 40px;
+        border-radius: 18px;
+    }
+    
+    .slide-image {
+        width: 180px;
+        height: 180px;
+        margin: 0 auto 28px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    
+    .slide-content {
+        width: 100%;
+        padding: 0 0 36px;
+        align-items: center;
+        text-align: center;
+    }
+
+    .slide-content::after {
+        bottom: -210px;
+        right: 50%;
+        width: 360px;
+        height: 360px;
+        transform: translateX(50%);
+        filter: blur(180px);
+    }
+    
+    .quote-icon {
+        display: none;
+    }
+
+    .quote-text {
+        max-width: 22ch;
+        margin: 0 auto 24px;
+        font-size: 1.7rem;
+        line-height: 1.65;
+        text-align: center;
+        position: relative;
+    }
+
+    .quote-text::before,
+    .quote-text::after {
+        position: absolute;
+        top: -4px;
+        color: #C5A059;
+        font-family: Georgia, serif;
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .quote-text::before {
+        content: "\201C";
+        left: -12px;
+    }
+
+    .quote-text::after {
+        content: "\201D";
+        right: -12px;
+    }
+
+    .quote-divider {
+        margin-bottom: 24px;
+    }
+
+    .quote-name {
+        font-size: 22px;
+        text-align: center;
+        margin-inline: auto;
+    }
+
+    .quote-title {
+        text-align: center;
+        margin-inline: auto;
+    }
+    
+    .obsidian-slider-wrapper {
+        position: relative;
+        flex-direction: column;
+    }
+
+    /* Completely hide navigation arrows on mobile as per user request */
+    .slider-nav {
+        display: none !important;
+    }
+
+    /* Reposition dots to act as standard mobile indicators beneath the content */
+    .slide-dots {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        gap: 12px;
+    }
+    
+    .slide-dots .dot {
+        width: 10px;
+        height: 10px;
+        background-color: rgba(255,255,255,0.2);
+    }
+    
+    .slide-dots .dot.active {
+        background-color: #C5A059;
+    }
+}
+
+@media (max-width: 600px) {
+    .obsidian-slider-header h2 {
+        margin-bottom: 12px;
+    }
+
+    .obsidian-slider-header p {
+        font-size: 14px;
+    }
+
+    .slider-slide {
+        padding-inline: 4px;
+    }
+
+    .slide-inner {
+        width: min(100%, 340px);
+        padding: 28px 18px 32px;
+        border-radius: 16px;
+    }
+
+    .slide-image {
+        width: 150px;
+        height: 150px;
+        margin-bottom: 24px;
+    }
+
+    .slide-content {
+        padding: 0 0 28px;
+    }
+
+    .quote-icon {
+        font-size: 32px;
+        margin-bottom: 8px;
+    }
+
+    .quote-text {
+        max-width: 18ch;
+        font-size: 15px;
+        margin-bottom: 20px;
+        line-height: 1.75;
+        margin-inline: auto;
+    }
+
+    .quote-text::before,
+    .quote-text::after {
+        font-size: 24px;
+    }
+
+    .quote-text::before {
+        left: -6px;
+    }
+
+    .quote-text::after {
+        right: -6px;
+    }
+
+    .quote-divider {
+        margin-bottom: 20px;
+    }
+
+    .quote-name {
+        font-size: 18px;
+        margin-bottom: 6px;
+    }
+
+    .quote-title {
+        font-size: 12px;
+        max-width: 18ch;
+        margin-inline: auto;
+    }
+
+    .slide-dots {
+        bottom: 16px;
+        gap: 10px;
+    }
+
+    .slide-dots .dot {
+        width: 8px;
+        height: 8px;
+    }
+}
+
+/* ============================================================
+   SHOWCASE VARIANT
+   ============================================================ */
+
+.slider-variant-showcase .obsidian-slider-header {
+    text-align: center;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.slider-variant-showcase .slide-inner.showcase-card {
+    flex-direction: column;
+    border: 2px solid transparent;
+    border-image: linear-gradient(135deg, #CF5912, #692D09) 1;
+    border-radius: 0;
+    min-height: auto;
+    background: #111111;
+    overflow: hidden;
+}
+
+/* Image: tall enough so the full car is visible */
+.showcase-image {
+    width: 100%;
+    height: 700px;
+    overflow: hidden;
+    position: relative;
+    padding: 32px; /* Adds breathing room around the car */
+    box-sizing: border-box;
+}
+
+.showcase-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+}
+
+/* Divider: inset so it doesn't touch the card border */
+.showcase-divider-wrap {
+    padding: 0 28px;
+}
+
+.showcase-divider {
+    height: 3px;
+    background: linear-gradient(to right, #CF5912, #692D09);
+}
+
+/* Content: text left, buttons right, both vertically centered */
+.showcase-content {
+    padding: 32px 40px 36px;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+}
+
+.showcase-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.showcase-name {
+    color: #C5A059;
+    margin-bottom: 12px;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: rgba(197, 160, 89, 0.3);
+    text-underline-offset: 6px;
+}
+
+.showcase-specs h4 {
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.showcase-specs p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    line-height: 1.7;
+    margin: 0 0 4px;
+}
+
+.showcase-specs p strong {
+    color: #FFFFFF;
+}
+
+/* Buttons: use global WP button styles, side by side on the right */
+.showcase-buttons.wp-block-buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    flex-shrink: 0;
+}
+
+/* Showcase dot indicators (below arrows) */
+.showcase-dots {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 32px;
+}
+
+.showcase-dots .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    cursor: pointer;
+    transition: background 0.3s ease;
+    border: none;
+}
+
+.showcase-dots .dot.active {
+    background: #CF5912;
+}
+
+/* Showcase tablet landscape */
+@media (max-width: 1200px) {
+    .showcase-image {
+        height: 500px;
+        padding: 28px;
+    }
+
+    .showcase-content {
+        padding: 32px 32px 36px;
+        gap: 24px;
+    }
+
+    .showcase-buttons.wp-block-buttons {
+        flex-direction: column;
+        gap: 12px;
+    }
+}
+
+/* Showcase tablet portrait / mobile */
+@media (max-width: 900px) {
+    .slider-variant-showcase .slider-nav {
+        display: none !important;
+    }
+
+    .showcase-image {
+        height: 360px;
+        padding: 24px;
+    }
+
+    .showcase-content {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 28px 24px 32px;
+    }
+
+    .showcase-buttons.wp-block-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .slider-variant-showcase .slide-inner.showcase-card {
+        width: min(100%, 420px);
+        margin: 0 auto;
+        padding: 0;
+        border-radius: 18px;
+    }
+}
+
+/* Showcase small mobile */
+@media (max-width: 600px) {
+    .showcase-image {
+        height: 260px;
+        padding: 16px;
+    }
+
+    .showcase-divider-wrap {
+        padding: 0 18px;
+    }
+
+    .showcase-content {
+        padding: 22px 18px 28px;
+        gap: 20px;
+    }
+
+    .showcase-specs p {
+        font-size: 13px;
+    }
+
+    .showcase-dots {
+        margin-top: 24px;
+    }
+
+    .slider-variant-showcase .slide-inner.showcase-card {
+        width: min(100%, 340px);
+        border-radius: 16px;
+    }
+}

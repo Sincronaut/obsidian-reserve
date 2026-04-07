@@ -1,0 +1,335 @@
+/* ============================================================
+   THREE CARDS BLOCK STYLES
+   ============================================================ */
+
+.obsidian-three-cards {
+    background-color: #0B0B0B;
+    color: #FFFFFF;
+    position: relative;
+    overflow: hidden;
+    padding-top: var(--wp--preset--spacing--section-padding-v);
+    padding-bottom: var(--wp--preset--spacing--section-padding-v);
+    padding-left: var(--wp--preset--spacing--section-padding-h);
+    padding-right: var(--wp--preset--spacing--section-padding-h);
+}
+
+.three-cards-container {
+    max-width: var(--wp--style--global--wide-size);
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+/* Decorative Smudges */
+.smudge {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background-color: rgba(197, 160, 89, 0.15); /* #C5A05957 ish opacity */
+    filter: blur(150px);
+    border-radius: 50%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.smudge-top-right {
+    top: -200px;
+    right: -200px;
+}
+
+.smudge-bot-left {
+    bottom: -300px;
+    left: -200px;
+}
+
+/* Header Styles */
+.three-cards-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.three-cards-title {
+    margin-bottom: 16px;
+    font-weight: 700;
+}
+
+.three-cards-description {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    opacity: 0.6;
+}
+
+/* Cards Layout: two on top row, one centered on next row (same width) */
+.cards-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+}
+
+.card-item {
+    background-color: #1A1A1A;
+    border-radius: 12px;
+    padding: 0; /* Removing inner padding to let image reach edges */
+    position: relative;
+    overflow: hidden;
+    flex: 0 1 min(100%, 600px);
+    width: min(100%, 600px);
+    min-height: 320px;
+    display: flex;
+    align-items: stretch;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.card-item.img-left {
+    flex-direction: row;
+}
+
+.card-item.img-right {
+    flex-direction: row-reverse;
+}
+
+.card-item:hover {
+    transform: translateY(-5px);
+    border-color: rgba(197, 160, 89, 0.3);
+}
+
+/* Image column: image intentionally overflows, card clips it */
+.card-image-column {
+    flex: 0 0 190px;
+    width: 190px;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    overflow: hidden;
+    height: 100%;
+    position: relative;
+}
+
+.card-icon {
+    width: auto;
+    height: 100%;
+    max-width: none;
+    object-fit: contain;
+    object-position: center;
+}
+
+.card-item.img-left .card-icon {
+    position: relative;
+    left: -56px;
+}
+
+.card-item.img-right .card-icon {
+    position: relative;
+    left: auto;
+    right: -56px;
+}
+
+/* Text Column */
+.card-text-column {
+    flex: 1.5;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.card-title {
+    color: #C5A059;
+    font-size: 22px;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.card-description {
+    opacity: 0.8;
+    line-height: 1.6;
+}
+
+@media (max-width: 1200px) {
+    .obsidian-three-cards {
+        padding-top: 88px;
+        padding-bottom: 88px;
+    }
+
+    .three-cards-header {
+        margin-bottom: 48px;
+    }
+
+    .cards-grid {
+        gap: 24px;
+    }
+
+    .card-item {
+        flex-basis: min(100%, 560px);
+        width: min(100%, 560px);
+        min-height: 280px;
+    }
+
+    .card-image-column {
+        flex: 0 0 172px;
+        width: 172px;
+    }
+
+    .card-icon {
+        height: 100%;
+    }
+
+    .card-item.img-left .card-icon {
+        left: -44px;
+    }
+
+    .card-item.img-right .card-icon {
+        right: -44px;
+    }
+
+    .card-text-column {
+        padding: 32px 28px;
+    }
+}
+
+/* ---- Dot indicators (hidden on desktop) ---- */
+.cards-dots {
+    display: none;
+}
+
+/* ============================================================
+   MOBILE CAROUSEL  (<=991px)
+   ============================================================ */
+@media (max-width: 991px) {
+    .obsidian-three-cards {
+        padding-top: 72px;
+        padding-bottom: 72px;
+    }
+
+    .three-cards-header {
+        margin-bottom: 40px;
+    }
+
+    /* Clip viewport lives on the parent; the track slides inside it */
+    .three-cards-container {
+        overflow: hidden;
+    }
+
+    /* --- Carousel track --- */
+    .cards-grid {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        gap: 0;
+        overflow: visible;
+        transition: transform 0.45s ease;
+    }
+
+    /* Each card is one full-width slide */
+    .card-item,
+    .card-item.img-left,
+    .card-item.img-right {
+        flex: 0 0 100%;
+        width: 100%;
+        min-height: 340px;
+        flex-direction: column !important;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+    }
+
+    /* --- Blurred background image --- */
+    .card-image-column {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        z-index: 0;
+        padding: 0;
+    }
+
+    .card-icon {
+        width: auto;
+        height: 85%;
+        max-width: none;
+        position: relative;
+        left: auto !important;
+        right: auto !important;
+        object-fit: contain;
+        object-position: center;
+        filter: blur(6px);
+        opacity: 0.45;
+    }
+
+    /* --- Text overlay --- */
+    .card-text-column {
+        position: relative;
+        z-index: 1;
+        padding: 48px 28px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+    }
+
+    .card-title {
+        font-size: 20px;
+    }
+
+    .card-description {
+        max-width: 340px;
+    }
+
+    /* --- Dots --- */
+    .cards-dots {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 28px;
+    }
+
+    .cards-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(255, 255, 255, 0.3);
+        padding: 0;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    .cards-dot.active {
+        background: #C5A059;
+    }
+}
+
+@media (max-width: 600px) {
+    .obsidian-three-cards {
+        padding-top: 56px;
+        padding-bottom: 56px;
+    }
+
+    .three-cards-header {
+        margin-bottom: 32px;
+    }
+
+    .card-item,
+    .card-item.img-left,
+    .card-item.img-right {
+        min-height: 300px;
+    }
+
+    .card-text-column {
+        padding: 40px 22px;
+    }
+
+    .card-title {
+        font-size: 18px;
+    }
+}
