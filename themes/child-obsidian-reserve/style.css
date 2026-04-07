@@ -20,12 +20,18 @@ Tags: blog, booking, block-theme, full-site-editing
    ============================================================ */
 
 /* Smooth scrolling for anchor links and reset structure - FRONT END ONLY */
-body:not(.wp-admin), html {
+body:not(.wp-admin):not(.editor-styles-wrapper) {
 	scroll-behavior: smooth;
 	margin: 0;
 	padding: 0;
 	background-color: var(--wp--preset--color--contrast, #0B0B0B);
 	scrollbar-gutter: stable; /* Prevents layout shift when scrollbar appears */
+}
+html:not(.wp-toolbar) {
+	scroll-behavior: smooth;
+	margin: 0;
+	padding: 0;
+	background-color: var(--wp--preset--color--contrast, #0B0B0B);
 }
 
 /* Ensure images are responsive globally */
@@ -59,7 +65,7 @@ main.wp-site-blocks > * + * {
 /* ----------------------------------------------------
    GLOBAL RESETS, TYPOGRAPHY & LAYOUTS
    ---------------------------------------------------- */
-body {
+body:not(.editor-styles-wrapper) {
 	max-width: 1920px;
 	width: 100%;
 	margin: 0 auto !important;

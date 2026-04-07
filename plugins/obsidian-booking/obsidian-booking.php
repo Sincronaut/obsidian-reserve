@@ -144,13 +144,22 @@ add_action('admin_enqueue_scripts', 'obsidian_booking_admin_assets');
    ────────────────────────────────────────────── */
 function obsidian_booking_activate()
 {
-   // Flush rewrite rules so CPT URLs work immediately
+   // Register CPTs + taxonomies so rewrite rules and terms exist
    if (function_exists('obsidian_register_car_post_type')) {
       obsidian_register_car_post_type();
    }
    if (function_exists('obsidian_register_booking_post_type')) {
       obsidian_register_booking_post_type();
    }
+   if (function_exists('obsidian_register_taxonomies')) {
+      obsidian_register_taxonomies();
+   }
+
+   // Seed default car classes
+   if (function_exists('obsidian_seed_car_classes')) {
+      obsidian_seed_car_classes();
+   }
+
    flush_rewrite_rules();
 }
 register_activation_hook(__FILE__, 'obsidian_booking_activate');
