@@ -256,13 +256,36 @@ Assign to: Post Type = Car
 | Model | `car_model` | Text | e.g. "GTR" |
 | Year | `car_year` | Number | e.g. 2024 |
 | Daily Rate | `car_daily_rate` | Number | In PHP peso, e.g. 850.00 |
-| Total Units | `car_total_units` | Number | How many of this car you own |
-| Colors | `car_colors` | Checkbox | Orange, Black, White, Silver, Red |
+| Total Units | `car_total_units` | Number | **DEPRECATED** — now derived from color variants. Kept as fallback. |
+| Colors | `car_colors` | Checkbox | Orange, Red, Black, Blue (expandable) — source of truth for which colors exist |
 | Car Status | `car_status` | Select | Choices: available, maintenance, retired |
-| Image - Exterior | `car_img_exterior` | Image | Return: Image URL |
-| Image - Interior | `car_img_interior` | Image | Return: Image URL |
-| Image - Engine | `car_img_engine` | Image | Return: Image URL |
-| Image - Detail | `car_img_detail` | Image | Return: Image URL |
+| Image - Exterior | `car_img_exterior` | Image | Return: Image URL (modal gallery) |
+| Image - Interior | `car_img_interior` | Image | Return: Image URL (modal gallery) |
+| Image - Engine | `car_img_engine` | Image | Return: Image URL (modal gallery) |
+| Image - Detail | `car_img_detail` | Image | Return: Image URL (modal gallery) |
+
+### Step 2.2b — Color Variant Data (added post-Phase 4)
+
+Per-color inventory (units + card image) is stored as a JSON meta field on the Car CPT:
+
+**Meta field:** `_car_color_variants` (registered via `register_post_meta()` in `includes/meta-fields.php`)
+
+```json
+{
+  "orange": { "units": 3, "image_id": 456 },
+  "black":  { "units": 2, "image_id": 789 }
+}
+```
+
+**Why not ACF?** ACF Free has no Repeater field, and the color list is dynamic. A single JSON field scales to any number of colors without creating new ACF fields.
+
+**Admin UI:** A custom meta box in `admin/car-meta-box.php` reads the ACF `car_colors` checkbox and renders per-color inputs (units + WP Media image picker). Saving serializes to JSON.
+
+**Helpers** (in `includes/availability.php`):
+- `obsidian_get_color_variants( $car_id )` — reads + decodes the JSON (with backwards-compat fallback)
+- `obsidian_get_color_hex( $color_name )` — maps color name → hex code for swatch rendering
+- `obsidian_get_total_units( $car_id )` — sum of all color variant units (replaces `car_total_units`)
+- `obsidian_get_available_units_by_color( $car_id, $color, $start, $end )` — per-color availability check
 
 ### Step 2.3 — Register Booking meta fields with PHP (NOT ACF)
 
@@ -498,12 +521,14 @@ Create `themes/child-obsidian-reserve/blocks/car-grid/`:
 - `style.css` — card styling matching your existing design language
 
 Each card displays:
-- Featured image
+- Featured image (swaps when user clicks a color swatch)
 - Car name
+- **Color swatches** — small colored circles for each variant. Clicking a swatch swaps the card image and updates the per-color unit count. First color is active by default.
 - Daily rate
-- Available units badge
+- Per-color available units badge (updates with swatch selection)
 - Car class tag (Exotic, SUV, etc.)
 - "Book Now" button with `data-car-id` attribute (or "Sign In to Book" if logged out)
+- **Class filter tabs** — All / Exotic / Executive / SUV / Sport (client-side JS filtering)
 
 Register the block in your theme's `functions.php` alongside your other blocks.
 
@@ -1057,15 +1082,15 @@ Walk through the entire flow as a new user:
 
 ## Code Conflicts to Resolve
 
-> [!WARNING]
-> The following files were written during Phases 1-4 with the **old** status list and flow. Before starting Phase 6, you MUST update them:
+> [!NOTE]
+> **All Phase 1-4 conflicts have been resolved.** Status list, payment fields, blocking statuses, and status transitions are all up to date. The color variant system has been integrated. Remaining Phase 6 work (PayMongo endpoints) is new code, not a conflict.
 
-| File | What Needs Changing |
+| File | Status |
 |---|---|
-| `includes/meta-fields.php` | Add payment fields: `_booking_payment_type`, `_booking_payment_amount`, `_booking_deposit_amount`, `_booking_balance_due`, `_booking_payment_id`, `_booking_payment_status`, `_booking_denial_reason` |
-| `includes/availability.php` | Update blocking statuses from `['pending', 'confirmed', 'active']` to `['pending_review', 'awaiting_payment', 'paid', 'confirmed', 'active']` |
-| `includes/booking-handler.php` | Update `obsidian_get_status_transitions()`: `pending_review → [awaiting_payment, denied]`, `awaiting_payment → [paid, denied]`, `paid → [confirmed]`, `confirmed → [active, denied]`, `active → [completed]`. Update labels and colors. |
-| `includes/rest-api.php` | Change booking creation status from `'pending'` to `'pending_review'`. Add `/bookings/{id}/payment` and `/webhook/paymongo` endpoints |
+| `includes/meta-fields.php` | ✅ Resolved — payment fields added, `_car_color_variants` registered |
+| `includes/availability.php` | ✅ Resolved — blocking statuses correct, color-aware functions added |
+| `includes/booking-handler.php` | ✅ Resolved — transition map updated |
+| `includes/rest-api.php` | ✅ Resolved — `pending_review` status, color validation, color_variants in response. Still needs `/bookings/{id}/payment` and `/webhook/paymongo` in Phase 6 |
 
 ---
 
