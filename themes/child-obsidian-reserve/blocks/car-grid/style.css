@@ -1,0 +1,321 @@
+/* ============================================================
+   CAR GRID BLOCK STYLES
+   ============================================================ */
+
+.obsidian-car-grid {
+    background-color: #0B0B0B;
+    color: #FFFFFF;
+    padding-top: var(--wp--preset--spacing--section-padding-v);
+    padding-bottom: var(--wp--preset--spacing--section-padding-v);
+    padding-left: var(--wp--preset--spacing--section-padding-h);
+    padding-right: var(--wp--preset--spacing--section-padding-h);
+}
+
+.car-grid-container {
+    max-width: var(--wp--style--global--wide-size);
+    margin: 0 auto;
+}
+
+/* ---- Section Header ---- */
+
+.car-grid-header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.car-grid-title {
+    margin-bottom: 16px;
+    font-weight: 700;
+}
+
+.car-grid-description {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    opacity: 0.6;
+}
+
+/* ---- Filter Tabs ---- */
+
+.car-grid-filters {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 48px;
+}
+
+.filter-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.6);
+    padding: 10px 24px;
+    border-radius: 100px;
+    font-family: var(--wp--preset--font-family--montserrat);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    border-color: #C5A059;
+    color: #C5A059;
+}
+
+.filter-btn.active {
+    background: #C5A059;
+    border-color: #C5A059;
+    color: #0B0B0B;
+}
+
+/* ---- Card Grid Layout ---- */
+
+.car-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+}
+
+/* ---- Individual Card ---- */
+
+.car-card {
+    background-color: #141414;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.car-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(197, 160, 89, 0.35);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+}
+
+/* ---- Card Image ---- */
+
+.car-card-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background-color: #1A1A1A;
+}
+
+.car-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.car-card:hover .car-card-image img {
+    transform: scale(1.05);
+}
+
+.car-card-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%);
+}
+
+.car-class-badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: rgba(11, 11, 11, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #C5A059;
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border: 1px solid rgba(197, 160, 89, 0.2);
+}
+
+/* ---- Card Body ---- */
+
+.car-card-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.car-card-name {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #FFFFFF;
+    line-height: 1.3;
+}
+
+.car-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 20px;
+}
+
+.car-meta-item {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.45);
+    font-weight: 500;
+}
+
+.car-meta-divider {
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 13px;
+}
+
+/* ---- Footer: Price + Units ---- */
+
+.car-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 20px;
+    margin-top: auto;
+}
+
+.car-card-pricing {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.car-rate {
+    font-size: 22px;
+    font-weight: 700;
+    color: #C5A059;
+}
+
+.car-rate-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 500;
+}
+
+.car-card-units {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.units-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #5CB85C;
+    flex-shrink: 0;
+}
+
+.units-text {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.45);
+    font-weight: 500;
+}
+
+/* ---- Book Now Button ---- */
+
+.car-book-btn {
+    display: block;
+    width: 100%;
+    padding: 14px 24px;
+    background: transparent;
+    border: 1px solid rgba(197, 160, 89, 0.4);
+    border-radius: 8px;
+    color: #C5A059;
+    font-family: var(--wp--preset--font-family--montserrat);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.car-book-btn:hover {
+    background: #C5A059;
+    border-color: #C5A059;
+    color: #0B0B0B;
+}
+
+.car-book-btn--login {
+    border-color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.car-book-btn--login:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+    color: #FFFFFF;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* ---- Empty State ---- */
+
+.car-grid-empty {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 80px 20px;
+    font-size: 16px;
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET (2 columns)
+   ============================================================ */
+
+@media (max-width: 1200px) {
+    .car-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE (1 column)
+   ============================================================ */
+
+@media (max-width: 700px) {
+    .obsidian-car-grid {
+        padding-top: 56px;
+        padding-bottom: 56px;
+    }
+
+    .car-grid-header {
+        margin-bottom: 32px;
+    }
+
+    .car-grid-filters {
+        gap: 8px;
+        margin-bottom: 32px;
+    }
+
+    .filter-btn {
+        padding: 8px 18px;
+        font-size: 12px;
+    }
+
+    .car-cards {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .car-card-name {
+        font-size: 18px;
+    }
+
+    .car-rate {
+        font-size: 20px;
+    }
+}

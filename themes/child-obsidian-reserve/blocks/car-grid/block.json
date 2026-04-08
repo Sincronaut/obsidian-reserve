@@ -1,0 +1,26 @@
+{
+	"$schema": "https://schemas.wp.org/wp/6.9/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/car-grid",
+	"version": "1.0.0",
+	"title": "Car Grid",
+	"category": "theme",
+	"icon": "car",
+	"description": "Displays the full fleet of available cars as a filterable grid with booking buttons.",
+	"attributes": {
+		"title": {
+			"type": "string",
+			"default": "Select Your <span class='text-gold'>Vehicle.</span>"
+		},
+		"description": {
+			"type": "string",
+			"default": "Every vehicle is meticulously maintained to showroom standards. The exact car you reserve is the one waiting for you."
+		}
+	},
+	"supports": {
+		"html": false,
+		"anchor": true
+	},
+	"style": "file:./style.css",
+	"render": "file:./render.php"
+}
