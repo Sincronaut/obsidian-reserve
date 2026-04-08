@@ -47,11 +47,27 @@ function obsidian_render_color_variants_meta_box( $post ) {
 		return;
 	}
 
-	echo '<p class="obsidian-meta-description">';
-	esc_html_e( 'Set how many units you have of each color and upload a card image for each variant.', 'obsidian-booking' );
-	echo '</p>';
+	$total_units = (int) get_field( 'car_total_units', $post->ID );
+	$allocated   = 0;
+	foreach ( $colors as $c ) {
+		$allocated += (int) ( $variants[ strtolower( $c ) ]['units'] ?? 0 );
+	}
 
-	echo '<div class="obsidian-color-variants">';
+	?>
+	<p class="obsidian-meta-description">
+		<?php esc_html_e( 'Distribute your total units across colors. The sum must not exceed Total Units.', 'obsidian-booking' ); ?>
+	</p>
+
+	<div class="obsidian-units-counter<?php echo $allocated > $total_units ? ' over-limit' : ''; ?>"
+		 data-total="<?php echo esc_attr( $total_units ); ?>">
+		<span class="counter-allocated"><?php echo esc_html( $allocated ); ?></span>
+		/ <span class="counter-total"><?php echo esc_html( $total_units ); ?></span>
+		<?php esc_html_e( 'units allocated', 'obsidian-booking' ); ?>
+		<span class="counter-warning"><?php esc_html_e( '— exceeds Total Units!', 'obsidian-booking' ); ?></span>
+	</div>
+
+	<div class="obsidian-color-variants">
+	<?php
 
 	foreach ( $colors as $color ) {
 		$key      = strtolower( $color );
@@ -78,7 +94,7 @@ function obsidian_render_color_variants_meta_box( $post ) {
 					   value="<?php echo esc_attr( $units ); ?>"
 					   min="0"
 					   step="1"
-					   class="small-text" />
+					   class="small-text variant-units-input" />
 			</div>
 
 			<div class="variant-image">
@@ -141,12 +157,20 @@ function obsidian_save_color_variants( $post_id ) {
 		return;
 	}
 
-	$variants = array();
+	$total_units = (int) get_field( 'car_total_units', $post_id );
+	$variants    = array();
+	$running_sum = 0;
 
 	foreach ( $_POST['obsidian_variant'] as $color => $data ) {
 		$color_key = sanitize_text_field( strtolower( $color ) );
+		$requested = absint( $data['units'] ?? 0 );
+
+		// Clamp so the running total never exceeds car_total_units
+		$allowed = min( $requested, max( 0, $total_units - $running_sum ) );
+		$running_sum += $allowed;
+
 		$variants[ $color_key ] = array(
-			'units'    => absint( $data['units'] ?? 0 ),
+			'units'    => $allowed,
 			'image_id' => absint( $data['image_id'] ?? 0 ),
 		);
 	}

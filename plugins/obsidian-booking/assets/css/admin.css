@@ -16,6 +16,43 @@
     margin-bottom: 16px;
 }
 
+/* ---- Units Allocation Counter ---- */
+
+.obsidian-units-counter {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 14px;
+    margin-bottom: 16px;
+    background: #f0f6fc;
+    border: 1px solid #c3d9ed;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d4ed8;
+}
+
+.obsidian-units-counter .counter-allocated {
+    font-size: 15px;
+}
+
+.obsidian-units-counter .counter-warning {
+    display: none;
+    color: #dc2626;
+    font-weight: 700;
+    margin-left: 4px;
+}
+
+.obsidian-units-counter.over-limit {
+    background: #fef2f2;
+    border-color: #fca5a5;
+    color: #dc2626;
+}
+
+.obsidian-units-counter.over-limit .counter-warning {
+    display: inline;
+}
+
 /* ---- Color Variant Rows ---- */
 
 .obsidian-color-variants {
