@@ -1,10 +1,10 @@
 <?php
 /**
- * Availability Engine
+ * Availability Engine + Color Variant Helpers
  *
- * Core date-overlap logic for determining car availability.
- * This is the foundation of the booking system — the modal, the REST API,
- * and the booking handler all depend on these functions.
+ * Core date-overlap logic for determining car availability,
+ * plus per-color inventory helpers used by the REST API,
+ * admin meta box, and car-grid block.
  *
  * @package obsidian-booking
  */
@@ -13,38 +13,126 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   COLOR VARIANT HELPERS
+   ══════════════════════════════════════════════════════════════ */
+
+/**
+ * Map a color name to its hex code for rendering swatches.
+ *
+ * @param string $color_name The color name (case-insensitive).
+ * @return string Hex color code.
+ */
+function obsidian_get_color_hex( $color_name ) {
+	$map = array(
+		'orange' => '#FF6B00',
+		'black'  => '#1A1A1A',
+		'red'    => '#CC0000',
+		'blue'   => '#0066CC',
+		'white'  => '#F5F5F5',
+		'silver' => '#C0C0C0',
+		'yellow' => '#FFD700',
+		'green'  => '#2E8B57',
+		'gray'   => '#808080',
+		'grey'   => '#808080',
+	);
+
+	return $map[ strtolower( trim( $color_name ) ) ] ?? '#888888';
+}
+
+/**
+ * Get the decoded color variants for a car.
+ *
+ * Returns an associative array keyed by lowercase color name.
+ * Falls back to car_total_units split evenly across ACF car_colors
+ * if _car_color_variants hasn't been populated yet.
+ *
+ * @param int $car_id The Car post ID.
+ * @return array e.g. ['orange' => ['units' => 3, 'image_id' => 456], ...]
+ */
+function obsidian_get_color_variants( $car_id ) {
+	$json     = get_post_meta( $car_id, '_car_color_variants', true );
+	$variants = ! empty( $json ) ? json_decode( $json, true ) : null;
+
+	if ( ! empty( $variants ) && is_array( $variants ) ) {
+		return $variants;
+	}
+
+	// Backwards compat: split car_total_units evenly across car_colors
+	$colors      = get_field( 'car_colors', $car_id );
+	$total_units = (int) get_field( 'car_total_units', $car_id );
+
+	if ( empty( $colors ) || ! is_array( $colors ) ) {
+		return array();
+	}
+
+	$per_color = max( 1, intdiv( $total_units, count( $colors ) ) );
+	$fallback  = array();
+	foreach ( $colors as $color ) {
+		$fallback[ strtolower( $color ) ] = array(
+			'units'    => $per_color,
+			'image_id' => 0,
+		);
+	}
+
+	return $fallback;
+}
+
+/**
+ * Derive total units from color variants (sum of all per-color units).
+ * Falls back to ACF car_total_units if no variants are set.
+ *
+ * @param int $car_id The Car post ID.
+ * @return int Total units across all colors.
+ */
+function obsidian_get_total_units( $car_id ) {
+	$variants = obsidian_get_color_variants( $car_id );
+
+	if ( ! empty( $variants ) ) {
+		$total = 0;
+		foreach ( $variants as $data ) {
+			$total += (int) ( $data['units'] ?? 0 );
+		}
+		return $total;
+	}
+
+	return (int) get_field( 'car_total_units', $car_id );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   AVAILABILITY FUNCTIONS
+   ══════════════════════════════════════════════════════════════ */
+
+/**
+ * Statuses that block inventory (everything before completed/denied).
+ *
+ * @return array
+ */
+function obsidian_get_blocking_statuses() {
+	return array( 'pending_review', 'awaiting_payment', 'paid', 'confirmed', 'active' );
+}
+
 /**
  * Count how many units of a car are still available for a date range.
  *
- * Logic:
- *  1. Get the car's total units (from ACF field).
- *  2. Query all bookings for this car that overlap the requested dates.
- *  3. Only count bookings with active statuses (pending, confirmed, active).
- *  4. Subtract overlapping bookings from total → available units.
+ * Now derives total from the sum of all color variant units instead
+ * of the single car_total_units ACF field.
  *
- * Date-overlap formula:
- *   existing_start < requested_end AND existing_end > requested_start
- *
- * @param int    $car_id     The Car post ID.
- * @param string $start_date Requested start date (Y-m-d).
- * @param string $end_date   Requested end date (Y-m-d).
+ * @param int    $car_id             The Car post ID.
+ * @param string $start_date         Requested start date (Y-m-d).
+ * @param string $end_date           Requested end date (Y-m-d).
  * @param int    $exclude_booking_id Optional booking ID to exclude (for edits).
  *
  * @return int Number of available units (0 = fully booked).
  */
 function obsidian_get_available_units( $car_id, $start_date, $end_date, $exclude_booking_id = 0 ) {
 
-	// Get total units from ACF
-	$total_units = (int) get_field( 'car_total_units', $car_id );
+	$total_units = obsidian_get_total_units( $car_id );
 
 	if ( $total_units <= 0 ) {
 		return 0;
 	}
 
-	// Statuses that "hold" a unit (completed/denied don't block inventory)
-	$blocking_statuses = array( 'pending_review', 'awaiting_payment', 'paid', 'confirmed', 'active' );
-
-	// Query overlapping bookings
 	$args = array(
 		'post_type'      => 'booking',
 		'post_status'    => 'any',
@@ -52,31 +140,23 @@ function obsidian_get_available_units( $car_id, $start_date, $end_date, $exclude
 		'fields'         => 'ids',
 		'meta_query'     => array(
 			'relation' => 'AND',
-
-			// Same car
 			array(
 				'key'     => '_booking_car_id',
 				'value'   => $car_id,
 				'compare' => '=',
 				'type'    => 'NUMERIC',
 			),
-
-			// Status is one that blocks inventory
 			array(
 				'key'     => '_booking_status',
-				'value'   => $blocking_statuses,
+				'value'   => obsidian_get_blocking_statuses(),
 				'compare' => 'IN',
 			),
-
-			// Date overlap: existing_start < requested_end
 			array(
 				'key'     => '_booking_start_date',
 				'value'   => $end_date,
 				'compare' => '<',
 				'type'    => 'DATE',
 			),
-
-			// Date overlap: existing_end > requested_start
 			array(
 				'key'     => '_booking_end_date',
 				'value'   => $start_date,
@@ -86,10 +166,9 @@ function obsidian_get_available_units( $car_id, $start_date, $end_date, $exclude
 		),
 	);
 
-	$query = new WP_Query( $args );
+	$query             = new WP_Query( $args );
 	$overlapping_count = $query->found_posts;
 
-	// If we're editing an existing booking, don't count it against itself
 	if ( $exclude_booking_id > 0 ) {
 		$overlapping_ids = $query->posts;
 		if ( in_array( $exclude_booking_id, $overlapping_ids, true ) ) {
@@ -97,15 +176,91 @@ function obsidian_get_available_units( $car_id, $start_date, $end_date, $exclude
 		}
 	}
 
-	$available = $total_units - $overlapping_count;
+	return max( 0, $total_units - $overlapping_count );
+}
 
-	return max( 0, $available );
+/**
+ * Count how many units of a SPECIFIC COLOR are available for a date range.
+ *
+ * Same overlap logic as obsidian_get_available_units() but also
+ * filters bookings by _booking_color.
+ *
+ * @param int    $car_id             The Car post ID.
+ * @param string $color              The color name (lowercase).
+ * @param string $start_date         Requested start date (Y-m-d).
+ * @param string $end_date           Requested end date (Y-m-d).
+ * @param int    $exclude_booking_id Optional booking ID to exclude.
+ *
+ * @return int Number of available units of this color (0 = sold out).
+ */
+function obsidian_get_available_units_by_color( $car_id, $color, $start_date, $end_date, $exclude_booking_id = 0 ) {
+
+	$variants    = obsidian_get_color_variants( $car_id );
+	$color_lower = strtolower( $color );
+
+	if ( ! isset( $variants[ $color_lower ] ) ) {
+		return 0;
+	}
+
+	$color_units = (int) ( $variants[ $color_lower ]['units'] ?? 0 );
+
+	if ( $color_units <= 0 ) {
+		return 0;
+	}
+
+	$args = array(
+		'post_type'      => 'booking',
+		'post_status'    => 'any',
+		'posts_per_page' => -1,
+		'fields'         => 'ids',
+		'meta_query'     => array(
+			'relation' => 'AND',
+			array(
+				'key'     => '_booking_car_id',
+				'value'   => $car_id,
+				'compare' => '=',
+				'type'    => 'NUMERIC',
+			),
+			array(
+				'key'     => '_booking_color',
+				'value'   => $color_lower,
+				'compare' => '=',
+			),
+			array(
+				'key'     => '_booking_status',
+				'value'   => obsidian_get_blocking_statuses(),
+				'compare' => 'IN',
+			),
+			array(
+				'key'     => '_booking_start_date',
+				'value'   => $end_date,
+				'compare' => '<',
+				'type'    => 'DATE',
+			),
+			array(
+				'key'     => '_booking_end_date',
+				'value'   => $start_date,
+				'compare' => '>',
+				'type'    => 'DATE',
+			),
+		),
+	);
+
+	$query             = new WP_Query( $args );
+	$overlapping_count = $query->found_posts;
+
+	if ( $exclude_booking_id > 0 ) {
+		$overlapping_ids = $query->posts;
+		if ( in_array( $exclude_booking_id, $overlapping_ids, true ) ) {
+			$overlapping_count--;
+		}
+	}
+
+	return max( 0, $color_units - $overlapping_count );
 }
 
 /**
  * Check if a car has at least one unit available for a date range.
- *
- * Simple boolean wrapper around obsidian_get_available_units().
  *
  * @param int    $car_id     The Car post ID.
  * @param string $start_date Requested start date (Y-m-d).
@@ -120,9 +275,8 @@ function obsidian_is_car_available( $car_id, $start_date, $end_date ) {
 /**
  * Get an array of fully-booked dates for a car.
  *
- * Loops through the next N days and checks availability for each single day.
- * Returns dates where ALL units are booked — these feed directly into
- * Flatpickr's `disable` option to gray out unavailable dates.
+ * Returns dates where ALL units are booked — feeds into
+ * Flatpickr's `disable` option.
  *
  * @param int $car_id     The Car post ID.
  * @param int $days_ahead How many days into the future to check (default 90).
@@ -139,8 +293,6 @@ function obsidian_get_unavailable_dates( $car_id, $days_ahead = 90 ) {
 		$check_date->modify( "+{$i} days" );
 		$date_string = $check_date->format( 'Y-m-d' );
 
-		// For a single day, start = that day, end = next day
-		// This catches any booking that includes this day
 		$next_day = clone $check_date;
 		$next_day->modify( '+1 day' );
 

@@ -161,7 +161,7 @@ function obsidian_api_get_availability( $request ) {
 	}
 
 	$days_ahead       = isset( $request['days'] ) ? (int) $request['days'] : 90;
-	$total_units      = (int) get_field( 'car_total_units', $car_id );
+	$total_units      = obsidian_get_total_units( $car_id );
 	$unavailable      = obsidian_get_unavailable_dates( $car_id, $days_ahead );
 
 	return rest_ensure_response( array(
@@ -197,7 +197,7 @@ function obsidian_api_create_booking( $request ) {
 	$end_date        = sanitize_text_field( $params['end_date'] );
 	$pickup_location = sanitize_text_field( $params['pickup_location'] );
 	$customer_type   = sanitize_text_field( $params['customer_type'] );
-	$color           = isset( $params['color'] ) ? sanitize_text_field( $params['color'] ) : '';
+	$color           = isset( $params['color'] ) ? sanitize_text_field( strtolower( $params['color'] ) ) : '';
 	$documents       = isset( $params['documents'] ) ? $params['documents'] : array();
 	$user_id         = get_current_user_id();
 
@@ -209,6 +209,18 @@ function obsidian_api_create_booking( $request ) {
 			__( 'This car does not exist.', 'obsidian-booking' ),
 			array( 'status' => 400 )
 		);
+	}
+
+	// --- Validate color exists for this car ---
+	if ( ! empty( $color ) ) {
+		$variants = obsidian_get_color_variants( $car_id );
+		if ( ! isset( $variants[ $color ] ) ) {
+			return new WP_Error(
+				'invalid_color',
+				__( 'This color is not available for this vehicle.', 'obsidian-booking' ),
+				array( 'status' => 400 )
+			);
+		}
 	}
 
 	// --- Validate dates ---
@@ -250,11 +262,20 @@ function obsidian_api_create_booking( $request ) {
 	}
 
 	// --- RE-CHECK AVAILABILITY (race condition protection) ---
-	if ( ! obsidian_is_car_available( $car_id, $start_date, $end_date ) ) {
+	if ( ! empty( $color ) ) {
+		$color_available = obsidian_get_available_units_by_color( $car_id, $color, $start_date, $end_date );
+		if ( $color_available <= 0 ) {
+			return new WP_Error(
+				'not_available',
+				__( 'Sorry, this color variant is no longer available for the selected dates.', 'obsidian-booking' ),
+				array( 'status' => 409 )
+			);
+		}
+	} elseif ( ! obsidian_is_car_available( $car_id, $start_date, $end_date ) ) {
 		return new WP_Error(
 			'not_available',
 			__( 'Sorry, this car is no longer available for the selected dates.', 'obsidian-booking' ),
-			array( 'status' => 409 )  // 409 Conflict
+			array( 'status' => 409 )
 		);
 	}
 
@@ -495,21 +516,39 @@ function obsidian_format_car_data( $car_id ) {
 		}
 	}
 
+	// Build per-color variant data
+	$variants       = obsidian_get_color_variants( $car_id );
+	$color_variants = array();
+	$fallback_img   = get_the_post_thumbnail_url( $car_id, 'large' ) ?: '';
+
+	foreach ( $variants as $color_name => $data ) {
+		$img_id  = (int) ( $data['image_id'] ?? 0 );
+		$img_url = $img_id > 0 ? wp_get_attachment_image_url( $img_id, 'large' ) : '';
+
+		$color_variants[] = array(
+			'color' => $color_name,
+			'hex'   => obsidian_get_color_hex( $color_name ),
+			'units' => (int) ( $data['units'] ?? 0 ),
+			'image' => $img_url ?: $fallback_img,
+		);
+	}
+
 	return array(
-		'id'          => $car_id,
-		'name'        => get_the_title( $car_id ),
-		'slug'        => get_post_field( 'post_name', $car_id ),
-		'description' => get_the_excerpt( $car_id ),
-		'image'       => get_the_post_thumbnail_url( $car_id, 'large' ) ?: '',
-		'gallery'     => $gallery,
-		'car_class'   => $car_class,
-		'make'        => get_field( 'car_make', $car_id ) ?: '',
-		'model'       => get_field( 'car_model', $car_id ) ?: '',
-		'year'        => (int) get_field( 'car_year', $car_id ),
-		'daily_rate'  => (float) get_field( 'car_daily_rate', $car_id ),
-		'total_units' => (int) get_field( 'car_total_units', $car_id ),
-		'colors'      => $colors,
-		'status'      => get_field( 'car_status', $car_id ) ?: 'available',
-		'link'        => get_permalink( $car_id ),
+		'id'             => $car_id,
+		'name'           => get_the_title( $car_id ),
+		'slug'           => get_post_field( 'post_name', $car_id ),
+		'description'    => get_the_excerpt( $car_id ),
+		'image'          => $fallback_img,
+		'gallery'        => $gallery,
+		'car_class'      => $car_class,
+		'make'           => get_field( 'car_make', $car_id ) ?: '',
+		'model'          => get_field( 'car_model', $car_id ) ?: '',
+		'year'           => (int) get_field( 'car_year', $car_id ),
+		'daily_rate'     => (float) get_field( 'car_daily_rate', $car_id ),
+		'total_units'    => obsidian_get_total_units( $car_id ),
+		'colors'         => $colors,
+		'color_variants' => $color_variants,
+		'status'         => get_field( 'car_status', $car_id ) ?: 'available',
+		'link'           => get_permalink( $car_id ),
 	);
 }
