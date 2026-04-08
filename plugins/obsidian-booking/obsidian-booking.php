@@ -117,6 +117,11 @@ function obsidian_booking_admin_assets($hook)
       return;
    }
 
+   // WP Media uploader for the color variant image picker
+   if ($post_type === 'car') {
+      wp_enqueue_media();
+   }
+
    wp_enqueue_style(
       'obsidian-booking-admin',
       OBSIDIAN_BOOKING_URL . 'assets/css/admin.css',

@@ -21,15 +21,19 @@ obsidian-booking/
 ├── obsidian-booking.php           ← Plugin bootstrap (constants + require_once)
 ├── includes/
 │   ├── post-types.php             ← Car + Booking CPT registration
-│   ├── meta-fields.php            ← Booking meta fields (register_post_meta)
+│   ├── meta-fields.php            ← Booking + Car meta fields (register_post_meta)
 │   ├── taxonomies.php             ← Car Class taxonomy (Exotic, SUV, etc.)
-│   ├── availability.php           ← Date-overlap engine for inventory
+│   ├── availability.php           ← Date-overlap engine + color variant helpers
 │   ├── rest-api.php               ← All REST API endpoints
 │   ├── booking-handler.php        ← Status transitions + booking CRUD
 │   ├── user-fields.php            ← Custom user profile fields
 │   ├── payment.php                ← [FUTURE] PayMongo integration
 │   └── notifications.php          ← [FUTURE] Email notification system
-├── admin/                         ← [FUTURE] Admin meta boxes, columns, dashboard
+├── admin/
+│   ├── car-meta-box.php           ← Color Variants meta box (per-color units + images)
+│   ├── booking-meta-box.php       ← [FUTURE] Booking detail panel (approve/deny)
+│   ├── booking-columns.php        ← [FUTURE] Custom admin list columns
+│   └── dashboard-widget.php       ← [FUTURE] Dashboard widget
 ├── assets/
 │   ├── css/                       ← [FUTURE] Modal + booking page styles
 │   └── js/                        ← [FUTURE] Modal + booking page scripts
@@ -50,10 +54,12 @@ A WordPress block theme (FSE). Uses `templates/`, `parts/`, and custom `blocks/`
 
 ### Data Model
 
-**Cars** — Custom Post Type, public, uses ACF for admin-managed fields:
-- `car_make`, `car_model`, `car_year`, `car_daily_rate`, `car_total_units`
-- `car_colors` (checkbox), `car_status` (select: available/maintenance/retired)
-- `car_img_exterior`, `car_img_interior`, `car_img_engine`, `car_img_detail` (image fields)
+**Cars** — Custom Post Type, public, uses ACF + custom meta:
+- ACF fields: `car_make`, `car_model`, `car_year`, `car_daily_rate`, `car_total_units` (deprecated — now derived from color variants)
+- ACF: `car_colors` (checkbox — source of truth for which colors exist), `car_status` (select: available/maintenance/retired)
+- ACF: `car_img_exterior`, `car_img_interior`, `car_img_engine`, `car_img_detail` (gallery images for the modal)
+- Custom meta: `_car_color_variants` (JSON) — per-color units + image ID, e.g. `{"orange":{"units":3,"image_id":456},"black":{"units":2,"image_id":789}}`
+- Custom admin meta box on Car edit screen renders per-color inputs (reads ACF checkbox, saves to `_car_color_variants`)
 - Taxonomy: `car_class` (Exotic, Executive, SUV, Sport)
 
 **Bookings** — Custom Post Type, NOT public, uses `register_post_meta()`:
@@ -160,7 +166,7 @@ pending_review ──► awaiting_payment ──► paid ──► confirmed ─
 
 ## Key Technical Decisions
 
-1. **ACF for Cars, `register_post_meta()` for Bookings** — Cars are admin-managed (humans type), bookings are code-managed (REST API creates them)
+1. **ACF for Cars, `register_post_meta()` for Bookings** — Cars are admin-managed (humans type), bookings are code-managed (REST API creates them). Exception: `_car_color_variants` is registered via `register_post_meta()` on the Car CPT because it stores structured JSON that ACF Free can't handle (no Repeater field)
 2. **Custom car-grid block, NOT Query Loop** — Need full control over `data-car-id` attributes and "Book Now" button logic
 3. **Modal is lightweight** — Only shows car info + date selection. Documents, payment, confirmation happen on a full-page `/booking/` wizard
 4. **PayMongo for payments** — Card data never touches our server. Uses Payment Intents API

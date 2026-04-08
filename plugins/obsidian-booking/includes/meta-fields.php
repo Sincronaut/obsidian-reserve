@@ -1,8 +1,11 @@
 <?php
 /**
- * Register custom meta fields for the Booking CPT.
+ * Register custom meta fields for the Booking and Car CPTs.
  *
- * Car fields are handled by ACF (admin fills them in manually).
+ * Most Car fields are handled by ACF (admin fills them in manually).
+ * _car_color_variants is registered here because it stores structured
+ * JSON data (per-color units + image IDs) that ACF Free can't handle.
+ *
  * Booking fields are registered here with register_post_meta()
  * because bookings are created/updated programmatically via REST API.
  *
@@ -49,3 +52,29 @@ function obsidian_register_booking_meta() {
 	}
 }
 add_action( 'init', 'obsidian_register_booking_meta' );
+
+/**
+ * Register color variant meta for the Car CPT.
+ *
+ * Stores per-color inventory and image data as JSON.
+ * Example value:
+ *   {"orange":{"units":3,"image_id":456},"black":{"units":2,"image_id":789}}
+ *
+ * The ACF car_colors checkbox remains the source of truth for WHICH colors
+ * a car offers. This field stores HOW MANY of each and WHAT IMAGE to show.
+ *
+ * Helper functions (obsidian_get_color_variants, obsidian_get_color_hex)
+ * live in includes/availability.php alongside the availability engine.
+ */
+function obsidian_register_car_meta() {
+	register_post_meta( 'car', '_car_color_variants', array(
+		'show_in_rest'      => true,
+		'single'            => true,
+		'type'              => 'string',
+		'sanitize_callback' => 'sanitize_text_field',
+		'auth_callback'     => function () {
+			return current_user_can( 'edit_posts' );
+		},
+	) );
+}
+add_action( 'init', 'obsidian_register_car_meta' );
