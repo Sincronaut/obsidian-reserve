@@ -25,11 +25,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function obsidian_get_status_transitions() {
 	return array(
-		'pending'   => array( 'confirmed', 'denied' ),
-		'confirmed' => array( 'active', 'denied' ),
-		'active'    => array( 'completed' ),
-		'completed' => array(),     // Terminal state — no further changes
-		'denied'    => array(),     // Terminal state — no further changes
+		'pending_review'    => array( 'awaiting_payment', 'denied' ),
+		'awaiting_payment'  => array( 'paid', 'denied' ),
+		'paid'              => array( 'confirmed' ),
+		'confirmed'         => array( 'active', 'denied' ),  // denied = emergency override only
+		'active'            => array( 'completed' ),
+		'completed'         => array(),     // Terminal state — no further changes
+		'denied'            => array(),     // Terminal state — no further changes
 	);
 }
 
@@ -43,11 +45,13 @@ function obsidian_get_status_transitions() {
  */
 function obsidian_get_status_label( $status ) {
 	$labels = array(
-		'pending'   => __( 'Pending Review', 'obsidian-booking' ),
-		'confirmed' => __( 'Confirmed', 'obsidian-booking' ),
-		'active'    => __( 'Active', 'obsidian-booking' ),
-		'completed' => __( 'Completed', 'obsidian-booking' ),
-		'denied'    => __( 'Denied', 'obsidian-booking' ),
+		'pending_review'    => __( 'Pending Review', 'obsidian-booking' ),
+		'awaiting_payment'  => __( 'Awaiting Payment', 'obsidian-booking' ),
+		'paid'              => __( 'Paid', 'obsidian-booking' ),
+		'confirmed'         => __( 'Confirmed', 'obsidian-booking' ),
+		'active'            => __( 'Active', 'obsidian-booking' ),
+		'completed'         => __( 'Completed', 'obsidian-booking' ),
+		'denied'            => __( 'Denied', 'obsidian-booking' ),
 	);
 
 	return isset( $labels[ $status ] ) ? $labels[ $status ] : ucfirst( $status );
@@ -63,11 +67,13 @@ function obsidian_get_status_label( $status ) {
  */
 function obsidian_get_status_color( $status ) {
 	$colors = array(
-		'pending'   => '#F0AD4E',  // Amber/gold — waiting for review
-		'confirmed' => '#5CB85C',  // Green — approved
-		'active'    => '#5BC0DE',  // Blue — car is currently rented out
-		'completed' => '#777777',  // Gray — trip is done
-		'denied'    => '#D9534F',  // Red — rejected
+		'pending_review'    => '#F0AD4E',  // Amber/gold — waiting for doc review
+		'awaiting_payment'  => '#E67E22',  // Orange — docs approved, needs payment
+		'paid'              => '#3498DB',  // Blue — payment received
+		'confirmed'         => '#5CB85C',  // Green — booking locked in
+		'active'            => '#5BC0DE',  // Teal — car is currently rented out
+		'completed'         => '#777777',  // Gray — trip is done
+		'denied'            => '#D9534F',  // Red — rejected
 	);
 
 	return isset( $colors[ $status ] ) ? $colors[ $status ] : '#999999';
@@ -203,23 +209,30 @@ function obsidian_get_booking_summary( $booking_id ) {
 	$num_days = $start_dt->diff( $end_dt )->days;
 
 	return array(
-		'booking_id'      => $booking_id,
-		'car_id'          => $car_id,
-		'car_name'        => get_the_title( $car_id ),
-		'car_image'       => get_the_post_thumbnail_url( $car_id, 'medium' ),
-		'user_id'         => $user_id,
-		'user_name'       => $user ? $user->display_name : __( 'Unknown', 'obsidian-booking' ),
-		'user_email'      => $user ? $user->user_email : '',
-		'start_date'      => $start,
-		'end_date'        => $end,
-		'num_days'        => $num_days,
-		'pickup_location' => get_post_meta( $booking_id, '_booking_pickup_location', true ),
-		'customer_type'   => get_post_meta( $booking_id, '_booking_customer_type', true ),
-		'color'           => get_post_meta( $booking_id, '_booking_color', true ),
-		'status'          => get_post_meta( $booking_id, '_booking_status', true ),
-		'total_price'     => (float) get_post_meta( $booking_id, '_booking_total_price', true ),
-		'documents'       => json_decode( get_post_meta( $booking_id, '_booking_documents', true ), true ) ?: array(),
-		'admin_notes'     => get_post_meta( $booking_id, '_booking_admin_notes', true ),
-		'created_at'      => $booking->post_date,
+		'booking_id'       => $booking_id,
+		'car_id'           => $car_id,
+		'car_name'         => get_the_title( $car_id ),
+		'car_image'        => get_the_post_thumbnail_url( $car_id, 'medium' ),
+		'user_id'          => $user_id,
+		'user_name'        => $user ? $user->display_name : __( 'Unknown', 'obsidian-booking' ),
+		'user_email'       => $user ? $user->user_email : '',
+		'start_date'       => $start,
+		'end_date'         => $end,
+		'num_days'         => $num_days,
+		'pickup_location'  => get_post_meta( $booking_id, '_booking_pickup_location', true ),
+		'customer_type'    => get_post_meta( $booking_id, '_booking_customer_type', true ),
+		'color'            => get_post_meta( $booking_id, '_booking_color', true ),
+		'status'           => get_post_meta( $booking_id, '_booking_status', true ),
+		'total_price'      => (float) get_post_meta( $booking_id, '_booking_total_price', true ),
+		'payment_type'     => get_post_meta( $booking_id, '_booking_payment_type', true ),
+		'payment_amount'   => (float) get_post_meta( $booking_id, '_booking_payment_amount', true ),
+		'deposit_amount'   => (float) get_post_meta( $booking_id, '_booking_deposit_amount', true ),
+		'balance_due'      => (float) get_post_meta( $booking_id, '_booking_balance_due', true ),
+		'payment_id'       => get_post_meta( $booking_id, '_booking_payment_id', true ),
+		'payment_status'   => get_post_meta( $booking_id, '_booking_payment_status', true ),
+		'denial_reason'    => get_post_meta( $booking_id, '_booking_denial_reason', true ),
+		'documents'        => json_decode( get_post_meta( $booking_id, '_booking_documents', true ), true ) ?: array(),
+		'admin_notes'      => get_post_meta( $booking_id, '_booking_admin_notes', true ),
+		'created_at'       => $booking->post_date,
 	);
 }

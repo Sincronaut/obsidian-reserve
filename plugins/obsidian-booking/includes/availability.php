@@ -41,8 +41,8 @@ function obsidian_get_available_units( $car_id, $start_date, $end_date, $exclude
 		return 0;
 	}
 
-	// Statuses that "hold" a unit (denied/completed don't block inventory)
-	$blocking_statuses = array( 'pending', 'confirmed', 'active' );
+	// Statuses that "hold" a unit (completed/denied don't block inventory)
+	$blocking_statuses = array( 'pending_review', 'awaiting_payment', 'paid', 'confirmed', 'active' );
 
 	// Query overlapping bookings
 	$args = array(

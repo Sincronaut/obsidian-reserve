@@ -293,21 +293,28 @@ function obsidian_api_create_booking( $request ) {
 	update_post_meta( $booking_id, '_booking_end_date', $end_date );
 	update_post_meta( $booking_id, '_booking_pickup_location', $pickup_location );
 	update_post_meta( $booking_id, '_booking_customer_type', $customer_type );
-	update_post_meta( $booking_id, '_booking_status', 'pending' );
+	update_post_meta( $booking_id, '_booking_status', 'pending_review' );
 	update_post_meta( $booking_id, '_booking_total_price', $total );
 	update_post_meta( $booking_id, '_booking_color', $color );
 	update_post_meta( $booking_id, '_booking_documents', wp_json_encode( $documents ) );
 	update_post_meta( $booking_id, '_booking_admin_notes', '' );
+	update_post_meta( $booking_id, '_booking_payment_type', '' );
+	update_post_meta( $booking_id, '_booking_payment_amount', 0 );
+	update_post_meta( $booking_id, '_booking_deposit_amount', 0 );
+	update_post_meta( $booking_id, '_booking_balance_due', $total );
+	update_post_meta( $booking_id, '_booking_payment_id', '' );
+	update_post_meta( $booking_id, '_booking_payment_status', 'unpaid' );
+	update_post_meta( $booking_id, '_booking_denial_reason', '' );
 
-	// --- Fire action hook (Phase 7 will listen for this to send emails) ---
-	do_action( 'obsidian_booking_status_changed', $booking_id, '', 'pending' );
+	// --- Fire action hook (Phase 8 will listen for this to send emails) ---
+	do_action( 'obsidian_booking_status_changed', $booking_id, '', 'pending_review' );
 
 	return rest_ensure_response( array(
 		'success'    => true,
 		'booking_id' => $booking_id,
-		'status'     => 'pending',
+		'status'     => 'pending_review',
 		'total'      => $total,
-		'message'    => __( 'Your reservation has been submitted! We will review it shortly.', 'obsidian-booking' ),
+		'message'    => __( 'Your documents have been submitted for review! We will email you once approved.', 'obsidian-booking' ),
 	) );
 }
 
@@ -337,18 +344,22 @@ function obsidian_api_get_my_bookings( $request ) {
 		$car_id = (int) get_post_meta( $booking->ID, '_booking_car_id', true );
 
 		$data[] = array(
-			'booking_id'      => $booking->ID,
-			'car_id'          => $car_id,
-			'car_name'        => get_the_title( $car_id ),
-			'car_image'       => get_the_post_thumbnail_url( $car_id, 'medium' ),
-			'start_date'      => get_post_meta( $booking->ID, '_booking_start_date', true ),
-			'end_date'        => get_post_meta( $booking->ID, '_booking_end_date', true ),
-			'pickup_location' => get_post_meta( $booking->ID, '_booking_pickup_location', true ),
-			'customer_type'   => get_post_meta( $booking->ID, '_booking_customer_type', true ),
-			'status'          => get_post_meta( $booking->ID, '_booking_status', true ),
-			'total_price'     => (float) get_post_meta( $booking->ID, '_booking_total_price', true ),
-			'color'           => get_post_meta( $booking->ID, '_booking_color', true ),
-			'created_at'      => $booking->post_date,
+			'booking_id'       => $booking->ID,
+			'car_id'           => $car_id,
+			'car_name'         => get_the_title( $car_id ),
+			'car_image'        => get_the_post_thumbnail_url( $car_id, 'medium' ),
+			'start_date'       => get_post_meta( $booking->ID, '_booking_start_date', true ),
+			'end_date'         => get_post_meta( $booking->ID, '_booking_end_date', true ),
+			'pickup_location'  => get_post_meta( $booking->ID, '_booking_pickup_location', true ),
+			'customer_type'    => get_post_meta( $booking->ID, '_booking_customer_type', true ),
+			'status'           => get_post_meta( $booking->ID, '_booking_status', true ),
+			'total_price'      => (float) get_post_meta( $booking->ID, '_booking_total_price', true ),
+			'payment_type'     => get_post_meta( $booking->ID, '_booking_payment_type', true ),
+			'payment_amount'   => (float) get_post_meta( $booking->ID, '_booking_payment_amount', true ),
+			'balance_due'      => (float) get_post_meta( $booking->ID, '_booking_balance_due', true ),
+			'payment_status'   => get_post_meta( $booking->ID, '_booking_payment_status', true ),
+			'color'            => get_post_meta( $booking->ID, '_booking_color', true ),
+			'created_at'       => $booking->post_date,
 		);
 	}
 
