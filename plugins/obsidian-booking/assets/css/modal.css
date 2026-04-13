@@ -251,13 +251,14 @@ body.obsidian-modal-open {
    margin-left: auto;
 }
 
-/* Left meta — price + class badge */
+/* Left meta — class badge + price, pushed to bottom */
 
 .obsidian-modal-left-meta {
    display: flex;
    align-items: center;
    justify-content: space-between;
-   padding-top: 4px;
+   margin-top: auto;
+   padding-top: 16px;
 }
 
 .obsidian-modal-rate {

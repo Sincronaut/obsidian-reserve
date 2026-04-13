@@ -176,11 +176,11 @@ function obsidian_booking_render_modal()
                <div id="obsidian-modal-colors" class="obsidian-modal-colors"></div>
 
                <div class="obsidian-modal-left-meta">
+                  <span id="obsidian-modal-class" class="obsidian-modal-badge"></span>
                   <div class="obsidian-modal-rate">
                      <span id="obsidian-modal-rate-value"></span>
                      <span class="obsidian-modal-rate-label">/ day</span>
                   </div>
-                  <span id="obsidian-modal-class" class="obsidian-modal-badge"></span>
                </div>
             </div>
 
