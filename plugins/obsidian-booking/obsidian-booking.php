@@ -210,7 +210,7 @@ function obsidian_booking_render_modal()
                         <span>Local Renters</span>
                      </label>
                      <label class="obsidian-modal-radio">
-                        <input type="radio" name="obsidian_customer_type" value="foreigner" />
+                        <input type="radio" name="obsidian_customer_type" value="international" />
                         <span class="radio-circle"></span>
                         <span>International Renters</span>
                      </label>
