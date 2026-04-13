@@ -165,31 +165,47 @@ function obsidian_booking_render_modal()
          </div>
 
          <div class="obsidian-modal-content" id="obsidian-modal-content">
-            <!-- Gallery -->
-            <div class="obsidian-modal-gallery">
+
+            <!-- LEFT COLUMN — Gallery + Color + Price -->
+            <div class="obsidian-modal-left">
                <div class="obsidian-modal-main-img">
                   <img id="obsidian-modal-hero" src="" alt="" />
                </div>
                <div class="obsidian-modal-thumbs" id="obsidian-modal-thumbs"></div>
-            </div>
 
-            <!-- Car info -->
-            <div class="obsidian-modal-info">
-               <h2 id="obsidian-modal-name"></h2>
-               <div class="obsidian-modal-specs">
+               <div id="obsidian-modal-colors" class="obsidian-modal-colors"></div>
+
+               <div class="obsidian-modal-left-meta">
+                  <div class="obsidian-modal-rate">
+                     <span id="obsidian-modal-rate-value"></span>
+                     <span class="obsidian-modal-rate-label">/ day</span>
+                  </div>
                   <span id="obsidian-modal-class" class="obsidian-modal-badge"></span>
-                  <span class="obsidian-modal-divider">|</span>
-                  <span id="obsidian-modal-year"></span>
-               </div>
-               <div class="obsidian-modal-rate">
-                  <span id="obsidian-modal-rate-value"></span>
-                  <span class="obsidian-modal-rate-label">/ day</span>
                </div>
             </div>
 
-            <!-- Date Selection -->
-            <div class="obsidian-modal-section">
-               <h4 class="obsidian-modal-section-title">Select Dates</h4>
+            <!-- RIGHT COLUMN — Info + Form -->
+            <div class="obsidian-modal-right">
+               <h3 id="obsidian-modal-name"></h3>
+
+               <div id="obsidian-modal-specs" class="obsidian-modal-specs"></div>
+
+               <div class="obsidian-modal-customer-section">
+                  <h4 class="obsidian-modal-section-heading">Tell us who you are. We handle the rest.</h4>
+                  <div class="obsidian-modal-customer-type">
+                     <label class="obsidian-modal-radio">
+                        <input type="radio" name="obsidian_customer_type" value="local" checked />
+                        <span class="radio-circle"></span>
+                        <span>Local Renters</span>
+                     </label>
+                     <label class="obsidian-modal-radio">
+                        <input type="radio" name="obsidian_customer_type" value="foreigner" />
+                        <span class="radio-circle"></span>
+                        <span>International Renters</span>
+                     </label>
+                  </div>
+               </div>
+
                <div class="obsidian-modal-dates">
                   <div class="obsidian-modal-field">
                      <label for="obsidian-pickup-date">Pick-up Date</label>
@@ -200,35 +216,18 @@ function obsidian_booking_render_modal()
                      <input type="text" id="obsidian-dropoff-date" placeholder="Select date" readonly />
                   </div>
                </div>
-            </div>
 
-            <!-- Color Selection -->
-            <div class="obsidian-modal-section" id="obsidian-modal-color-section">
-               <h4 class="obsidian-modal-section-title">Select Color</h4>
-               <div id="obsidian-modal-colors" class="obsidian-modal-colors"></div>
-            </div>
-
-            <!-- Pickup Location -->
-            <div class="obsidian-modal-section">
-               <h4 class="obsidian-modal-section-title">Pickup Location</h4>
-               <div class="obsidian-modal-field">
-                  <input type="text" id="obsidian-pickup-location" placeholder="Airport / Hotel / Address" />
+               <div class="obsidian-modal-actions">
+                  <button id="obsidian-modal-proceed" class="obsidian-modal-cta" disabled>
+                     <span id="obsidian-modal-cta-text">Reserve Vehicle</span>
+                  </button>
+                  <button id="obsidian-modal-check-avail" class="obsidian-modal-cta-outline" type="button">
+                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                     Check Vehicle Availability
+                  </button>
                </div>
             </div>
 
-            <!-- Total -->
-            <div class="obsidian-modal-total">
-               <div class="obsidian-modal-total-row">
-                  <span class="obsidian-modal-total-label">TOTAL:</span>
-                  <span id="obsidian-modal-total-value">₱0</span>
-               </div>
-               <span id="obsidian-modal-total-breakdown" class="obsidian-modal-breakdown"></span>
-            </div>
-
-            <!-- CTA -->
-            <button id="obsidian-modal-proceed" class="obsidian-modal-cta" disabled>
-               Proceed to Booking
-            </button>
          </div>
       </div>
    </div>

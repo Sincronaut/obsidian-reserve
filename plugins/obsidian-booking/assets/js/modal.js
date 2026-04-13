@@ -1,16 +1,16 @@
 /**
  * Obsidian Booking — Modal JS
- * Phase 5: Modal open/close, Flatpickr init, AJAX booking submission.
+ * Phase 5: Two-column modal with gallery, specs, customer type, and date pickers.
  */
 (function () {
    'use strict';
 
    var cfg = window.obsidianBooking || {};
 
-   var modal, overlay, panel, loader, content;
-   var heroImg, thumbsContainer, nameEl, classEl, yearEl, rateEl;
-   var pickupInput, dropoffInput, colorsContainer, colorSection, locationInput;
-   var totalValue, totalBreakdown, proceedBtn;
+   var modal, overlay, loader, content;
+   var heroImg, thumbsContainer, colorsContainer;
+   var nameEl, classEl, rateEl, specsEl, ctaTextEl;
+   var pickupInput, dropoffInput, proceedBtn, checkAvailBtn;
    var pickupFP, dropoffFP;
    var currentCar = null;
    var selectedColor = null;
@@ -19,24 +19,21 @@
       modal = document.getElementById('obsidian-booking-modal');
       if (!modal) return;
 
-      overlay       = modal.querySelector('.obsidian-modal-overlay');
-      panel         = modal.querySelector('.obsidian-modal-panel');
-      loader        = document.getElementById('obsidian-modal-loader');
-      content       = document.getElementById('obsidian-modal-content');
-      heroImg       = document.getElementById('obsidian-modal-hero');
+      overlay         = modal.querySelector('.obsidian-modal-overlay');
+      loader          = document.getElementById('obsidian-modal-loader');
+      content         = document.getElementById('obsidian-modal-content');
+      heroImg         = document.getElementById('obsidian-modal-hero');
       thumbsContainer = document.getElementById('obsidian-modal-thumbs');
-      nameEl        = document.getElementById('obsidian-modal-name');
-      classEl       = document.getElementById('obsidian-modal-class');
-      yearEl        = document.getElementById('obsidian-modal-year');
-      rateEl        = document.getElementById('obsidian-modal-rate-value');
-      pickupInput   = document.getElementById('obsidian-pickup-date');
-      dropoffInput  = document.getElementById('obsidian-dropoff-date');
       colorsContainer = document.getElementById('obsidian-modal-colors');
-      colorSection  = document.getElementById('obsidian-modal-color-section');
-      locationInput = document.getElementById('obsidian-pickup-location');
-      totalValue    = document.getElementById('obsidian-modal-total-value');
-      totalBreakdown = document.getElementById('obsidian-modal-total-breakdown');
-      proceedBtn    = document.getElementById('obsidian-modal-proceed');
+      nameEl          = document.getElementById('obsidian-modal-name');
+      classEl         = document.getElementById('obsidian-modal-class');
+      rateEl          = document.getElementById('obsidian-modal-rate-value');
+      specsEl         = document.getElementById('obsidian-modal-specs');
+      ctaTextEl       = document.getElementById('obsidian-modal-cta-text');
+      pickupInput     = document.getElementById('obsidian-pickup-date');
+      dropoffInput    = document.getElementById('obsidian-dropoff-date');
+      proceedBtn      = document.getElementById('obsidian-modal-proceed');
+      checkAvailBtn   = document.getElementById('obsidian-modal-check-avail');
 
       modal.querySelector('.obsidian-modal-close').addEventListener('click', closeModal);
       overlay.addEventListener('click', closeModal);
@@ -55,7 +52,9 @@
       });
 
       proceedBtn.addEventListener('click', handleProceed);
-      locationInput.addEventListener('input', validateForm);
+      checkAvailBtn.addEventListener('click', function () {
+         if (pickupFP) pickupFP.open();
+      });
    }
 
    /* ── Open / Close ── */
@@ -116,10 +115,10 @@
 
       currentCar = null;
       selectedColor = null;
-      locationInput.value = '';
-      totalValue.textContent = '\u20B10';
-      totalBreakdown.textContent = '';
       proceedBtn.disabled = true;
+
+      var localRadio = modal.querySelector('input[name="obsidian_customer_type"][value="local"]');
+      if (localRadio) localRadio.checked = true;
    }
 
    /* ── Populate ── */
@@ -127,9 +126,22 @@
    function populateModal(car) {
       nameEl.textContent = car.name;
       classEl.textContent = car.car_class || '';
-      yearEl.textContent = car.year || '';
       rateEl.textContent = '\u20B1' + numberFormat(car.daily_rate);
 
+      // Specifications (HTML from WYSIWYG field)
+      if (car.specifications) {
+         specsEl.innerHTML = car.specifications;
+         specsEl.style.display = '';
+      } else {
+         specsEl.innerHTML = '';
+         specsEl.style.display = 'none';
+      }
+
+      // CTA text with car name
+      var shortName = car.make ? car.make + ' ' + (car.model || '') : car.name;
+      ctaTextEl.textContent = 'Reserve ' + shortName.trim();
+
+      // Gallery + colors
       if (car.color_variants && car.color_variants.length > 0) {
          selectedColor = car.color_variants[0].color;
          buildGallery(car.color_variants[0].gallery || [], car.image);
@@ -151,22 +163,19 @@
          return;
       }
 
-      // First image (index 0) is the card thumbnail — use it as the initial hero
       heroImg.src = all[0];
       heroImg.alt = currentCar ? currentCar.name : '';
 
-      // Modal thumbnails = images 2–6 (indices 1+), the gallery shots
+      // Thumbnails = images 2–6 (indices 1+)
       var modalImages = all.length > 1 ? all.slice(1) : all;
 
-      var labels = ['Image 1', 'Image 2', 'Image 3', 'Image 4', 'Image 5'];
       modalImages.forEach(function (url, idx) {
          var btn = document.createElement('button');
          btn.className = 'obsidian-modal-thumb' + (idx === 0 ? ' active' : '');
-         btn.setAttribute('aria-label', labels[idx] || 'Photo');
 
          var img = document.createElement('img');
          img.src = url;
-         img.alt = labels[idx] || 'Photo';
+         img.alt = 'Image ' + (idx + 1);
          img.loading = 'lazy';
          btn.appendChild(img);
 
@@ -186,52 +195,31 @@
       colorsContainer.innerHTML = '';
 
       if (!variants.length) {
-         colorSection.style.display = 'none';
+         colorsContainer.style.display = 'none';
          return;
       }
-      colorSection.style.display = '';
+      colorsContainer.style.display = '';
 
       variants.forEach(function (v, idx) {
-         var label = document.createElement('label');
-         label.className = 'obsidian-modal-color-option' + (idx === 0 ? ' active' : '');
+         var btn = document.createElement('button');
+         btn.className = 'obsidian-modal-color-swatch' + (idx === 0 ? ' active' : '');
+         btn.style.backgroundColor = v.hex;
+         btn.setAttribute('aria-label', capitalize(v.color));
+         btn.title = capitalize(v.color) + ' \u2014 ' + v.units + ' available';
 
-         var radio = document.createElement('input');
-         radio.type = 'radio';
-         radio.name = 'obsidian_modal_color';
-         radio.value = v.color;
-         radio.className = 'obsidian-modal-color-radio';
-         if (idx === 0) radio.checked = true;
-
-         var swatch = document.createElement('span');
-         swatch.className = 'obsidian-modal-color-dot';
-         swatch.style.backgroundColor = v.hex;
-
-         var name = document.createElement('span');
-         name.className = 'obsidian-modal-color-name';
-         name.textContent = capitalize(v.color);
-
-         var units = document.createElement('span');
-         units.className = 'obsidian-modal-color-units';
-         units.textContent = v.units + ' available';
-
-         label.appendChild(radio);
-         label.appendChild(swatch);
-         label.appendChild(name);
-         label.appendChild(units);
-
-         radio.addEventListener('change', function () {
+         btn.addEventListener('click', function () {
             selectedColor = v.color;
 
-            colorsContainer.querySelectorAll('.obsidian-modal-color-option').forEach(function (opt) {
-               opt.classList.remove('active');
+            colorsContainer.querySelectorAll('.obsidian-modal-color-swatch').forEach(function (s) {
+               s.classList.remove('active');
             });
-            label.classList.add('active');
+            btn.classList.add('active');
 
             buildGallery(v.gallery || [], fallbackImg);
             validateForm();
          });
 
-         colorsContainer.appendChild(label);
+         colorsContainer.appendChild(btn);
       });
    }
 
@@ -251,7 +239,6 @@
                dropoffFP.set('minDate', nextDay);
                dropoffFP.open();
             }
-            calculateTotal();
             validateForm();
          }
       });
@@ -263,32 +250,9 @@
          altFormat: 'M d, Y',
          disable: unavailableDates,
          onChange: function () {
-            calculateTotal();
             validateForm();
          }
       });
-   }
-
-   /* ── Price calculation ── */
-
-   function calculateTotal() {
-      if (!currentCar) return;
-
-      var start = pickupFP.selectedDates[0];
-      var end   = dropoffFP.selectedDates[0];
-
-      if (!start || !end) {
-         totalValue.textContent = '\u20B10';
-         totalBreakdown.textContent = '';
-         return;
-      }
-
-      var days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-      if (days < 1) days = 1;
-
-      var total = days * currentCar.daily_rate;
-      totalValue.textContent = '\u20B1' + numberFormat(total);
-      totalBreakdown.textContent = '(' + days + ' day' + (days > 1 ? 's' : '') + ' \u00D7 \u20B1' + numberFormat(currentCar.daily_rate) + '/day)';
    }
 
    /* ── Validation ── */
@@ -297,9 +261,8 @@
       var hasPickup  = pickupFP && pickupFP.selectedDates.length > 0;
       var hasDropoff = dropoffFP && dropoffFP.selectedDates.length > 0;
       var hasColor   = selectedColor || !(currentCar && currentCar.color_variants && currentCar.color_variants.length > 0);
-      var hasLocation = locationInput.value.trim() !== '';
 
-      proceedBtn.disabled = !(hasPickup && hasDropoff && hasColor && hasLocation);
+      proceedBtn.disabled = !(hasPickup && hasDropoff && hasColor);
    }
 
    /* ── Proceed → redirect to booking page ── */
@@ -307,16 +270,16 @@
    function handleProceed() {
       if (proceedBtn.disabled || !currentCar) return;
 
-      var start    = pickupFP.selectedDates[0];
-      var end      = dropoffFP.selectedDates[0];
-      var location = locationInput.value.trim();
+      var start        = pickupFP.selectedDates[0];
+      var end          = dropoffFP.selectedDates[0];
+      var customerType = modal.querySelector('input[name="obsidian_customer_type"]:checked');
 
       var params = new URLSearchParams({
-         car_id:   currentCar.id,
-         start:    formatDate(start),
-         end:      formatDate(end),
-         color:    selectedColor || '',
-         location: location
+         car_id:        currentCar.id,
+         start:         formatDate(start),
+         end:           formatDate(end),
+         color:         selectedColor || '',
+         customer_type: customerType ? customerType.value : 'local'
       });
 
       window.location.href = (cfg.bookingPageUrl || '/booking/') + '?' + params.toString();
