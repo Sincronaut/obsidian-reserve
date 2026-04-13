@@ -506,30 +506,31 @@ function obsidian_format_car_data( $car_id ) {
 		$colors = array();
 	}
 
-	// Build gallery from individual image fields
-	$gallery = array();
-	$image_fields = array( 'car_img_exterior', 'car_img_interior', 'car_img_engine', 'car_img_detail' );
-	foreach ( $image_fields as $field_name ) {
-		$img = get_field( $field_name, $car_id );
-		if ( $img ) {
-			$gallery[] = is_array( $img ) ? $img['url'] : $img;
-		}
-	}
-
-	// Build per-color variant data
+	// Build per-color variant data with full gallery per color
 	$variants       = obsidian_get_color_variants( $car_id );
 	$color_variants = array();
 	$fallback_img   = get_the_post_thumbnail_url( $car_id, 'large' ) ?: '';
 
 	foreach ( $variants as $color_name => $data ) {
-		$img_id  = (int) ( $data['image_id'] ?? 0 );
-		$img_url = $img_id > 0 ? wp_get_attachment_image_url( $img_id, 'large' ) : '';
+		$images     = isset( $data['images'] ) && is_array( $data['images'] ) ? $data['images'] : array();
+		$gallery    = array();
+
+		foreach ( $images as $img_id ) {
+			$img_id = (int) $img_id;
+			if ( $img_id > 0 ) {
+				$url = wp_get_attachment_image_url( $img_id, 'large' );
+				if ( $url ) {
+					$gallery[] = $url;
+				}
+			}
+		}
 
 		$color_variants[] = array(
-			'color' => $color_name,
-			'hex'   => obsidian_get_color_hex( $color_name ),
-			'units' => (int) ( $data['units'] ?? 0 ),
-			'image' => $img_url ?: $fallback_img,
+			'color'   => $color_name,
+			'hex'     => obsidian_get_color_hex( $color_name ),
+			'units'   => (int) ( $data['units'] ?? 0 ),
+			'image'   => ! empty( $gallery ) ? $gallery[0] : $fallback_img,
+			'gallery' => $gallery,
 		);
 	}
 
@@ -539,7 +540,6 @@ function obsidian_format_car_data( $car_id ) {
 		'slug'           => get_post_field( 'post_name', $car_id ),
 		'description'    => get_the_excerpt( $car_id ),
 		'image'          => $fallback_img,
-		'gallery'        => $gallery,
 		'car_class'      => $car_class,
 		'make'           => get_field( 'car_make', $car_id ) ?: '',
 		'model'          => get_field( 'car_model', $car_id ) ?: '',

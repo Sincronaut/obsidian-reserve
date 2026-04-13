@@ -72,6 +72,7 @@
    function openModal(carId) {
       modal.setAttribute('aria-hidden', 'false');
       document.body.classList.add('obsidian-modal-open');
+      loader.innerHTML = '<span class="obsidian-modal-spinner"></span>';
       loader.style.display = '';
       content.style.display = 'none';
 
@@ -129,50 +130,44 @@
       yearEl.textContent = car.year || '';
       rateEl.textContent = '\u20B1' + numberFormat(car.daily_rate);
 
-      var defaultImg = car.image;
       if (car.color_variants && car.color_variants.length > 0) {
-         defaultImg = car.color_variants[0].image || car.image;
          selectedColor = car.color_variants[0].color;
+         buildGallery(car.color_variants[0].gallery || [], car.image);
+      } else {
+         selectedColor = null;
+         buildGallery([], car.image);
       }
-      heroImg.src = defaultImg;
-      heroImg.alt = car.name;
 
-      buildGallery(car, defaultImg);
-      buildColors(car.color_variants || []);
+      buildColors(car.color_variants || [], car.image);
    }
 
-   function buildGallery(car, currentHeroSrc) {
+   function buildGallery(galleryUrls, fallbackImg) {
       thumbsContainer.innerHTML = '';
-      var thumbs = [];
 
-      if (currentHeroSrc) {
-         thumbs.push({ url: currentHeroSrc, label: 'Exterior', isColor: true });
+      var images = galleryUrls.length > 0 ? galleryUrls : (fallbackImg ? [fallbackImg] : []);
+
+      if (images.length === 0) {
+         heroImg.src = '';
+         return;
       }
 
-      var labels = ['Exterior', 'Interior', 'Engine', 'Detail'];
-      if (car.gallery && car.gallery.length > 0) {
-         car.gallery.forEach(function (url, i) {
-            if (url && url !== currentHeroSrc) {
-               thumbs.push({ url: url, label: labels[i] || 'Photo' });
-            }
-         });
-      }
+      heroImg.src = images[0];
+      heroImg.alt = currentCar ? currentCar.name : '';
 
-      thumbs.forEach(function (thumb, idx) {
+      var labels = ['Image 1', 'Image 2', 'Image 3', 'Image 4', 'Image 5'];
+      images.forEach(function (url, idx) {
          var btn = document.createElement('button');
          btn.className = 'obsidian-modal-thumb' + (idx === 0 ? ' active' : '');
-         btn.setAttribute('aria-label', thumb.label);
-         btn.setAttribute('data-src', thumb.url);
-         if (thumb.isColor) btn.setAttribute('data-is-color', '1');
+         btn.setAttribute('aria-label', labels[idx] || 'Photo');
 
          var img = document.createElement('img');
-         img.src = thumb.url;
-         img.alt = thumb.label;
+         img.src = url;
+         img.alt = labels[idx] || 'Photo';
          img.loading = 'lazy';
          btn.appendChild(img);
 
          btn.addEventListener('click', function () {
-            heroImg.src = thumb.url;
+            heroImg.src = url;
             thumbsContainer.querySelectorAll('.obsidian-modal-thumb').forEach(function (t) {
                t.classList.remove('active');
             });
@@ -183,7 +178,7 @@
       });
    }
 
-   function buildColors(variants) {
+   function buildColors(variants, fallbackImg) {
       colorsContainer.innerHTML = '';
 
       if (!variants.length) {
@@ -228,15 +223,7 @@
             });
             label.classList.add('active');
 
-            if (v.image) {
-               heroImg.src = v.image;
-
-               var colorThumb = thumbsContainer.querySelector('[data-is-color="1"]');
-               if (colorThumb) {
-                  colorThumb.querySelector('img').src = v.image;
-                  colorThumb.setAttribute('data-src', v.image);
-               }
-            }
+            buildGallery(v.gallery || [], fallbackImg);
             validateForm();
          });
 

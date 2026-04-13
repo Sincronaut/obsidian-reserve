@@ -2,7 +2,7 @@
 /**
  * Car Color Variants Meta Box
  *
- * Renders per-color inventory (units + image) inputs on the Car edit screen.
+ * Renders per-color inventory (units + 5 gallery images) inputs on the Car edit screen.
  * Reads the ACF car_colors checkbox to determine which colors to show.
  * Saves data as JSON into _car_color_variants post meta.
  *
@@ -12,6 +12,8 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+define( 'OBSIDIAN_IMAGES_PER_COLOR', 5 );
 
 /**
  * Register the meta box on the Car CPT edit screen.
@@ -55,7 +57,7 @@ function obsidian_render_color_variants_meta_box( $post ) {
 
 	?>
 	<p class="obsidian-meta-description">
-		<?php esc_html_e( 'Distribute your total units across colors. The sum must not exceed Total Units.', 'obsidian-booking' ); ?>
+		<?php esc_html_e( 'Distribute your total units across colors and upload up to 5 images per color. The sum must not exceed Total Units.', 'obsidian-booking' ); ?>
 	</p>
 
 	<div class="obsidian-units-counter<?php echo $allocated > $total_units ? ' over-limit' : ''; ?>"
@@ -70,54 +72,66 @@ function obsidian_render_color_variants_meta_box( $post ) {
 	<?php
 
 	foreach ( $colors as $color ) {
-		$key      = strtolower( $color );
-		$hex      = obsidian_get_color_hex( $key );
-		$units    = (int) ( $variants[ $key ]['units'] ?? 0 );
-		$image_id = (int) ( $variants[ $key ]['image_id'] ?? 0 );
-		$img_url  = $image_id > 0 ? wp_get_attachment_image_url( $image_id, 'thumbnail' ) : '';
+		$key   = strtolower( $color );
+		$hex   = obsidian_get_color_hex( $key );
+		$units = (int) ( $variants[ $key ]['units'] ?? 0 );
+
+		// Support both old (image_id) and new (images[]) format
+		$images = array();
+		if ( ! empty( $variants[ $key ]['images'] ) && is_array( $variants[ $key ]['images'] ) ) {
+			$images = $variants[ $key ]['images'];
+		} elseif ( ! empty( $variants[ $key ]['image_id'] ) ) {
+			$images = array( (int) $variants[ $key ]['image_id'] );
+		}
 
 		?>
 		<div class="obsidian-variant-row">
-			<div class="variant-swatch" style="background-color: <?php echo esc_attr( $hex ); ?>;"></div>
-
-			<div class="variant-label">
-				<?php echo esc_html( ucfirst( $color ) ); ?>
-			</div>
-
-			<div class="variant-units">
-				<label for="variant_units_<?php echo esc_attr( $key ); ?>">
-					<?php esc_html_e( 'Units:', 'obsidian-booking' ); ?>
-				</label>
-				<input type="number"
-					   id="variant_units_<?php echo esc_attr( $key ); ?>"
-					   name="obsidian_variant[<?php echo esc_attr( $key ); ?>][units]"
-					   value="<?php echo esc_attr( $units ); ?>"
-					   min="0"
-					   step="1"
-					   class="small-text variant-units-input" />
-			</div>
-
-			<div class="variant-image">
-				<input type="hidden"
-					   class="variant-image-id"
-					   name="obsidian_variant[<?php echo esc_attr( $key ); ?>][image_id]"
-					   value="<?php echo esc_attr( $image_id ); ?>" />
-
-				<div class="variant-image-preview">
-					<?php if ( $img_url ) : ?>
-						<img src="<?php echo esc_url( $img_url ); ?>" alt="" />
-					<?php endif; ?>
+			<div class="variant-header">
+				<div class="variant-swatch" style="background-color: <?php echo esc_attr( $hex ); ?>;"></div>
+				<div class="variant-label"><?php echo esc_html( ucfirst( $color ) ); ?></div>
+				<div class="variant-units">
+					<label for="variant_units_<?php echo esc_attr( $key ); ?>">
+						<?php esc_html_e( 'Units:', 'obsidian-booking' ); ?>
+					</label>
+					<input type="number"
+						   id="variant_units_<?php echo esc_attr( $key ); ?>"
+						   name="obsidian_variant[<?php echo esc_attr( $key ); ?>][units]"
+						   value="<?php echo esc_attr( $units ); ?>"
+						   min="0"
+						   step="1"
+						   class="small-text variant-units-input" />
 				</div>
+			</div>
 
-				<button type="button" class="button obsidian-upload-image">
-					<?php echo $img_url ? esc_html__( 'Change Image', 'obsidian-booking' ) : esc_html__( 'Choose Image', 'obsidian-booking' ); ?>
-				</button>
+			<div class="variant-images-grid">
+				<?php for ( $i = 0; $i < OBSIDIAN_IMAGES_PER_COLOR; $i++ ) :
+					$img_id  = (int) ( $images[ $i ] ?? 0 );
+					$img_url = $img_id > 0 ? wp_get_attachment_image_url( $img_id, 'thumbnail' ) : '';
+				?>
+				<div class="variant-image-slot" data-index="<?php echo esc_attr( $i ); ?>">
+					<span class="variant-image-label"><?php echo esc_html( 'Image ' . ( $i + 1 ) ); ?></span>
 
-				<?php if ( $img_url ) : ?>
-					<button type="button" class="button obsidian-remove-image">
-						<?php esc_html_e( 'Remove', 'obsidian-booking' ); ?>
-					</button>
-				<?php endif; ?>
+					<input type="hidden"
+						   class="variant-image-id"
+						   name="obsidian_variant[<?php echo esc_attr( $key ); ?>][images][<?php echo esc_attr( $i ); ?>]"
+						   value="<?php echo esc_attr( $img_id ); ?>" />
+
+					<div class="variant-image-preview">
+						<?php if ( $img_url ) : ?>
+							<img src="<?php echo esc_url( $img_url ); ?>" alt="" />
+						<?php endif; ?>
+					</div>
+
+					<div class="variant-image-actions">
+						<button type="button" class="button button-small obsidian-upload-image">
+							<?php echo $img_url ? esc_html__( 'Change', 'obsidian-booking' ) : esc_html__( 'Upload', 'obsidian-booking' ); ?>
+						</button>
+						<?php if ( $img_url ) : ?>
+							<button type="button" class="button button-small obsidian-remove-image">&times;</button>
+						<?php endif; ?>
+					</div>
+				</div>
+				<?php endfor; ?>
 			</div>
 		</div>
 		<?php
@@ -165,13 +179,19 @@ function obsidian_save_color_variants( $post_id ) {
 		$color_key = sanitize_text_field( strtolower( $color ) );
 		$requested = absint( $data['units'] ?? 0 );
 
-		// Clamp so the running total never exceeds car_total_units
 		$allowed = min( $requested, max( 0, $total_units - $running_sum ) );
 		$running_sum += $allowed;
 
+		$images = array();
+		if ( isset( $data['images'] ) && is_array( $data['images'] ) ) {
+			for ( $i = 0; $i < OBSIDIAN_IMAGES_PER_COLOR; $i++ ) {
+				$images[] = absint( $data['images'][ $i ] ?? 0 );
+			}
+		}
+
 		$variants[ $color_key ] = array(
-			'units'    => $allowed,
-			'image_id' => absint( $data['image_id'] ?? 0 ),
+			'units'  => $allowed,
+			'images' => $images,
 		);
 	}
 

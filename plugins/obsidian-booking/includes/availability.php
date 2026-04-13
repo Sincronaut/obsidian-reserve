@@ -44,17 +44,32 @@ function obsidian_get_color_hex( $color_name ) {
  * Get the decoded color variants for a car.
  *
  * Returns an associative array keyed by lowercase color name.
+ * Each entry has 'units' (int) and 'images' (array of attachment IDs).
+ *
+ * Handles backwards compatibility:
+ *  - Old format: { "orange": { "units": 3, "image_id": 123 } }
+ *  - New format: { "orange": { "units": 3, "images": [101, 102, ...] } }
+ *
  * Falls back to car_total_units split evenly across ACF car_colors
  * if _car_color_variants hasn't been populated yet.
  *
  * @param int $car_id The Car post ID.
- * @return array e.g. ['orange' => ['units' => 3, 'image_id' => 456], ...]
+ * @return array e.g. ['orange' => ['units' => 3, 'images' => [101, 102, ...]], ...]
  */
 function obsidian_get_color_variants( $car_id ) {
 	$json     = get_post_meta( $car_id, '_car_color_variants', true );
 	$variants = ! empty( $json ) ? json_decode( $json, true ) : null;
 
 	if ( ! empty( $variants ) && is_array( $variants ) ) {
+		// Normalise old image_id format → images array
+		foreach ( $variants as $color => &$data ) {
+			if ( ! isset( $data['images'] ) || ! is_array( $data['images'] ) ) {
+				$legacy_id      = (int) ( $data['image_id'] ?? 0 );
+				$data['images'] = $legacy_id > 0 ? array( $legacy_id ) : array();
+				unset( $data['image_id'] );
+			}
+		}
+		unset( $data );
 		return $variants;
 	}
 
@@ -70,8 +85,8 @@ function obsidian_get_color_variants( $car_id ) {
 	$fallback  = array();
 	foreach ( $colors as $color ) {
 		$fallback[ strtolower( $color ) ] = array(
-			'units'    => $per_color,
-			'image_id' => 0,
+			'units'  => $per_color,
+			'images' => array(),
 		);
 	}
 
