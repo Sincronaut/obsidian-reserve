@@ -128,9 +128,12 @@
       classEl.textContent = car.car_class || '';
       rateEl.textContent = '\u20B1' + numberFormat(car.daily_rate);
 
-      // Specifications (HTML from WYSIWYG field)
+      // Specifications — textarea with one spec per line → bulleted list
       if (car.specifications) {
-         specsEl.innerHTML = car.specifications;
+         var lines = car.specifications.split(/\r?\n/).filter(function (l) { return l.trim() !== ''; });
+         specsEl.innerHTML = '<ul>' + lines.map(function (line) {
+            return '<li>' + line.trim() + '</li>';
+         }).join('') + '</ul>';
          specsEl.style.display = '';
       } else {
          specsEl.innerHTML = '';
@@ -201,25 +204,46 @@
       colorsContainer.style.display = '';
 
       variants.forEach(function (v, idx) {
-         var btn = document.createElement('button');
-         btn.className = 'obsidian-modal-color-swatch' + (idx === 0 ? ' active' : '');
-         btn.style.backgroundColor = v.hex;
-         btn.setAttribute('aria-label', capitalize(v.color));
-         btn.title = capitalize(v.color) + ' \u2014 ' + v.units + ' available';
+         var label = document.createElement('label');
+         label.className = 'obsidian-modal-color-option' + (idx === 0 ? ' active' : '');
 
-         btn.addEventListener('click', function () {
+         var radio = document.createElement('input');
+         radio.type = 'radio';
+         radio.name = 'obsidian_modal_color';
+         radio.value = v.color;
+         radio.className = 'obsidian-modal-color-radio';
+         if (idx === 0) radio.checked = true;
+
+         var swatch = document.createElement('span');
+         swatch.className = 'obsidian-modal-color-dot';
+         swatch.style.backgroundColor = v.hex;
+
+         var name = document.createElement('span');
+         name.className = 'obsidian-modal-color-name';
+         name.textContent = capitalize(v.color);
+
+         var units = document.createElement('span');
+         units.className = 'obsidian-modal-color-units';
+         units.textContent = v.units + ' available';
+
+         label.appendChild(radio);
+         label.appendChild(swatch);
+         label.appendChild(name);
+         label.appendChild(units);
+
+         radio.addEventListener('change', function () {
             selectedColor = v.color;
 
-            colorsContainer.querySelectorAll('.obsidian-modal-color-swatch').forEach(function (s) {
-               s.classList.remove('active');
+            colorsContainer.querySelectorAll('.obsidian-modal-color-option').forEach(function (opt) {
+               opt.classList.remove('active');
             });
-            btn.classList.add('active');
+            label.classList.add('active');
 
             buildGallery(v.gallery || [], fallbackImg);
             validateForm();
          });
 
-         colorsContainer.appendChild(btn);
+         colorsContainer.appendChild(label);
       });
    }
 
