@@ -11,6 +11,7 @@
    var heroImg, thumbsContainer, colorsContainer;
    var nameEl, classEl, rateEl, specsEl, ctaTextEl;
    var pickupInput, dropoffInput, proceedBtn, checkAvailBtn;
+   var totalWrap, totalValue, totalBreakdown;
    var pickupFP, dropoffFP;
    var currentCar = null;
    var selectedColor = null;
@@ -34,6 +35,9 @@
       dropoffInput    = document.getElementById('obsidian-dropoff-date');
       proceedBtn      = document.getElementById('obsidian-modal-proceed');
       checkAvailBtn   = document.getElementById('obsidian-modal-check-avail');
+      totalWrap       = document.getElementById('obsidian-modal-total');
+      totalValue      = document.getElementById('obsidian-modal-total-value');
+      totalBreakdown  = document.getElementById('obsidian-modal-total-breakdown');
 
       modal.querySelector('.obsidian-modal-close').addEventListener('click', closeModal);
       overlay.addEventListener('click', closeModal);
@@ -116,6 +120,7 @@
       currentCar = null;
       selectedColor = null;
       proceedBtn.disabled = true;
+      totalWrap.style.display = 'none';
 
       var localRadio = modal.querySelector('input[name="obsidian_customer_type"][value="local"]');
       if (localRadio) localRadio.checked = true;
@@ -263,6 +268,7 @@
                dropoffFP.set('minDate', nextDay);
                dropoffFP.open();
             }
+            calculateTotal();
             validateForm();
          }
       });
@@ -274,9 +280,32 @@
          altFormat: 'M d, Y',
          disable: unavailableDates,
          onChange: function () {
+            calculateTotal();
             validateForm();
          }
       });
+   }
+
+   /* ── Price calculation ── */
+
+   function calculateTotal() {
+      if (!currentCar) return;
+
+      var start = pickupFP.selectedDates[0];
+      var end   = dropoffFP.selectedDates[0];
+
+      if (!start || !end) {
+         totalWrap.style.display = 'none';
+         return;
+      }
+
+      var days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+      if (days < 1) days = 1;
+
+      var total = days * currentCar.daily_rate;
+      totalValue.textContent = '\u20B1' + numberFormat(total);
+      totalBreakdown.textContent = '(' + days + ' day' + (days > 1 ? 's' : '') + ' \u00D7 \u20B1' + numberFormat(currentCar.daily_rate) + '/day)';
+      totalWrap.style.display = '';
    }
 
    /* ── Validation ── */
