@@ -303,7 +303,7 @@ function obsidian_register_booking_meta() {
         '_booking_start_date'       => 'string',   // Y-m-d
         '_booking_end_date'         => 'string',   // Y-m-d
         '_booking_pickup_location'  => 'string',
-        '_booking_customer_type'    => 'string',   // local | foreigner
+        '_booking_customer_type'    => 'string',   // local | international
         '_booking_status'           => 'string',   // pending_review | docs_approved | awaiting_payment | paid | confirmed | active | completed | denied
         '_booking_documents'        => 'string',   // JSON array of attachment IDs
         '_booking_admin_notes'      => 'string',
