@@ -2,3 +2,336 @@
  * Obsidian Booking — Modal JS
  * Phase 5: Modal open/close, Flatpickr init, AJAX booking submission.
  */
+(function () {
+   'use strict';
+
+   var cfg = window.obsidianBooking || {};
+
+   var modal, overlay, panel, loader, content;
+   var heroImg, thumbsContainer, nameEl, classEl, yearEl, rateEl;
+   var pickupInput, dropoffInput, colorsContainer, colorSection, locationInput;
+   var totalValue, totalBreakdown, proceedBtn;
+   var pickupFP, dropoffFP;
+   var currentCar = null;
+   var selectedColor = null;
+
+   function init() {
+      modal = document.getElementById('obsidian-booking-modal');
+      if (!modal) return;
+
+      overlay       = modal.querySelector('.obsidian-modal-overlay');
+      panel         = modal.querySelector('.obsidian-modal-panel');
+      loader        = document.getElementById('obsidian-modal-loader');
+      content       = document.getElementById('obsidian-modal-content');
+      heroImg       = document.getElementById('obsidian-modal-hero');
+      thumbsContainer = document.getElementById('obsidian-modal-thumbs');
+      nameEl        = document.getElementById('obsidian-modal-name');
+      classEl       = document.getElementById('obsidian-modal-class');
+      yearEl        = document.getElementById('obsidian-modal-year');
+      rateEl        = document.getElementById('obsidian-modal-rate-value');
+      pickupInput   = document.getElementById('obsidian-pickup-date');
+      dropoffInput  = document.getElementById('obsidian-dropoff-date');
+      colorsContainer = document.getElementById('obsidian-modal-colors');
+      colorSection  = document.getElementById('obsidian-modal-color-section');
+      locationInput = document.getElementById('obsidian-pickup-location');
+      totalValue    = document.getElementById('obsidian-modal-total-value');
+      totalBreakdown = document.getElementById('obsidian-modal-total-breakdown');
+      proceedBtn    = document.getElementById('obsidian-modal-proceed');
+
+      modal.querySelector('.obsidian-modal-close').addEventListener('click', closeModal);
+      overlay.addEventListener('click', closeModal);
+      document.addEventListener('keydown', function (e) {
+         if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
+            closeModal();
+         }
+      });
+
+      document.addEventListener('click', function (e) {
+         var btn = e.target.closest('.car-book-btn[data-car-id]');
+         if (btn) {
+            e.preventDefault();
+            openModal(parseInt(btn.getAttribute('data-car-id'), 10));
+         }
+      });
+
+      proceedBtn.addEventListener('click', handleProceed);
+      locationInput.addEventListener('input', validateForm);
+   }
+
+   /* ── Open / Close ── */
+
+   function openModal(carId) {
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('obsidian-modal-open');
+      loader.style.display = '';
+      content.style.display = 'none';
+
+      Promise.all([
+         fetch(cfg.restUrl + 'cars/' + carId, {
+            headers: { 'X-WP-Nonce': cfg.nonce }
+         }).then(function (r) { return r.json(); }),
+         fetch(cfg.restUrl + 'availability/' + carId, {
+            headers: { 'X-WP-Nonce': cfg.nonce }
+         }).then(function (r) { return r.json(); })
+      ]).then(function (results) {
+         currentCar = results[0];
+         currentCar._unavailable = results[1].unavailable_dates || [];
+         selectedColor = null;
+         populateModal(currentCar);
+         initFlatpickr(currentCar._unavailable);
+         loader.style.display = 'none';
+         content.style.display = '';
+      }).catch(function (err) {
+         console.error('Failed to load car data:', err);
+         closeModal();
+      });
+   }
+
+   function closeModal() {
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('obsidian-modal-open');
+
+      if (pickupFP) { pickupFP.destroy(); pickupFP = null; }
+      if (dropoffFP) { dropoffFP.destroy(); dropoffFP = null; }
+
+      currentCar = null;
+      selectedColor = null;
+      locationInput.value = '';
+      totalValue.textContent = '\u20B10';
+      totalBreakdown.textContent = '';
+      proceedBtn.disabled = true;
+   }
+
+   /* ── Populate ── */
+
+   function populateModal(car) {
+      nameEl.textContent = car.name;
+      classEl.textContent = car.car_class || '';
+      yearEl.textContent = car.year || '';
+      rateEl.textContent = '\u20B1' + numberFormat(car.daily_rate);
+
+      var defaultImg = car.image;
+      if (car.color_variants && car.color_variants.length > 0) {
+         defaultImg = car.color_variants[0].image || car.image;
+         selectedColor = car.color_variants[0].color;
+      }
+      heroImg.src = defaultImg;
+      heroImg.alt = car.name;
+
+      buildGallery(car, defaultImg);
+      buildColors(car.color_variants || []);
+   }
+
+   function buildGallery(car, currentHeroSrc) {
+      thumbsContainer.innerHTML = '';
+      var thumbs = [];
+
+      if (currentHeroSrc) {
+         thumbs.push({ url: currentHeroSrc, label: 'Exterior', isColor: true });
+      }
+
+      var labels = ['Exterior', 'Interior', 'Engine', 'Detail'];
+      if (car.gallery && car.gallery.length > 0) {
+         car.gallery.forEach(function (url, i) {
+            if (url && url !== currentHeroSrc) {
+               thumbs.push({ url: url, label: labels[i] || 'Photo' });
+            }
+         });
+      }
+
+      thumbs.forEach(function (thumb, idx) {
+         var btn = document.createElement('button');
+         btn.className = 'obsidian-modal-thumb' + (idx === 0 ? ' active' : '');
+         btn.setAttribute('aria-label', thumb.label);
+         btn.setAttribute('data-src', thumb.url);
+         if (thumb.isColor) btn.setAttribute('data-is-color', '1');
+
+         var img = document.createElement('img');
+         img.src = thumb.url;
+         img.alt = thumb.label;
+         img.loading = 'lazy';
+         btn.appendChild(img);
+
+         btn.addEventListener('click', function () {
+            heroImg.src = thumb.url;
+            thumbsContainer.querySelectorAll('.obsidian-modal-thumb').forEach(function (t) {
+               t.classList.remove('active');
+            });
+            btn.classList.add('active');
+         });
+
+         thumbsContainer.appendChild(btn);
+      });
+   }
+
+   function buildColors(variants) {
+      colorsContainer.innerHTML = '';
+
+      if (!variants.length) {
+         colorSection.style.display = 'none';
+         return;
+      }
+      colorSection.style.display = '';
+
+      variants.forEach(function (v, idx) {
+         var label = document.createElement('label');
+         label.className = 'obsidian-modal-color-option' + (idx === 0 ? ' active' : '');
+
+         var radio = document.createElement('input');
+         radio.type = 'radio';
+         radio.name = 'obsidian_modal_color';
+         radio.value = v.color;
+         radio.className = 'obsidian-modal-color-radio';
+         if (idx === 0) radio.checked = true;
+
+         var swatch = document.createElement('span');
+         swatch.className = 'obsidian-modal-color-dot';
+         swatch.style.backgroundColor = v.hex;
+
+         var name = document.createElement('span');
+         name.className = 'obsidian-modal-color-name';
+         name.textContent = capitalize(v.color);
+
+         var units = document.createElement('span');
+         units.className = 'obsidian-modal-color-units';
+         units.textContent = v.units + ' available';
+
+         label.appendChild(radio);
+         label.appendChild(swatch);
+         label.appendChild(name);
+         label.appendChild(units);
+
+         radio.addEventListener('change', function () {
+            selectedColor = v.color;
+
+            colorsContainer.querySelectorAll('.obsidian-modal-color-option').forEach(function (opt) {
+               opt.classList.remove('active');
+            });
+            label.classList.add('active');
+
+            if (v.image) {
+               heroImg.src = v.image;
+
+               var colorThumb = thumbsContainer.querySelector('[data-is-color="1"]');
+               if (colorThumb) {
+                  colorThumb.querySelector('img').src = v.image;
+                  colorThumb.setAttribute('data-src', v.image);
+               }
+            }
+            validateForm();
+         });
+
+         colorsContainer.appendChild(label);
+      });
+   }
+
+   /* ── Flatpickr ── */
+
+   function initFlatpickr(unavailableDates) {
+      pickupFP = flatpickr(pickupInput, {
+         minDate: 'today',
+         dateFormat: 'Y-m-d',
+         altInput: true,
+         altFormat: 'M d, Y',
+         disable: unavailableDates,
+         onChange: function (selectedDates) {
+            if (selectedDates.length > 0) {
+               var nextDay = new Date(selectedDates[0]);
+               nextDay.setDate(nextDay.getDate() + 1);
+               dropoffFP.set('minDate', nextDay);
+               dropoffFP.open();
+            }
+            calculateTotal();
+            validateForm();
+         }
+      });
+
+      dropoffFP = flatpickr(dropoffInput, {
+         minDate: 'today',
+         dateFormat: 'Y-m-d',
+         altInput: true,
+         altFormat: 'M d, Y',
+         disable: unavailableDates,
+         onChange: function () {
+            calculateTotal();
+            validateForm();
+         }
+      });
+   }
+
+   /* ── Price calculation ── */
+
+   function calculateTotal() {
+      if (!currentCar) return;
+
+      var start = pickupFP.selectedDates[0];
+      var end   = dropoffFP.selectedDates[0];
+
+      if (!start || !end) {
+         totalValue.textContent = '\u20B10';
+         totalBreakdown.textContent = '';
+         return;
+      }
+
+      var days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+      if (days < 1) days = 1;
+
+      var total = days * currentCar.daily_rate;
+      totalValue.textContent = '\u20B1' + numberFormat(total);
+      totalBreakdown.textContent = '(' + days + ' day' + (days > 1 ? 's' : '') + ' \u00D7 \u20B1' + numberFormat(currentCar.daily_rate) + '/day)';
+   }
+
+   /* ── Validation ── */
+
+   function validateForm() {
+      var hasPickup  = pickupFP && pickupFP.selectedDates.length > 0;
+      var hasDropoff = dropoffFP && dropoffFP.selectedDates.length > 0;
+      var hasColor   = selectedColor || !(currentCar && currentCar.color_variants && currentCar.color_variants.length > 0);
+      var hasLocation = locationInput.value.trim() !== '';
+
+      proceedBtn.disabled = !(hasPickup && hasDropoff && hasColor && hasLocation);
+   }
+
+   /* ── Proceed → redirect to booking page ── */
+
+   function handleProceed() {
+      if (proceedBtn.disabled || !currentCar) return;
+
+      var start    = pickupFP.selectedDates[0];
+      var end      = dropoffFP.selectedDates[0];
+      var location = locationInput.value.trim();
+
+      var params = new URLSearchParams({
+         car_id:   currentCar.id,
+         start:    formatDate(start),
+         end:      formatDate(end),
+         color:    selectedColor || '',
+         location: location
+      });
+
+      window.location.href = (cfg.bookingPageUrl || '/booking/') + '?' + params.toString();
+   }
+
+   /* ── Utilities ── */
+
+   function numberFormat(num) {
+      return Math.round(num).toLocaleString('en-PH');
+   }
+
+   function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+   }
+
+   function formatDate(d) {
+      var y   = d.getFullYear();
+      var m   = ('0' + (d.getMonth() + 1)).slice(-2);
+      var day = ('0' + d.getDate()).slice(-2);
+      return y + '-' + m + '-' + day;
+   }
+
+   if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+   } else {
+      init();
+   }
+})();

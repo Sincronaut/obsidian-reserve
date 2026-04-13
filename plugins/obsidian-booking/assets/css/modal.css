@@ -1,4 +1,550 @@
 /* ============================================================
    Obsidian Booking — Modal Styles
-   Phase 5: Full modal styling goes here.
+   Dark theme (#0B0B0B) · Gold accents (#C5A059) · Montserrat
    ============================================================ */
+
+/* ── Scroll lock when modal is open ── */
+
+body.obsidian-modal-open {
+   overflow: hidden;
+}
+
+/* ── Full-screen overlay ── */
+
+.obsidian-modal {
+   position: fixed;
+   inset: 0;
+   z-index: 99999;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   opacity: 1;
+   visibility: visible;
+   transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.obsidian-modal[aria-hidden="true"] {
+   opacity: 0;
+   visibility: hidden;
+   pointer-events: none;
+}
+
+.obsidian-modal-overlay {
+   position: absolute;
+   inset: 0;
+   background: rgba(0, 0, 0, 0.75);
+   backdrop-filter: blur(6px);
+   -webkit-backdrop-filter: blur(6px);
+}
+
+/* ── Panel ── */
+
+.obsidian-modal-panel {
+   position: relative;
+   z-index: 1;
+   width: 92vw;
+   max-width: 680px;
+   max-height: 90vh;
+   overflow-y: auto;
+   background: #111111;
+   border: 1px solid rgba(197, 160, 89, 0.15);
+   border-radius: 16px;
+   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
+   transform: translateY(0);
+   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.obsidian-modal[aria-hidden="true"] .obsidian-modal-panel {
+   transform: translateY(24px);
+}
+
+/* Custom scrollbar for the panel */
+.obsidian-modal-panel::-webkit-scrollbar {
+   width: 6px;
+}
+.obsidian-modal-panel::-webkit-scrollbar-track {
+   background: transparent;
+}
+.obsidian-modal-panel::-webkit-scrollbar-thumb {
+   background: rgba(197, 160, 89, 0.25);
+   border-radius: 3px;
+}
+
+/* ── Close button ── */
+
+.obsidian-modal-close {
+   position: absolute;
+   top: 14px;
+   right: 14px;
+   z-index: 5;
+   width: 36px;
+   height: 36px;
+   background: rgba(11, 11, 11, 0.7);
+   backdrop-filter: blur(8px);
+   -webkit-backdrop-filter: blur(8px);
+   border: 1px solid rgba(255, 255, 255, 0.1);
+   border-radius: 50%;
+   color: #FFFFFF;
+   font-size: 22px;
+   line-height: 1;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.obsidian-modal-close:hover {
+   background: rgba(197, 160, 89, 0.2);
+   border-color: rgba(197, 160, 89, 0.4);
+}
+
+/* ── Loader ── */
+
+.obsidian-modal-loader {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   padding: 80px 0;
+}
+
+.obsidian-modal-spinner {
+   width: 36px;
+   height: 36px;
+   border: 3px solid rgba(197, 160, 89, 0.2);
+   border-top-color: #C5A059;
+   border-radius: 50%;
+   animation: obsidian-spin 0.7s linear infinite;
+}
+
+@keyframes obsidian-spin {
+   to { transform: rotate(360deg); }
+}
+
+/* ── Gallery ── */
+
+.obsidian-modal-gallery {
+   margin-bottom: 4px;
+}
+
+.obsidian-modal-main-img {
+   width: 100%;
+   aspect-ratio: 16 / 9;
+   overflow: hidden;
+   border-radius: 16px 16px 0 0;
+   background: #1A1A1A;
+}
+
+.obsidian-modal-main-img img {
+   width: 100%;
+   height: 100%;
+   object-fit: cover;
+   display: block;
+   transition: opacity 0.3s ease;
+}
+
+.obsidian-modal-thumbs {
+   display: flex;
+   gap: 6px;
+   padding: 6px 20px 0;
+}
+
+.obsidian-modal-thumb {
+   flex: 1;
+   aspect-ratio: 16 / 10;
+   overflow: hidden;
+   border-radius: 8px;
+   border: 2px solid transparent;
+   background: #1A1A1A;
+   cursor: pointer;
+   padding: 0;
+   transition: border-color 0.25s ease, opacity 0.25s ease;
+}
+
+.obsidian-modal-thumb img {
+   width: 100%;
+   height: 100%;
+   object-fit: cover;
+   display: block;
+}
+
+.obsidian-modal-thumb:hover {
+   border-color: rgba(255, 255, 255, 0.25);
+}
+
+.obsidian-modal-thumb.active {
+   border-color: #C5A059;
+}
+
+/* ── Car info ── */
+
+.obsidian-modal-info {
+   padding: 20px 24px 0;
+}
+
+.obsidian-modal-info h2 {
+   font-family: var(--wp--preset--font-family--montserrat, 'Montserrat', sans-serif);
+   font-size: 24px;
+   font-weight: 700;
+   color: #FFFFFF;
+   margin: 0 0 8px;
+   line-height: 1.3;
+}
+
+.obsidian-modal-specs {
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   margin-bottom: 10px;
+   font-size: 13px;
+   color: rgba(255, 255, 255, 0.5);
+   font-weight: 500;
+}
+
+.obsidian-modal-badge {
+   color: #C5A059;
+   font-weight: 700;
+   text-transform: uppercase;
+   letter-spacing: 0.5px;
+   font-size: 11px;
+}
+
+.obsidian-modal-divider {
+   color: rgba(255, 255, 255, 0.15);
+}
+
+.obsidian-modal-rate {
+   display: flex;
+   align-items: baseline;
+   gap: 4px;
+   margin-bottom: 4px;
+}
+
+.obsidian-modal-rate span:first-child {
+   font-size: 26px;
+   font-weight: 700;
+   color: #C5A059;
+   font-family: var(--wp--preset--font-family--montserrat, 'Montserrat', sans-serif);
+}
+
+.obsidian-modal-rate-label {
+   font-size: 14px;
+   color: rgba(255, 255, 255, 0.4);
+   font-weight: 500;
+}
+
+/* ── Section (dates, color, location) ── */
+
+.obsidian-modal-section {
+   padding: 0 24px;
+   margin-top: 20px;
+}
+
+.obsidian-modal-section-title {
+   font-family: var(--wp--preset--font-family--montserrat, 'Montserrat', sans-serif);
+   font-size: 11px;
+   font-weight: 700;
+   letter-spacing: 1.5px;
+   text-transform: uppercase;
+   color: rgba(255, 255, 255, 0.35);
+   margin: 0 0 12px;
+   padding-bottom: 8px;
+   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ── Date fields ── */
+
+.obsidian-modal-dates {
+   display: grid;
+   grid-template-columns: 1fr 1fr;
+   gap: 12px;
+}
+
+.obsidian-modal-field label {
+   display: block;
+   font-size: 11px;
+   font-weight: 600;
+   color: rgba(255, 255, 255, 0.4);
+   text-transform: uppercase;
+   letter-spacing: 0.5px;
+   margin-bottom: 6px;
+}
+
+.obsidian-modal-field input[type="text"],
+.obsidian-modal-field input.flatpickr-input {
+   width: 100%;
+   background: #1A1A1A;
+   border: 1px solid rgba(255, 255, 255, 0.1);
+   border-radius: 8px;
+   color: #FFFFFF;
+   font-family: var(--wp--preset--font-family--montserrat, 'Montserrat', sans-serif);
+   font-size: 14px;
+   padding: 12px 14px;
+   outline: none;
+   transition: border-color 0.25s ease;
+   box-sizing: border-box;
+}
+
+.obsidian-modal-field input:focus,
+.obsidian-modal-field input.active {
+   border-color: #C5A059;
+}
+
+.obsidian-modal-field input::placeholder {
+   color: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Color options ── */
+
+.obsidian-modal-colors {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 10px;
+}
+
+.obsidian-modal-color-option {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   background: #1A1A1A;
+   border: 1px solid rgba(255, 255, 255, 0.08);
+   border-radius: 10px;
+   padding: 10px 16px;
+   cursor: pointer;
+   transition: border-color 0.25s ease, background 0.25s ease;
+}
+
+.obsidian-modal-color-option:hover {
+   border-color: rgba(255, 255, 255, 0.2);
+}
+
+.obsidian-modal-color-option.active {
+   border-color: #C5A059;
+   background: rgba(197, 160, 89, 0.08);
+}
+
+.obsidian-modal-color-radio {
+   display: none;
+}
+
+.obsidian-modal-color-dot {
+   width: 18px;
+   height: 18px;
+   border-radius: 50%;
+   border: 2px solid rgba(255, 255, 255, 0.2);
+   flex-shrink: 0;
+}
+
+.obsidian-modal-color-option.active .obsidian-modal-color-dot {
+   border-color: rgba(255, 255, 255, 0.5);
+   box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.3);
+}
+
+.obsidian-modal-color-name {
+   font-size: 14px;
+   font-weight: 600;
+   color: #FFFFFF;
+}
+
+.obsidian-modal-color-units {
+   font-size: 11px;
+   color: rgba(255, 255, 255, 0.35);
+   font-weight: 500;
+   margin-left: auto;
+}
+
+/* ── Total ── */
+
+.obsidian-modal-total {
+   margin: 24px 24px 0;
+   padding: 16px 0;
+   border-top: 1px solid rgba(255, 255, 255, 0.08);
+   text-align: center;
+}
+
+.obsidian-modal-total-row {
+   display: flex;
+   align-items: baseline;
+   justify-content: center;
+   gap: 8px;
+}
+
+.obsidian-modal-total-label {
+   font-size: 12px;
+   font-weight: 700;
+   letter-spacing: 1px;
+   text-transform: uppercase;
+   color: rgba(255, 255, 255, 0.45);
+}
+
+#obsidian-modal-total-value {
+   font-size: 28px;
+   font-weight: 700;
+   color: #C5A059;
+   font-family: var(--wp--preset--font-family--montserrat, 'Montserrat', sans-serif);
+}
+
+.obsidian-modal-breakdown {
+   display: block;
+   font-size: 12px;
+   color: rgba(255, 255, 255, 0.3);
+   margin-top: 4px;
+}
+
+/* ── CTA button ── */
+
+.obsidian-modal-cta {
+   display: block;
+   width: calc(100% - 48px);
+   margin: 20px 24px 24px;
+   padding: 16px;
+   background: #C5A059;
+   border: none;
+   border-radius: 10px;
+   color: #0B0B0B;
+   font-family: var(--wp--preset--font-family--montserrat, 'Montserrat', sans-serif);
+   font-size: 14px;
+   font-weight: 700;
+   letter-spacing: 0.5px;
+   text-transform: uppercase;
+   cursor: pointer;
+   transition: background 0.3s ease, opacity 0.3s ease, transform 0.2s ease;
+}
+
+.obsidian-modal-cta:hover:not(:disabled) {
+   background: #D4AF6A;
+   transform: translateY(-1px);
+}
+
+.obsidian-modal-cta:disabled {
+   opacity: 0.35;
+   cursor: not-allowed;
+}
+
+/* ============================================================
+   Flatpickr Dark Theme Override
+   ============================================================ */
+
+.flatpickr-calendar {
+   background: #1A1A1A !important;
+   border: 1px solid rgba(197, 160, 89, 0.2) !important;
+   border-radius: 12px !important;
+   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5) !important;
+   font-family: var(--wp--preset--font-family--montserrat, 'Montserrat', sans-serif) !important;
+}
+
+.flatpickr-months {
+   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.flatpickr-months .flatpickr-month,
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+   background: transparent !important;
+   color: #FFFFFF !important;
+}
+
+.flatpickr-current-month input.cur-year {
+   color: #FFFFFF !important;
+}
+
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+   fill: #C5A059 !important;
+   color: #C5A059 !important;
+}
+
+.flatpickr-months .flatpickr-prev-month:hover,
+.flatpickr-months .flatpickr-next-month:hover {
+   fill: #D4AF6A !important;
+   color: #D4AF6A !important;
+}
+
+span.flatpickr-weekday {
+   color: rgba(255, 255, 255, 0.3) !important;
+   font-weight: 600 !important;
+   font-size: 11px !important;
+}
+
+.flatpickr-day {
+   color: #FFFFFF !important;
+   border-radius: 6px !important;
+   border-color: transparent !important;
+}
+
+.flatpickr-day:hover {
+   background: rgba(197, 160, 89, 0.15) !important;
+   border-color: rgba(197, 160, 89, 0.3) !important;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+   background: #C5A059 !important;
+   border-color: #C5A059 !important;
+   color: #0B0B0B !important;
+}
+
+.flatpickr-day.inRange {
+   background: rgba(197, 160, 89, 0.15) !important;
+   border-color: transparent !important;
+   box-shadow: none !important;
+}
+
+.flatpickr-day.flatpickr-disabled,
+.flatpickr-day.prevMonthDay,
+.flatpickr-day.nextMonthDay {
+   color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.flatpickr-day.flatpickr-disabled {
+   text-decoration: line-through;
+}
+
+.flatpickr-day.today {
+   border-color: rgba(197, 160, 89, 0.4) !important;
+}
+
+/* ============================================================
+   Responsive — mobile
+   ============================================================ */
+
+@media (max-width: 600px) {
+   .obsidian-modal-panel {
+      width: 100vw;
+      max-width: 100%;
+      max-height: 100vh;
+      border-radius: 0;
+   }
+
+   .obsidian-modal-main-img {
+      border-radius: 0;
+   }
+
+   .obsidian-modal-dates {
+      grid-template-columns: 1fr;
+   }
+
+   .obsidian-modal-colors {
+      flex-direction: column;
+   }
+
+   .obsidian-modal-info h2 {
+      font-size: 20px;
+   }
+
+   .obsidian-modal-rate span:first-child {
+      font-size: 22px;
+   }
+
+   #obsidian-modal-total-value {
+      font-size: 24px;
+   }
+
+   .obsidian-modal-cta {
+      position: sticky;
+      bottom: 0;
+      width: 100%;
+      margin: 20px 0 0;
+      border-radius: 0;
+   }
+}
