@@ -286,7 +286,20 @@
       var hasDropoff = dropoffFP && dropoffFP.selectedDates.length > 0;
       var hasColor   = selectedColor || !(currentCar && currentCar.color_variants && currentCar.color_variants.length > 0);
 
-      proceedBtn.disabled = !(hasPickup && hasDropoff && hasColor);
+      // Block booking if selected color has 0 units
+      var colorAvailable = true;
+      if (selectedColor && currentCar && currentCar.color_variants) {
+         for (var i = 0; i < currentCar.color_variants.length; i++) {
+            if (currentCar.color_variants[i].color === selectedColor) {
+               if (currentCar.color_variants[i].units <= 0) {
+                  colorAvailable = false;
+               }
+               break;
+            }
+         }
+      }
+
+      proceedBtn.disabled = !(hasPickup && hasDropoff && hasColor && colorAvailable);
    }
 
    /* ── Proceed → redirect to booking page ── */
