@@ -534,6 +534,10 @@ function obsidian_format_car_data( $car_id ) {
 		);
 	}
 
+	// Specifications — WYSIWYG or textarea field
+	$specs_raw = get_field( 'car_specs', $car_id );
+	$specs     = $specs_raw ? wp_kses_post( $specs_raw ) : '';
+
 	return array(
 		'id'             => $car_id,
 		'name'           => get_the_title( $car_id ),
@@ -548,6 +552,7 @@ function obsidian_format_car_data( $car_id ) {
 		'total_units'    => obsidian_get_total_units( $car_id ),
 		'colors'         => $colors,
 		'color_variants' => $color_variants,
+		'specifications' => $specs,
 		'status'         => get_field( 'car_status', $car_id ) ?: 'available',
 		'link'           => get_permalink( $car_id ),
 	);
