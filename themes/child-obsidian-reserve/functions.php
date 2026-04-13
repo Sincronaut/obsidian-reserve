@@ -113,6 +113,7 @@ function obsidian_reserve_register_blocks() {
 	register_block_type( get_stylesheet_directory() . '/blocks/standard' );
 	register_block_type( get_stylesheet_directory() . '/blocks/contact' );
 	register_block_type( get_stylesheet_directory() . '/blocks/car-grid' );
+	register_block_type( get_stylesheet_directory() . '/blocks/booking-form' );
 }
 add_action( 'init', 'obsidian_reserve_register_blocks' );
 

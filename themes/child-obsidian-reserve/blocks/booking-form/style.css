@@ -1,0 +1,493 @@
+/* ═══════════════════════════════════════════
+   Booking Form Block — style.css
+   Dark theme with gold accents (#C5A059)
+   ═══════════════════════════════════════════ */
+
+.obsidian-booking-form-wrap {
+	max-width: 720px;
+	margin: 0 auto;
+	padding: 48px 56px 56px;
+	background: rgba(20, 20, 20, 0.85);
+	border: 1px solid rgba(197, 160, 89, 0.25);
+	border-radius: 12px;
+	font-family: 'Montserrat', sans-serif;
+	color: #fff;
+}
+
+/* ── Error state ── */
+.obsidian-bf-error {
+	text-align: center;
+	font-size: 15px;
+	color: #ccc;
+	padding: 40px 0;
+}
+.obsidian-bf-error a {
+	color: #C5A059;
+	text-decoration: underline;
+}
+
+/* ── Header ── */
+.obsidian-bf-header {
+	margin-bottom: 28px;
+}
+.obsidian-bf-title {
+	font-size: 32px;
+	font-weight: 700;
+	margin: 0 0 8px;
+	line-height: 1.2;
+	color: #fff;
+}
+.obsidian-bf-title .text-gold {
+	color: #C5A059;
+}
+.obsidian-bf-subtitle {
+	font-size: 16px;
+	color: rgba(255, 255, 255, 0.7);
+	margin: 0;
+	font-weight: 400;
+}
+
+/* ── Progress Stepper ── */
+.obsidian-bf-stepper {
+	display: flex;
+	align-items: center;
+	margin-bottom: 32px;
+	gap: 0;
+}
+.obsidian-bf-step {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	border: 2px solid rgba(255, 255, 255, 0.25);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	transition: all 0.3s ease;
+}
+.obsidian-bf-step.active {
+	background: #C5A059;
+	border-color: #C5A059;
+}
+.obsidian-bf-step-number {
+	font-size: 15px;
+	font-weight: 600;
+	color: rgba(255, 255, 255, 0.5);
+}
+.obsidian-bf-step.active .obsidian-bf-step-number {
+	color: #0B0B0B;
+}
+.obsidian-bf-step-line {
+	flex: 1;
+	height: 2px;
+	background: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Booking Summary ── */
+.obsidian-bf-summary {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 16px;
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(197, 160, 89, 0.15);
+	border-radius: 8px;
+	margin-bottom: 24px;
+}
+.obsidian-bf-summary-img {
+	width: 80px;
+	height: 56px;
+	object-fit: cover;
+	border-radius: 6px;
+	flex-shrink: 0;
+}
+.obsidian-bf-summary-info {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.65);
+}
+.obsidian-bf-summary-info strong {
+	font-size: 15px;
+	color: #fff;
+}
+.obsidian-bf-summary-total {
+	font-size: 16px;
+	font-weight: 700;
+	color: #C5A059;
+}
+
+/* ── Documents Toggle ── */
+.obsidian-bf-docs-toggle {
+	background: none;
+	border: none;
+	color: #fff;
+	font-family: 'Montserrat', sans-serif;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	padding: 0;
+	margin-bottom: 16px;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.obsidian-bf-docs-toggle:hover {
+	color: #C5A059;
+}
+.obsidian-bf-docs-info {
+	margin-bottom: 24px;
+	padding: 16px;
+	background: rgba(197, 160, 89, 0.06);
+	border: 1px solid rgba(197, 160, 89, 0.15);
+	border-radius: 8px;
+}
+.obsidian-bf-docs-info ul {
+	margin: 0;
+	padding: 0 0 0 20px;
+	list-style: disc;
+}
+.obsidian-bf-docs-info li {
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.7);
+	margin-bottom: 4px;
+}
+
+/* ── Form Fields ── */
+.obsidian-bf-form {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+.obsidian-bf-field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+.obsidian-bf-field label,
+.obsidian-bf-upload-group > label,
+.obsidian-bf-section-label {
+	font-size: 13px;
+	font-weight: 500;
+	color: rgba(255, 255, 255, 0.85);
+}
+.obsidian-bf-section-label {
+	font-weight: 600;
+	font-size: 14px;
+	margin-top: 8px;
+}
+
+.obsidian-bf-field input[type="text"],
+.obsidian-bf-field input[type="tel"],
+.obsidian-bf-field select {
+	width: 100%;
+	padding: 14px 16px;
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(197, 160, 89, 0.35);
+	border-radius: 8px;
+	color: #fff;
+	font-family: 'Montserrat', sans-serif;
+	font-size: 14px;
+	transition: border-color 0.2s ease;
+	outline: none;
+	box-sizing: border-box;
+	-webkit-appearance: none;
+	appearance: none;
+}
+.obsidian-bf-field input::placeholder {
+	color: rgba(197, 160, 89, 0.45);
+}
+.obsidian-bf-field input:focus,
+.obsidian-bf-field select:focus {
+	border-color: #C5A059;
+}
+.obsidian-bf-field input.obf-invalid,
+.obsidian-bf-field select.obf-invalid {
+	border-color: #ff4444;
+}
+
+/* Select dropdown styling */
+.obsidian-bf-field select {
+	color: rgba(197, 160, 89, 0.65);
+	cursor: pointer;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C5A059' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 16px center;
+	padding-right: 40px;
+}
+.obsidian-bf-field select option {
+	background: #1a1a1a;
+	color: #fff;
+}
+
+/* Split field (label + note on same row) */
+.obsidian-bf-field-split {
+	position: relative;
+}
+.obsidian-bf-field-split > div {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+.obsidian-bf-field-note {
+	font-size: 12px;
+	color: #C5A059;
+	font-weight: 500;
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
+/* ── Upload Zones ── */
+.obsidian-bf-upload-group {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+.obsidian-bf-upload-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+}
+.obsidian-bf-upload-zone {
+	position: relative;
+	border: 2px dashed rgba(197, 160, 89, 0.35);
+	border-radius: 10px;
+	padding: 32px 24px;
+	text-align: center;
+	cursor: pointer;
+	transition: border-color 0.2s ease, background 0.2s ease;
+	overflow: hidden;
+}
+.obsidian-bf-upload-zone:hover {
+	border-color: #C5A059;
+	background: rgba(197, 160, 89, 0.04);
+}
+.obsidian-bf-upload-zone .obf-file-input {
+	position: absolute;
+	inset: 0;
+	opacity: 0;
+	cursor: pointer;
+	z-index: 2;
+}
+.obf-upload-placeholder {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	color: rgba(197, 160, 89, 0.55);
+}
+.obf-upload-placeholder svg {
+	opacity: 0.6;
+}
+.obf-upload-placeholder span {
+	font-size: 13px;
+	font-weight: 500;
+}
+
+/* Upload preview */
+.obf-upload-preview {
+	position: relative;
+}
+.obf-upload-preview img {
+	max-width: 100%;
+	max-height: 140px;
+	border-radius: 6px;
+	object-fit: contain;
+}
+.obf-upload-remove {
+	position: absolute;
+	top: -8px;
+	right: -8px;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: #ff4444;
+	color: #fff;
+	border: none;
+	font-size: 16px;
+	line-height: 1;
+	cursor: pointer;
+	z-index: 3;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.obsidian-bf-upload-help {
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.5);
+	margin: 4px 0 0;
+	line-height: 1.5;
+	font-style: italic;
+}
+
+/* ── Notice (90-day rule) ── */
+.obsidian-bf-notice {
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.6);
+	line-height: 1.6;
+	padding: 14px 16px;
+	background: rgba(197, 160, 89, 0.06);
+	border-left: 3px solid #C5A059;
+	border-radius: 4px;
+}
+.obsidian-bf-notice strong {
+	color: #C5A059;
+}
+
+/* ── Agreements ── */
+.obsidian-bf-agreements {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	margin-top: 8px;
+}
+.obsidian-bf-checkbox {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	cursor: pointer;
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.7);
+	line-height: 1.5;
+}
+.obsidian-bf-checkbox input[type="checkbox"] {
+	position: absolute;
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+.obf-check-box {
+	width: 18px;
+	height: 18px;
+	min-width: 18px;
+	border: 1.5px solid rgba(255, 255, 255, 0.3);
+	border-radius: 3px;
+	margin-top: 2px;
+	transition: all 0.2s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.obsidian-bf-checkbox input:checked + .obf-check-box {
+	background: #C5A059;
+	border-color: #C5A059;
+}
+.obsidian-bf-checkbox input:checked + .obf-check-box::after {
+	content: '';
+	display: block;
+	width: 5px;
+	height: 9px;
+	border: solid #0B0B0B;
+	border-width: 0 2px 2px 0;
+	transform: rotate(45deg);
+	margin-top: -2px;
+}
+.obsidian-bf-checkbox strong {
+	color: #fff;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+/* ── Submit Button ── */
+.obsidian-bf-actions {
+	margin-top: 8px;
+}
+.obsidian-bf-submit {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	padding: 14px 36px;
+	background: #C5A059;
+	color: #0B0B0B;
+	border: none;
+	border-radius: 6px;
+	font-family: 'Montserrat', sans-serif;
+	font-size: 15px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: opacity 0.2s ease, background 0.2s ease;
+}
+.obsidian-bf-submit:hover:not(:disabled) {
+	background: #d4af6a;
+}
+.obsidian-bf-submit:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+.obf-submit-spinner {
+	width: 18px;
+	height: 18px;
+	border: 2px solid rgba(11, 11, 11, 0.3);
+	border-top-color: #0B0B0B;
+	border-radius: 50%;
+	animation: obf-spin 0.6s linear infinite;
+}
+@keyframes obf-spin {
+	to { transform: rotate(360deg); }
+}
+
+/* ── Message (success/error) ── */
+.obsidian-bf-message {
+	padding: 16px;
+	border-radius: 8px;
+	font-size: 14px;
+	line-height: 1.5;
+	margin-top: 8px;
+}
+.obsidian-bf-message.obf-success {
+	background: rgba(46, 139, 87, 0.15);
+	border: 1px solid rgba(46, 139, 87, 0.4);
+	color: #6fcf97;
+}
+.obsidian-bf-message.obf-error {
+	background: rgba(255, 68, 68, 0.1);
+	border: 1px solid rgba(255, 68, 68, 0.3);
+	color: #ff6b6b;
+}
+
+/* ═══════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+	.obsidian-booking-form-wrap {
+		padding: 32px 24px 40px;
+		margin: 0 16px;
+	}
+	.obsidian-bf-title {
+		font-size: 24px;
+	}
+	.obsidian-bf-upload-row {
+		grid-template-columns: 1fr;
+	}
+	.obsidian-bf-summary {
+		flex-direction: column;
+		text-align: center;
+	}
+	.obsidian-bf-summary-img {
+		width: 100%;
+		height: auto;
+		max-height: 160px;
+	}
+	.obsidian-bf-field-note {
+		position: static;
+		margin-top: 4px;
+	}
+}
+
+@media (max-width: 480px) {
+	.obsidian-booking-form-wrap {
+		padding: 24px 16px 32px;
+		border-radius: 0;
+		margin: 0;
+	}
+	.obsidian-bf-step {
+		width: 34px;
+		height: 34px;
+	}
+	.obsidian-bf-step-number {
+		font-size: 13px;
+	}
+}
