@@ -144,18 +144,22 @@
    function buildGallery(galleryUrls, fallbackImg) {
       thumbsContainer.innerHTML = '';
 
-      var images = galleryUrls.length > 0 ? galleryUrls : (fallbackImg ? [fallbackImg] : []);
+      var all = galleryUrls.length > 0 ? galleryUrls : (fallbackImg ? [fallbackImg] : []);
 
-      if (images.length === 0) {
+      if (all.length === 0) {
          heroImg.src = '';
          return;
       }
 
-      heroImg.src = images[0];
+      // First image (index 0) is the card thumbnail — use it as the initial hero
+      heroImg.src = all[0];
       heroImg.alt = currentCar ? currentCar.name : '';
 
+      // Modal thumbnails = images 2–6 (indices 1+), the gallery shots
+      var modalImages = all.length > 1 ? all.slice(1) : all;
+
       var labels = ['Image 1', 'Image 2', 'Image 3', 'Image 4', 'Image 5'];
-      images.forEach(function (url, idx) {
+      modalImages.forEach(function (url, idx) {
          var btn = document.createElement('button');
          btn.className = 'obsidian-modal-thumb' + (idx === 0 ? ' active' : '');
          btn.setAttribute('aria-label', labels[idx] || 'Photo');
