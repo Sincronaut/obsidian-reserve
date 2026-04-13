@@ -217,6 +217,12 @@ function obsidian_booking_render_modal()
                   </div>
                </div>
 
+               <div class="obsidian-modal-total" id="obsidian-modal-total" style="display:none;">
+                  <span class="obsidian-modal-total-label">TOTAL:</span>
+                  <span id="obsidian-modal-total-value"></span>
+                  <span id="obsidian-modal-total-breakdown" class="obsidian-modal-breakdown"></span>
+               </div>
+
                <div class="obsidian-modal-actions">
                   <button id="obsidian-modal-proceed" class="obsidian-modal-cta" disabled>
                      <span id="obsidian-modal-cta-text">Reserve Vehicle</span>
