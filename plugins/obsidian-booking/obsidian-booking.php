@@ -103,6 +103,17 @@ function obsidian_booking_enqueue_assets()
       'loginUrl'       => wp_login_url(get_permalink()),
       'bookingPageUrl' => home_url('/booking/'),
    ));
+
+   // Booking form JS — only on the booking page
+   if (is_page('booking')) {
+      wp_enqueue_script(
+         'obsidian-booking-form',
+         OBSIDIAN_BOOKING_URL . 'assets/js/booking-form.js',
+         array('flatpickr'),
+         OBSIDIAN_BOOKING_VERSION,
+         true
+      );
+   }
 }
 add_action('wp_enqueue_scripts', 'obsidian_booking_enqueue_assets');
 

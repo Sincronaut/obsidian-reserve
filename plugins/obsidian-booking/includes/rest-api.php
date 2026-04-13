@@ -180,8 +180,8 @@ function obsidian_api_create_booking( $request ) {
 
 	$params = $request->get_json_params();
 
-	// --- Required field validation ---
-	$required = array( 'car_id', 'start_date', 'end_date', 'pickup_location', 'customer_type' );
+	// --- Required fields (shared) ---
+	$required = array( 'car_id', 'start_date', 'end_date', 'customer_type', 'first_name', 'last_name', 'address', 'birth_date', 'license_number', 'location' );
 	foreach ( $required as $field ) {
 		if ( empty( $params[ $field ] ) ) {
 			return new WP_Error(
@@ -192,14 +192,32 @@ function obsidian_api_create_booking( $request ) {
 		}
 	}
 
-	$car_id          = (int) $params['car_id'];
-	$start_date      = sanitize_text_field( $params['start_date'] );
-	$end_date        = sanitize_text_field( $params['end_date'] );
-	$pickup_location = sanitize_text_field( $params['pickup_location'] );
-	$customer_type   = sanitize_text_field( $params['customer_type'] );
-	$color           = isset( $params['color'] ) ? sanitize_text_field( strtolower( $params['color'] ) ) : '';
-	$documents       = isset( $params['documents'] ) ? $params['documents'] : array();
-	$user_id         = get_current_user_id();
+	$car_id        = (int) $params['car_id'];
+	$start_date    = sanitize_text_field( $params['start_date'] );
+	$end_date      = sanitize_text_field( $params['end_date'] );
+	$customer_type = sanitize_text_field( $params['customer_type'] );
+	$color         = isset( $params['color'] ) ? sanitize_text_field( strtolower( $params['color'] ) ) : '';
+	$user_id       = get_current_user_id();
+	$user          = wp_get_current_user();
+
+	// Contact & identity
+	$first_name     = sanitize_text_field( $params['first_name'] );
+	$last_name      = sanitize_text_field( $params['last_name'] );
+	$address        = sanitize_text_field( $params['address'] );
+	$birth_date     = sanitize_text_field( $params['birth_date'] );
+	$phone          = isset( $params['phone'] ) ? sanitize_text_field( $params['phone'] ) : '';
+	$license_number = sanitize_text_field( $params['license_number'] );
+	$location       = sanitize_text_field( $params['location'] );
+
+	// Local-only
+	$gov_id_type   = isset( $params['gov_id_type'] ) ? sanitize_text_field( $params['gov_id_type'] ) : '';
+	$gov_id_type_2 = isset( $params['gov_id_type_2'] ) ? sanitize_text_field( $params['gov_id_type_2'] ) : '';
+
+	// International-only
+	$passport_number = isset( $params['passport_number'] ) ? sanitize_text_field( $params['passport_number'] ) : '';
+
+	// Documents — structured object with attachment IDs per category
+	$documents = isset( $params['documents'] ) ? $params['documents'] : array();
 
 	// --- Validate car exists ---
 	$car = get_post( $car_id );
@@ -252,11 +270,46 @@ function obsidian_api_create_booking( $request ) {
 		);
 	}
 
+	// --- Validate birth date (must be 21+) ---
+	$dob = DateTime::createFromFormat( 'Y-m-d', $birth_date );
+	if ( ! $dob ) {
+		return new WP_Error(
+			'invalid_birth_date',
+			__( 'Invalid birth date format.', 'obsidian-booking' ),
+			array( 'status' => 400 )
+		);
+	}
+	$age = $dob->diff( $today )->y;
+	if ( $age < 21 ) {
+		return new WP_Error(
+			'underage',
+			__( 'You must be at least 21 years old to rent a vehicle.', 'obsidian-booking' ),
+			array( 'status' => 400 )
+		);
+	}
+
 	// --- Validate customer type ---
-	if ( ! in_array( $customer_type, array( 'local', 'foreigner' ), true ) ) {
+	if ( ! in_array( $customer_type, array( 'local', 'international' ), true ) ) {
 		return new WP_Error(
 			'invalid_customer_type',
-			__( 'Customer type must be "local" or "foreigner".', 'obsidian-booking' ),
+			__( 'Customer type must be "local" or "international".', 'obsidian-booking' ),
+			array( 'status' => 400 )
+		);
+	}
+
+	// --- Type-specific validation ---
+	if ( $customer_type === 'local' && empty( $phone ) ) {
+		return new WP_Error(
+			'missing_field',
+			__( 'Phone number is required for local renters.', 'obsidian-booking' ),
+			array( 'status' => 400 )
+		);
+	}
+
+	if ( $customer_type === 'international' && empty( $passport_number ) ) {
+		return new WP_Error(
+			'missing_field',
+			__( 'Passport number is required for international renters.', 'obsidian-booking' ),
 			array( 'status' => 400 )
 		);
 	}
@@ -286,9 +339,10 @@ function obsidian_api_create_booking( $request ) {
 
 	// --- Create the booking post ---
 	$booking_title = sprintf(
-		'%s — %s (%s to %s)',
+		'%s — %s %s (%s to %s)',
 		get_the_title( $car_id ),
-		wp_get_current_user()->display_name,
+		$first_name,
+		$last_name,
 		$start_date,
 		$end_date
 	);
@@ -312,22 +366,39 @@ function obsidian_api_create_booking( $request ) {
 	update_post_meta( $booking_id, '_booking_user_id', $user_id );
 	update_post_meta( $booking_id, '_booking_start_date', $start_date );
 	update_post_meta( $booking_id, '_booking_end_date', $end_date );
-	update_post_meta( $booking_id, '_booking_pickup_location', $pickup_location );
 	update_post_meta( $booking_id, '_booking_customer_type', $customer_type );
 	update_post_meta( $booking_id, '_booking_status', 'pending_review' );
 	update_post_meta( $booking_id, '_booking_total_price', $total );
 	update_post_meta( $booking_id, '_booking_color', $color );
+
+	// Contact & identity
+	update_post_meta( $booking_id, '_booking_first_name', $first_name );
+	update_post_meta( $booking_id, '_booking_last_name', $last_name );
+	update_post_meta( $booking_id, '_booking_email', $user->user_email );
+	update_post_meta( $booking_id, '_booking_address', $address );
+	update_post_meta( $booking_id, '_booking_birth_date', $birth_date );
+	update_post_meta( $booking_id, '_booking_phone', $phone );
+	update_post_meta( $booking_id, '_booking_license_number', $license_number );
+	update_post_meta( $booking_id, '_booking_location', $location );
+
+	// Type-specific
+	update_post_meta( $booking_id, '_booking_gov_id_type', $gov_id_type );
+	update_post_meta( $booking_id, '_booking_gov_id_type_2', $gov_id_type_2 );
+	update_post_meta( $booking_id, '_booking_passport_number', $passport_number );
+
+	// Documents
 	update_post_meta( $booking_id, '_booking_documents', wp_json_encode( $documents ) );
+
+	// Admin & payment defaults
 	update_post_meta( $booking_id, '_booking_admin_notes', '' );
+	update_post_meta( $booking_id, '_booking_denial_reason', '' );
 	update_post_meta( $booking_id, '_booking_payment_type', '' );
 	update_post_meta( $booking_id, '_booking_payment_amount', 0 );
 	update_post_meta( $booking_id, '_booking_deposit_amount', 0 );
 	update_post_meta( $booking_id, '_booking_balance_due', $total );
 	update_post_meta( $booking_id, '_booking_payment_id', '' );
 	update_post_meta( $booking_id, '_booking_payment_status', 'unpaid' );
-	update_post_meta( $booking_id, '_booking_denial_reason', '' );
 
-	// --- Fire action hook (Phase 8 will listen for this to send emails) ---
 	do_action( 'obsidian_booking_status_changed', $booking_id, '', 'pending_review' );
 
 	return rest_ensure_response( array(

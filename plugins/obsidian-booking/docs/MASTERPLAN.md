@@ -540,38 +540,55 @@ Uses your header part, the car-grid block, and your footer part.
 
 ### Step 5.3 — Build the booking modal
 
-Create the modal as HTML injected via `wp_footer` hook from your plugin:
+Create the modal as HTML injected via `wp_footer` hook from your plugin. Uses a **two-column layout**:
 
 ```
-┌──────────────────────────────────────────────────────┐
-│  ✕                                                   │
-│                                                      │
-│  [Main Image ──────────────]                         │
-│  [Ext] [Int] [Engine] [Detail]  ← thumbnail gallery  │
-│                                                      │
-│  Nissan GTR Katsura Orange                           │
-│  Exotic  |  2024  |  565 hp                          │
-│  ₱850 / day                                          │
-│                                                      │
-│  ── SELECT DATES ────────────────────────             │
-│  [Pick-up Date ▼]    [Drop-off Date ▼]               │
-│                                                      │
-│  ── SELECT COLOR ────────────────────────             │
-│  (●) Orange  (○) Black  (○) White                    │
-│                                                      │
-│  ── PICKUP LOCATION ──────────────────               │
-│  [Airport / Hotel / Address        ▼]                │
-│                                                      │
-│  ─────────────────────────────────────                │
-│  TOTAL: ₱4,250  (5 days × ₱850/day)                 │
-│                                                      │
-│  [    Proceed to Booking    ]                        │
-│                                                      │
-└──────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│  ✕                                                                     │
+│                                                                        │
+│  LEFT COLUMN                   │  RIGHT COLUMN                         │
+│                                │                                       │
+│  [Main Image ────────────]     │  Nissan GTR Katsura Orange (R35)      │
+│  [img1][img2][img3][img4][img5]│                                       │
+│                                │  • Engine: 3.8L V6 Twin-Turbo         │
+│  [Orange] [Black] ← swatches  │  • Power: 565 hp                      │
+│                                │  • Torque: 637 Nm                     │
+│  Exotic        ₱850 / day     │  • Transmission: 6-speed DCT          │
+│                                │  ...more specs from car_specs ACF...  │
+│                                │                                       │
+│                                │  Tell us who you are.                 │
+│                                │  We handle the rest.                  │
+│                                │                                       │
+│                                │  (●) Local Renters                    │
+│                                │  (○) International Renters            │
+│                                │                                       │
+│                                │  [Pick-up Date] [Drop-off Date]       │
+│                                │                                       │
+│                                │  TOTAL: ₱4,250 (5 days × ₱850/day)   │
+│                                │                                       │
+│                                │  [Reserve GTR]  [Check Availability]  │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
+
+Left column contains:
+- Hero image (image 1 from color variant — the card thumbnail)
+- 5 gallery thumbnails (images 2–6 from color variant)
+- Color variant buttons (swatch + name + availability count)
+- Class badge + daily rate at the bottom
+
+Right column contains:
+- Car name (H3, gold)
+- Specifications (bulleted list from ACF `car_specs` textarea, one spec per line)
+- Customer type section: "Tell us who you are. We handle the rest." + Local/International radio buttons
+- Flatpickr date pickers (pick-up + drop-off)
+- Dynamic total price (appears after both dates selected)
+- Two action buttons: "Reserve [Car Name]" (gold, submits) + "Check Vehicle Availability" (outline, opens date picker)
 
 > [!NOTE]
-> No documents, no payment, no customer type in the modal. Those moved to the booking page (Phase 6). The modal is just for browsing, selecting dates, and seeing the price.
+> No documents, no payment in the modal. Those happen on separate pages (Phase 6). The modal captures: car selection, color, dates, customer type, and the price preview.
+
+> [!IMPORTANT]
+> If the selected color variant has 0 available units, the "Reserve" button stays disabled.
 
 ### Step 5.4 — Write the modal JavaScript
 
@@ -582,17 +599,21 @@ User clicks "Book Now" →
   1. Get car_id from the button's data attribute
   2. Fetch car details:   GET /obsidian-booking/v1/cars/{id}
   3. Fetch availability:  GET /obsidian-booking/v1/availability/{id}
-  4. Populate modal with car images, name, specs
+  4. Populate modal: gallery, specs, color swatches, car info
   5. Initialize Flatpickr with unavailable dates grayed out
   6. Show modal (fade in, lock body scroll)
 
-User picks dates →
-  7. Calculate total: days × daily_rate
-  8. Update the "TOTAL" display in real-time
+User picks a color →
+  7. Swap all 6 gallery images to that color's set (image 1 = hero, 2–6 = thumbs)
+  8. Re-validate form (block if 0 units for that color)
 
-User clicks "Proceed to Booking" →
-  9. Validate: dates selected, color chosen, location set
-  10. Redirect to /booking/?car_id=X&start=YYYY-MM-DD&end=YYYY-MM-DD&color=Orange&location=Airport
+User picks dates →
+  9. Calculate total: days × daily_rate
+  10. Show "TOTAL: ₱X,XXX (N days × ₱rate/day)" dynamically
+
+User clicks "Reserve [Car Name]" →
+  11. Validate: dates selected, color chosen, color has units > 0
+  12. Redirect to /booking/?car_id=X&start=YYYY-MM-DD&end=YYYY-MM-DD&color=orange&customer_type=local
 ```
 
 ### Step 5.5 — Style the modal
@@ -601,9 +622,11 @@ Create `assets/css/modal.css`:
 
 - Match your theme: dark background (#0B0B0B), gold accents (#C5A059), Montserrat font
 - Full-screen overlay with backdrop blur
-- Centered panel, max-width ~700px
-- Image gallery with clickable thumbnails
-- Mobile responsive (stacks vertically on small screens)
+- Two-column panel, max-width ~1100px
+- Left column: gallery + colors + price/class
+- Right column: specs + form + actions
+- Custom Flatpickr dark theme override (gold selected dates)
+- Mobile responsive (stacks to single column on ≤860px, full-screen on ≤600px)
 - Smooth open/close animations
 
 ### Step 5.6 — Enqueue assets from the plugin
@@ -615,10 +638,10 @@ In `obsidian-booking.php`, add a `wp_enqueue_scripts` hook that loads:
 
 ```php
 wp_localize_script( 'obsidian-booking-modal', 'obsidianBooking', [
-    'restUrl'  => rest_url( 'obsidian-booking/v1/' ),
-    'nonce'    => wp_create_nonce( 'wp_rest' ),
-    'loggedIn' => is_user_logged_in(),
-    'loginUrl' => wp_login_url( get_permalink() ),
+    'restUrl'        => rest_url( 'obsidian-booking/v1/' ),
+    'nonce'          => wp_create_nonce( 'wp_rest' ),
+    'loggedIn'       => is_user_logged_in(),
+    'loginUrl'       => wp_login_url( get_permalink() ),
     'bookingPageUrl' => home_url( '/booking/' ),
 ]);
 ```
@@ -627,67 +650,140 @@ wp_localize_script( 'obsidian-booking-modal', 'obsidianBooking', [
 > The nonce is critical. Without it, your REST endpoints would accept requests from anywhere (CSRF vulnerability).
 
 ### ✅ Phase 5 Done When:
-- [ ] Car grid displays all available cars with correct data
-- [ ] Clicking "Book Now" opens the modal with that car's specs + gallery
-- [ ] Flatpickr shows disabled dates for fully-booked days
-- [ ] Price calculates dynamically as dates are selected
-- [ ] "Proceed to Booking" redirects to the booking page with URL params
-- [ ] Modal works on mobile
+- [x] Car grid displays all available cars with correct data
+- [x] Color swatches on cards swap the card image + show per-color units
+- [x] Clicking "Book Now" opens the two-column modal with gallery + specs
+- [x] Selecting a color in the modal swaps all 6 gallery images for that color
+- [x] Flatpickr shows disabled dates for fully-booked days
+- [x] Price calculates dynamically as dates are selected
+- [x] 0-unit colors block the Reserve button
+- [x] "Reserve [Car Name]" redirects to the booking page with URL params
+- [x] Modal works on mobile (stacks to single column)
 - [ ] Git commit: "Add car grid and booking modal"
 
 ---
 
-## Phase 6: Multi-Step Booking Page + PayMongo Payment
+## Phase 6: Booking Form, Payment & Confirmation (Separate Pages)
 **⏱ Time: ~10-12 hours (largest phase)**  
-**Goal: Users can submit requirements, get admin approval, pay, and receive confirmation.**
+**Goal: Users can submit requirements, get admin approval, pay, and receive confirmation — each on its own page.**
 
 > [!IMPORTANT]
-> This is the core booking experience. It's a full-page multi-step wizard, NOT inside the modal. The user arrives here after clicking "Proceed to Booking" in the modal.
+> This is a **multi-page flow**, NOT a single-page wizard. Each step has its own URL. This makes the flow
+> easier to reason about, allows direct linking from emails, and keeps each page focused.
+>
+> **Page structure:**
+> | Page | URL | When accessible |
+> |---|---|---|
+> | Booking Form | `/booking/` | After clicking "Reserve" in the modal |
+> | Payment | `/booking/payment/` | After admin approves documents |
+> | Confirmation | `/booking/confirmation/` | After successful payment |
 
-### Step 6.1 — Create the booking page template
+### Step 6.1 — Create the Booking Form page (`/booking/`)
 
-Create a WordPress page at `/booking/`. Use a custom page template that renders the multi-step form.
+Create a WordPress page at `/booking/`. Use a custom page template rendered by the plugin.
 
-The page reads URL parameters from the modal:
-- `car_id`, `start`, `end`, `color`, `location`
+The page reads URL parameters passed from the modal redirect:
+- `car_id`, `start`, `end`, `color`, `customer_type`
 
-### Step 6.2 — Step 1: Requirements Form
+Server-side: validate that the car exists and the dates are available. If invalid → redirect back to fleet with an error notice.
+
+> [!IMPORTANT]
+> The form displayed depends on the `customer_type` URL parameter (`local` or `international`).
+> Both forms share the same booking summary header and submit to the same endpoint,
+> but they collect **different fields and documents**.
+
+Both forms are rendered by a **single `booking-form` block** (`blocks/booking-form/`). The block reads
+`customer_type` from the URL and conditionally shows/hides the relevant fields. Email is pulled from the
+logged-in user's account — no email field in the form.
+
+#### 6.1a — Local Renter Form (`customer_type=local`)
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│  STEP 1 of 3 — Verify Your Identity                 │
-│  [■■■□□□□□□□] ─────────────────────────              │
+│  Local Renters Form                                  │
+│  Your exact vehicle starts with this form.           │
+│  (1)───────(2)───────(3)   ← progress stepper       │
 │                                                      │
-│  ── BOOKING SUMMARY ──────────────────               │
-│  Nissan GTR Katsura Orange                           │
-│  May 10-15, 2026 (5 days)  |  ₱4,250                │
+│  [View Documents Requirements]                       │
 │                                                      │
-│  ── CUSTOMER TYPE ────────────────────               │
-│  (●) Local Resident    (○) Foreign National          │
+│  ── BOOKING SUMMARY (car image + details) ──         │
 │                                                      │
-│  ── CONTACT INFO ─────────────────────               │
-│  Phone:    [+63 917 123 4567        ]                │
+│  First Name       [ex : Juan Miguel          ]       │
+│  Last Name        [ex : Dela Cruz            ]       │
+│  Address          [ex : 123 Street, Manila   ]       │
+│  Birth Date       [Month / Day / Year]  21+*         │
+│  Mobile Number    [+63                       ]       │
+│  Driver License # [N04-000-000-000]  2yr hold*       │
+│  [Upload Drivers License     ]                       │
 │                                                      │
-│  ── REQUIRED DOCUMENTS ──────────────                │
-│  [Upload: Valid ID — front & back   ]                │
-│  [Upload: Driver's License          ]                │
-│  📎 JPG, PNG, WebP, or PDF (max 5MB)                │
+│  ── GOVERNMENT ID ────────────────                   │
+│  [Select Government ID     ▼]                        │
+│  [Select Government ID     ▼]                        │
+│  [Upload ID (front)]  [Upload ID (back)]             │
+│                                                      │
+│  ── LOCATION ────────────────                        │
+│  [Select Obsidian Location  ▼]                       │
+│                                                      │
+│  ☐ I agree to the Terms and Conditions               │
+│  ☐ I agree to the Privacy Policy                     │
 │                                                      │
 │  [    Submit for Review    ]                         │
-│                                                      │
-│  By submitting, you agree to our Terms & Conditions. │
-│  No cancellations, no refunds.                       │
 └──────────────────────────────────────────────────────┘
 ```
 
-On submit:
-1. Upload documents via `POST /upload-document`
-2. Create booking via `POST /bookings` with all data
-3. Status set to `pending_review`
-4. User sees: "Your documents are under review. We'll email you once approved."
-5. Admin gets email notification
+#### 6.1b — International Renter Form (`customer_type=international`)
 
-### Step 6.3 — Admin reviews documents (happens in WP Admin)
+```
+┌──────────────────────────────────────────────────────┐
+│  International Renters Form                          │
+│  Land and drive. Fill in the details below.          │
+│  (1)───────(2)───────(3)   ← progress stepper       │
+│                                                      │
+│  [View Documents Requirements]                       │
+│                                                      │
+│  ── BOOKING SUMMARY (car image + details) ──         │
+│                                                      │
+│  First Name       [ex : Juan Miguel          ]       │
+│  Last Name        [ex : Dela Cruz            ]       │
+│  Address          [ex : 123 Street, Manila   ]       │
+│  Birth Date       [Month / Day / Year]  21+*         │
+│  Driver License # [000-000-000-000]  2yr hold*       │
+│  [Upload Drivers License     ]                       │
+│                                                      │
+│  ⚠ 90-Day Rule: Foreign license valid 90 days...     │
+│                                                      │
+│  Passport ID #    [000-000-000-000           ]       │
+│  [Upload Passport ID        ]                        │
+│  [Upload Proof of Arrival   ]                        │
+│  (e-ticket, airline booking, arrival stamp)           │
+│                                                      │
+│  ── LOCATION ────────────────                        │
+│  [Select Obsidian Location  ▼]                       │
+│                                                      │
+│  ☐ I agree to the Terms and Conditions               │
+│  ☐ I agree to the Privacy Policy                     │
+│                                                      │
+│  [    Submit for Review    ]                         │
+└──────────────────────────────────────────────────────┘
+```
+
+> [!NOTE]
+> Both forms share: First Name, Last Name, Address, Birth Date (21+), Driver License Number (2-year hold),
+> Upload Driver's License, Select Location, Terms + Privacy checkboxes, Submit for Review.
+>
+> **Local-only:** Mobile Number, Government ID (2 type dropdowns + 2 upload zones front/back).
+>
+> **International-only:** Passport ID Number, Upload Passport ID, Proof of Arrival upload, 90-Day Rule notice.
+
+On submit (both forms):
+1. Each document is uploaded individually via `POST /obsidian-booking/v1/upload-document`
+2. Once all uploads complete, JS calls `POST /obsidian-booking/v1/bookings` with form data + attachment IDs
+3. Server validates fields, re-checks availability, creates booking with status `pending_review`
+4. Email is pulled from `wp_get_current_user()->user_email` (no email field needed)
+5. User sees: "Your documents have been submitted for review!"
+6. Admin gets email notification
+
+### Step 6.2 — Admin reviews documents (happens in WP Admin)
 
 This is handled by Phase 7 (Admin UI). The admin:
 1. Opens the booking in WP Admin
@@ -696,21 +792,27 @@ This is handled by Phase 7 (Admin UI). The admin:
 4. Or clicks **[Deny]** with a reason → status changes to `denied`
 5. User gets email either way
 
-### Step 6.4 — Step 2: Payment (only accessible after docs approved)
+### Step 6.3 — Create the Payment page (`/booking/payment/`)
 
 User receives email: "Your documents are approved! Click here to complete your payment."
 
-Link brings them back to `/booking/?booking_id=XXX&step=payment`
+The email link goes to:
+```
+/booking/payment/?booking_id=XXX&token=SECURE_TOKEN
+```
+
+> [!IMPORTANT]
+> The `token` is a one-time secure hash generated when the booking is approved. It proves the user
+> owns this booking without requiring login. This keeps the URL clean and prevents unauthorized access.
 
 Server verifies:
-- User owns this booking
+- Token is valid for this booking ID
 - Status is `awaiting_payment`
-- If not → redirect with error
+- If not → redirect to `/booking/` with error
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│  STEP 2 of 3 — Payment                              │
-│  [■■■■■■□□□□] ─────────────────────────              │
+│  PAYMENT                                             │
 │                                                      │
 │  ── BOOKING SUMMARY ──────────────────               │
 │  Nissan GTR Katsura Orange                           │
@@ -744,24 +846,24 @@ Server verifies:
 
 On submit:
 1. JavaScript calls PayMongo API to create a Payment Intent
-2. PayMongo securely processes the card (data never hits your server)
-3. PayMongo webhook fires → your server receives confirmation
+2. PayMongo handles card data securely (card data never hits your server)
+3. PayMongo webhook fires → your server receives payment confirmation
 4. Status → `paid` → auto-transitions to `confirmed`
-5. Redirect to Step 3
+5. Server redirects to `/booking/confirmation/?booking_id=XXX`
 
-### Step 6.5 — Step 3: Confirmation / Success
+### Step 6.4 — Create the Confirmation page (`/booking/confirmation/`)
+
+After successful payment, the user lands on this page. It also serves as the receipt.
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│  ✅ Reservation Confirmed!                           │
-│  [■■■■■■■■■■] ─────────────────────────              │
+│  Reservation Confirmed!                              │
 │                                                      │
 │  ── YOUR BOOKING ─────────────────────               │
 │  [Car Image]                                         │
 │  Nissan GTR Katsura Orange                           │
 │  May 10 – May 15, 2026  (5 days)                     │
 │  Color: Orange                                       │
-│  Pickup: Airport                                     │
 │                                                      │
 │  ── PAYMENT RECEIPT ──────────────────               │
 │  Rental (50% down):    ₱2,125                        │
@@ -770,14 +872,14 @@ On submit:
 │  Balance at pickup:    ₱2,125                        │
 │                                                      │
 │  Booking ID: #301                                    │
-│  Status: ✅ Confirmed                                │
+│  Status: Confirmed                                   │
 │                                                      │
 │  [  View My Reservations  ]                          │
 │                                                      │
 └──────────────────────────────────────────────────────┘
 ```
 
-### Step 6.6 — PayMongo Integration
+### Step 6.5 — PayMongo Integration
 
 Create `includes/payment.php`:
 
@@ -795,15 +897,35 @@ You'll need:
    define( 'PAYMONGO_PUBLIC_KEY', 'pk_test_...' );
    ```
 
+### Step 6.6 — Page template routing
+
+Create `includes/booking-pages.php`:
+
+Instead of step parameters on a single URL, register child pages:
+
+```php
+// Rewrite rules
+add_rewrite_rule( '^booking/payment/?$', 'index.php?pagename=booking&ob_step=payment', 'top' );
+add_rewrite_rule( '^booking/confirmation/?$', 'index.php?pagename=booking&ob_step=confirmation', 'top' );
+add_filter( 'query_vars', fn($vars) => array_merge($vars, ['ob_step']) );
+```
+
+Each page template checks `get_query_var('ob_step')` and renders the right content:
+- No step → booking form (Step 6.1)
+- `payment` → payment page (Step 6.3)
+- `confirmation` → confirmation page (Step 6.4)
+
+This keeps everything under the `/booking/` parent URL for clean structure, but each step is its own distinct page load with its own URL.
+
 ### ✅ Phase 6 Done When:
-- [ ] Booking page renders with correct car info from URL params
-- [ ] Step 1 form submits documents and creates booking (status: pending_review)
-- [ ] Step 2 only loads if docs are approved (server-side check)
+- [ ] `/booking/` renders the booking form with correct car info from URL params
+- [ ] Form submits documents and creates booking (status: `pending_review`)
+- [ ] `/booking/payment/` only loads if docs are approved (server-side token check)
 - [ ] PayMongo test payment works (use test card 4242 4242 4242 4242)
-- [ ] Webhook updates booking status to paid
-- [ ] Step 3 shows confirmation with payment receipt
-- [ ] All steps work on mobile
-- [ ] Git commit: "Add multi-step booking page with PayMongo"
+- [ ] Webhook updates booking status to `paid`
+- [ ] `/booking/confirmation/` shows confirmation with payment receipt
+- [ ] All three pages work on mobile
+- [ ] Git commit: "Add booking form, payment, and confirmation pages"
 
 ---
 

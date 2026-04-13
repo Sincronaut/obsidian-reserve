@@ -1,0 +1,18 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/booking-form",
+	"version": "1.0.0",
+	"title": "Booking Form",
+	"category": "theme",
+	"icon": "clipboard",
+	"description": "Booking form for local and international renters. Reads customer_type from URL params.",
+	"supports": {
+		"html": false,
+		"align": false,
+		"multiple": false
+	},
+	"textdomain": "child-obsidian-reserve",
+	"render": "file:./render.php",
+	"style": "file:./style.css"
+}
