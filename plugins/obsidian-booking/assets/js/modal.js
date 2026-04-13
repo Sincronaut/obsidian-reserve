@@ -60,6 +60,15 @@
 
    /* ── Open / Close ── */
 
+   function handleResponse(r) {
+      if (!r.ok) {
+         return r.text().then(function (body) {
+            throw new Error('HTTP ' + r.status + ': ' + body.substring(0, 200));
+         });
+      }
+      return r.json();
+   }
+
    function openModal(carId) {
       modal.setAttribute('aria-hidden', 'false');
       document.body.classList.add('obsidian-modal-open');
@@ -69,21 +78,31 @@
       Promise.all([
          fetch(cfg.restUrl + 'cars/' + carId, {
             headers: { 'X-WP-Nonce': cfg.nonce }
-         }).then(function (r) { return r.json(); }),
+         }).then(handleResponse),
          fetch(cfg.restUrl + 'availability/' + carId, {
             headers: { 'X-WP-Nonce': cfg.nonce }
-         }).then(function (r) { return r.json(); })
+         }).then(handleResponse)
       ]).then(function (results) {
-         currentCar = results[0];
-         currentCar._unavailable = results[1].unavailable_dates || [];
+         var car   = results[0];
+         var avail = results[1];
+
+         if (car.code) {
+            throw new Error('Car API error: ' + (car.message || car.code));
+         }
+
+         currentCar = car;
+         currentCar._unavailable = (avail && avail.unavailable_dates) ? avail.unavailable_dates : [];
          selectedColor = null;
+
          populateModal(currentCar);
          initFlatpickr(currentCar._unavailable);
+
          loader.style.display = 'none';
          content.style.display = '';
       }).catch(function (err) {
-         console.error('Failed to load car data:', err);
-         closeModal();
+         console.error('Obsidian Modal Error:', err);
+         loader.innerHTML = '<p style="color:#ff6b6b;text-align:center;padding:40px 24px;font-size:14px;">'
+            + 'Failed to load vehicle data.<br><small style="opacity:.6">' + err.message + '</small></p>';
       });
    }
 
