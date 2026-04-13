@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'OBSIDIAN_IMAGES_PER_COLOR', 5 );
+define( 'OBSIDIAN_IMAGES_PER_COLOR', 6 );
 
 /**
  * Register the meta box on the Car CPT edit screen.
@@ -109,7 +109,7 @@ function obsidian_render_color_variants_meta_box( $post ) {
 					$img_url = $img_id > 0 ? wp_get_attachment_image_url( $img_id, 'thumbnail' ) : '';
 				?>
 				<div class="variant-image-slot" data-index="<?php echo esc_attr( $i ); ?>">
-					<span class="variant-image-label"><?php echo esc_html( 'Image ' . ( $i + 1 ) ); ?></span>
+					<span class="variant-image-label"><?php echo esc_html( $i === 0 ? 'Card Thumbnail' : 'Image ' . $i ); ?></span>
 
 					<input type="hidden"
 						   class="variant-image-id"
