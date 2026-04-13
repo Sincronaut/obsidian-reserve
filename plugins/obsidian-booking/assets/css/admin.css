@@ -58,17 +58,25 @@
 .obsidian-color-variants {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
 }
 
 .obsidian-variant-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 14px 16px;
+    padding: 16px;
     background: #f9f9f9;
     border: 1px solid #e0e0e0;
     border-radius: 6px;
+}
+
+/* ---- Variant Header (swatch + name + units) ---- */
+
+.variant-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .variant-swatch {
@@ -89,6 +97,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    margin-left: auto;
 }
 
 .variant-units label {
@@ -101,22 +110,36 @@
     width: 60px;
 }
 
-/* ---- Image Picker ---- */
+/* ---- Image Grid (5 slots per color) ---- */
 
-.variant-image {
+.variant-images-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
+
+.variant-image-slot {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 8px;
-    margin-left: auto;
+    gap: 6px;
+}
+
+.variant-image-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .variant-image-preview {
-    width: 60px;
-    height: 60px;
+    width: 100%;
+    aspect-ratio: 1;
     border-radius: 4px;
     overflow: hidden;
     background: #eee;
-    flex-shrink: 0;
+    border: 1px dashed #ccc;
 }
 
 .variant-image-preview img {
@@ -126,21 +149,37 @@
     display: block;
 }
 
-.obsidian-upload-image,
-.obsidian-remove-image {
-    white-space: nowrap;
+.variant-image-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.variant-image-actions .button.button-small {
+    font-size: 11px;
+    padding: 2px 8px;
+    min-height: 24px;
+    line-height: 22px;
 }
 
 /* ---- Responsive: Stack on narrow screens ---- */
 
 @media (max-width: 782px) {
-    .obsidian-variant-row {
+    .variant-header {
         flex-wrap: wrap;
     }
 
-    .variant-image {
+    .variant-units {
         margin-left: 0;
         width: 100%;
-        margin-top: 8px;
+    }
+
+    .variant-images-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .variant-images-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 }

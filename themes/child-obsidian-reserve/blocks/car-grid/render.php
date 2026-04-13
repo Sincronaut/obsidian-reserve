@@ -84,17 +84,18 @@ $car_classes = get_terms( array(
 				$first_color = true;
 				$default_img = $thumb;
 
-				// Determine the first color's image for the default card display
-				if ( ! empty( $variants ) ) {
-					$first_variant = reset( $variants );
-					$first_img_id  = (int) ( $first_variant['image_id'] ?? 0 );
-					if ( $first_img_id > 0 ) {
-						$first_img_url = wp_get_attachment_image_url( $first_img_id, 'large' );
-						if ( $first_img_url ) {
-							$default_img = $first_img_url;
-						}
+			// Determine the first color's image for the default card display
+			if ( ! empty( $variants ) ) {
+				$first_variant = reset( $variants );
+				$first_images  = isset( $first_variant['images'] ) && is_array( $first_variant['images'] ) ? $first_variant['images'] : array();
+				$first_img_id  = (int) ( $first_images[0] ?? 0 );
+				if ( $first_img_id > 0 ) {
+					$first_img_url = wp_get_attachment_image_url( $first_img_id, 'large' );
+					if ( $first_img_url ) {
+						$default_img = $first_img_url;
 					}
 				}
+			}
 			?>
 			<article class="car-card" data-car-id="<?php echo esc_attr( $car_id ); ?>" data-class="<?php echo esc_attr( $class_slug ); ?>">
 
@@ -118,14 +119,15 @@ $car_classes = get_terms( array(
 
 					<?php if ( ! empty( $variants ) ) : ?>
 					<div class="car-color-swatches">
-						<?php foreach ( $variants as $color_name => $data ) :
-							$hex      = obsidian_get_color_hex( $color_name );
-							$units    = (int) ( $data['units'] ?? 0 );
-							$img_id   = (int) ( $data['image_id'] ?? 0 );
-							$img_url  = $img_id > 0 ? wp_get_attachment_image_url( $img_id, 'large' ) : $thumb;
-							$is_first = $first_color;
-							$first_color = false;
-						?>
+					<?php foreach ( $variants as $color_name => $data ) :
+						$hex        = obsidian_get_color_hex( $color_name );
+						$units      = (int) ( $data['units'] ?? 0 );
+						$color_imgs = isset( $data['images'] ) && is_array( $data['images'] ) ? $data['images'] : array();
+						$card_img_id = (int) ( $color_imgs[0] ?? 0 );
+						$img_url    = $card_img_id > 0 ? wp_get_attachment_image_url( $card_img_id, 'large' ) : $thumb;
+						$is_first   = $first_color;
+						$first_color = false;
+					?>
 							<button class="color-swatch<?php echo $is_first ? ' active' : ''; ?>"
 									data-color="<?php echo esc_attr( $color_name ); ?>"
 									data-image="<?php echo esc_url( $img_url ?: $thumb ); ?>"

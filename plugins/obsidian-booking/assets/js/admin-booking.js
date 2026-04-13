@@ -1,6 +1,6 @@
 /**
  * Obsidian Booking — Admin JS
- * Color variant unit enforcement + image picker (WP Media Uploader).
+ * Color variant unit enforcement + per-slot image picker (WP Media Uploader).
  */
 (function($) {
 	'use strict';
@@ -28,7 +28,6 @@
 			}
 		}
 
-		// Live validation on every keystroke / change
 		$(document).on('input change', '.variant-units-input', function() {
 			var $input = $(this);
 			var val    = parseInt($input.val(), 10) || 0;
@@ -37,13 +36,11 @@
 				$input.val(0);
 			}
 
-			// Calculate sum of OTHER inputs
 			var othersSum = 0;
 			$('.variant-units-input').not($input).each(function() {
 				othersSum += parseInt($(this).val(), 10) || 0;
 			});
 
-			// Cap this input so total doesn't exceed limit
 			var maxForThis = totalUnits - othersSum;
 			if (val > maxForThis) {
 				$input.val(Math.max(0, maxForThis));
@@ -52,24 +49,22 @@
 			recalcUnits();
 		});
 
-		// Initial count on page load
 		if ($counter.length) {
 			recalcUnits();
 		}
 
-		/* ── Color Variant Image Picker ── */
+		/* ── Per-Slot Image Picker ── */
 
-		$('.obsidian-upload-image').on('click', function(e) {
+		$(document).on('click', '.obsidian-upload-image', function(e) {
 			e.preventDefault();
 
-			var button    = $(this);
-			var row       = button.closest('.obsidian-variant-row');
-			var idInput   = row.find('.variant-image-id');
-			var preview   = row.find('.variant-image-preview');
-			var removeBtn = row.find('.obsidian-remove-image');
+			var $button  = $(this);
+			var $slot    = $button.closest('.variant-image-slot');
+			var $idInput = $slot.find('.variant-image-id');
+			var $preview = $slot.find('.variant-image-preview');
 
 			var frame = wp.media({
-				title: 'Select Color Variant Image',
+				title: 'Select Image',
 				button: { text: 'Use This Image' },
 				multiple: false,
 				library: { type: 'image' }
@@ -81,16 +76,14 @@
 					? attachment.sizes.thumbnail.url
 					: attachment.url;
 
-				idInput.val(attachment.id);
-				preview.html('<img src="' + thumbUrl + '" alt="" />');
-				button.text('Change Image');
+				$idInput.val(attachment.id);
+				$preview.html('<img src="' + thumbUrl + '" alt="" />');
+				$button.text('Change');
 
-				if (removeBtn.length === 0) {
-					button.after(
-						'<button type="button" class="button obsidian-remove-image">Remove</button>'
+				if ($slot.find('.obsidian-remove-image').length === 0) {
+					$button.after(
+						'<button type="button" class="button button-small obsidian-remove-image">&times;</button>'
 					);
-				} else {
-					removeBtn.show();
 				}
 			});
 
@@ -100,10 +93,10 @@
 		$(document).on('click', '.obsidian-remove-image', function(e) {
 			e.preventDefault();
 
-			var row = $(this).closest('.obsidian-variant-row');
-			row.find('.variant-image-id').val('0');
-			row.find('.variant-image-preview').html('');
-			row.find('.obsidian-upload-image').text('Choose Image');
+			var $slot = $(this).closest('.variant-image-slot');
+			$slot.find('.variant-image-id').val('0');
+			$slot.find('.variant-image-preview').html('');
+			$slot.find('.obsidian-upload-image').text('Upload');
 			$(this).remove();
 		});
 
