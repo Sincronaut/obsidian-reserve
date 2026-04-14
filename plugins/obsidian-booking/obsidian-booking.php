@@ -41,6 +41,12 @@ require_once OBSIDIAN_BOOKING_DIR . 'includes/rest-api.php';
 // Notifications (Phase 7)
 require_once OBSIDIAN_BOOKING_DIR . 'includes/notifications.php';
 
+// Payment (Phase 6)
+require_once OBSIDIAN_BOOKING_DIR . 'includes/payment.php';
+
+// Booking page routing (Phase 6)
+require_once OBSIDIAN_BOOKING_DIR . 'includes/booking-pages.php';
+
 // User profile extensions (Phase 4)
 require_once OBSIDIAN_BOOKING_DIR . 'includes/user-fields.php';
 
@@ -106,13 +112,32 @@ function obsidian_booking_enqueue_assets()
 
    // Booking form JS — only on the booking page
    if (is_page('booking')) {
-      wp_enqueue_script(
-         'obsidian-booking-form',
-         OBSIDIAN_BOOKING_URL . 'assets/js/booking-form.js',
-         array('flatpickr'),
-         OBSIDIAN_BOOKING_VERSION,
-         true
-      );
+      $ob_step = get_query_var('ob_step', '');
+
+      if ($ob_step === 'payment') {
+         wp_enqueue_script(
+            'obsidian-payment-form',
+            OBSIDIAN_BOOKING_URL . 'assets/js/payment-form.js',
+            array(),
+            OBSIDIAN_BOOKING_VERSION,
+            true
+         );
+
+         wp_localize_script('obsidian-payment-form', 'obsidianPayment', array(
+            'restUrl'         => esc_url_raw(rest_url('obsidian-booking/v1/')),
+            'nonce'           => wp_create_nonce('wp_rest'),
+            'publicKey'       => defined('PAYMONGO_PUBLIC_KEY') ? PAYMONGO_PUBLIC_KEY : '',
+            'confirmationUrl' => home_url('/booking/confirmation/'),
+         ));
+      } else if ($ob_step !== 'confirmation') {
+         wp_enqueue_script(
+            'obsidian-booking-form',
+            OBSIDIAN_BOOKING_URL . 'assets/js/booking-form.js',
+            array('flatpickr'),
+            OBSIDIAN_BOOKING_VERSION,
+            true
+         );
+      }
    }
 }
 add_action('wp_enqueue_scripts', 'obsidian_booking_enqueue_assets');
@@ -271,6 +296,11 @@ function obsidian_booking_activate()
    // Seed default car classes
    if (function_exists('obsidian_seed_car_classes')) {
       obsidian_seed_car_classes();
+   }
+
+   // Register booking page rewrite rules before flushing
+   if (function_exists('obsidian_register_booking_rewrites')) {
+      obsidian_register_booking_rewrites();
    }
 
    flush_rewrite_rules();
