@@ -100,5 +100,117 @@
 			$(this).remove();
 		});
 
+		/* ── Booking Meta Box: Approve / Deny / Status Actions ── */
+
+		function bookingAction(action, bookingId, extraData) {
+			var data = $.extend({
+				action: 'obsidian_booking_action',
+				nonce: obsidianAdmin.nonce,
+				booking_id: bookingId,
+				booking_action: action
+			}, extraData || {});
+
+			return $.post(obsidianAdmin.ajaxUrl, data);
+		}
+
+		function showFeedback(msg, type) {
+			$('.obm-feedback').remove();
+			var cls = type === 'error' ? 'obm-feedback-error' : 'obm-feedback-success';
+			var $el = $('<div class="obm-feedback ' + cls + '">' + msg + '</div>');
+			$('.obm-actions-section').last().append($el);
+		}
+
+		$(document).on('click', '#obm-approve', function() {
+			var $btn = $(this);
+			var bookingId = $btn.data('booking-id');
+			$btn.prop('disabled', true).text('Approving...');
+
+			bookingAction('approve', bookingId).done(function(res) {
+				if (res.success) {
+					showFeedback(res.data.message, 'success');
+					setTimeout(function() { location.reload(); }, 1200);
+				} else {
+					showFeedback(res.data.message, 'error');
+					$btn.prop('disabled', false).text('Approve Documents');
+				}
+			}).fail(function() {
+				showFeedback('Request failed. Please try again.', 'error');
+				$btn.prop('disabled', false).text('Approve Documents');
+			});
+		});
+
+		$(document).on('input', '#obm-denial-reason', function() {
+			$('#obm-deny').prop('disabled', !$(this).val().trim());
+		});
+
+		$(document).on('click', '#obm-deny', function() {
+			var $btn = $(this);
+			var bookingId = $btn.data('booking-id');
+			var reason = $('#obm-denial-reason').val().trim();
+
+			if (!reason) return;
+
+			$btn.prop('disabled', true).text('Denying...');
+
+			bookingAction('deny', bookingId, { reason: reason }).done(function(res) {
+				if (res.success) {
+					showFeedback(res.data.message, 'success');
+					setTimeout(function() { location.reload(); }, 1200);
+				} else {
+					showFeedback(res.data.message, 'error');
+					$btn.prop('disabled', false).text('Deny');
+				}
+			}).fail(function() {
+				showFeedback('Request failed. Please try again.', 'error');
+				$btn.prop('disabled', false).text('Deny');
+			});
+		});
+
+		$(document).on('click', '#obm-mark-active', function() {
+			var $btn = $(this);
+			$btn.prop('disabled', true).text('Updating...');
+			bookingAction('mark_active', $btn.data('booking-id')).done(function(res) {
+				if (res.success) {
+					showFeedback(res.data.message, 'success');
+					setTimeout(function() { location.reload(); }, 1200);
+				} else {
+					showFeedback(res.data.message, 'error');
+					$btn.prop('disabled', false).text('Mark as Active');
+				}
+			});
+		});
+
+		$(document).on('click', '#obm-mark-completed', function() {
+			var $btn = $(this);
+			$btn.prop('disabled', true).text('Updating...');
+			bookingAction('mark_completed', $btn.data('booking-id')).done(function(res) {
+				if (res.success) {
+					showFeedback(res.data.message, 'success');
+					setTimeout(function() { location.reload(); }, 1200);
+				} else {
+					showFeedback(res.data.message, 'error');
+					$btn.prop('disabled', false).text('Mark as Completed');
+				}
+			});
+		});
+
+		$(document).on('click', '#obm-save-notes', function() {
+			var $btn = $(this);
+			var bookingId = $btn.data('booking-id');
+			var notes = $('#obm-admin-notes').val();
+
+			$btn.prop('disabled', true).text('Saving...');
+
+			bookingAction('save_notes', bookingId, { notes: notes }).done(function(res) {
+				$btn.prop('disabled', false).text('Save Notes');
+				if (res.success) {
+					$btn.text('Saved!');
+					setTimeout(function() { $btn.text('Save Notes'); }, 1500);
+				}
+			}).fail(function() {
+				$btn.prop('disabled', false).text('Save Notes');
+			});
+		});
+
 	});
 })(jQuery);

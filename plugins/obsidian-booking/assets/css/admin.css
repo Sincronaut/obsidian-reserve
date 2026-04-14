@@ -183,3 +183,292 @@
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* ============================================================
+   Booking List — Custom Columns
+   ============================================================ */
+
+.obsidian-col-muted {
+    color: #999;
+    font-size: 12px;
+}
+
+.obsidian-col-color {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.obsidian-col-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
+}
+
+/* ── Badges ── */
+
+.obsidian-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1.6;
+}
+.obsidian-badge-local {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+.obsidian-badge-intl {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+/* ── Status Badges ── */
+
+.obsidian-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.obsidian-status::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.obsidian-status-pending {
+    background: #fff8e1;
+    color: #f57f17;
+}
+.obsidian-status-pending::before {
+    background: #f57f17;
+}
+.obsidian-status-awaiting {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+.obsidian-status-awaiting::before {
+    background: #1565c0;
+}
+.obsidian-status-paid {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+.obsidian-status-paid::before {
+    background: #2e7d32;
+}
+.obsidian-status-confirmed {
+    background: #e8f5e9;
+    color: #1b5e20;
+}
+.obsidian-status-confirmed::before {
+    background: #1b5e20;
+}
+.obsidian-status-active {
+    background: #e0f2f1;
+    color: #00695c;
+}
+.obsidian-status-active::before {
+    background: #00695c;
+}
+.obsidian-status-completed {
+    background: #f3e5f5;
+    color: #6a1b9a;
+}
+.obsidian-status-completed::before {
+    background: #6a1b9a;
+}
+.obsidian-status-denied {
+    background: #ffebee;
+    color: #c62828;
+}
+.obsidian-status-denied::before {
+    background: #c62828;
+}
+
+/* ============================================================
+   Booking Detail Meta Box
+   ============================================================ */
+
+.obsidian-booking-detail {
+    margin: -6px -12px -12px;
+}
+
+/* ── Status Banner ── */
+
+.obm-status-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    border-bottom: 1px solid #eee;
+}
+.obm-status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.obm-status-pending_review  { background: #fff8e1; }
+.obm-status-pending_review .obm-status-dot { background: #f57f17; }
+.obm-status-awaiting_payment { background: #e3f2fd; }
+.obm-status-awaiting_payment .obm-status-dot { background: #1565c0; }
+.obm-status-paid { background: #e8f5e9; }
+.obm-status-paid .obm-status-dot { background: #2e7d32; }
+.obm-status-confirmed { background: #e8f5e9; }
+.obm-status-confirmed .obm-status-dot { background: #1b5e20; }
+.obm-status-active { background: #e0f2f1; }
+.obm-status-active .obm-status-dot { background: #00695c; }
+.obm-status-completed { background: #f3e5f5; }
+.obm-status-completed .obm-status-dot { background: #6a1b9a; }
+.obm-status-denied { background: #ffebee; }
+.obm-status-denied .obm-status-dot { background: #c62828; }
+
+.obm-denial-reason {
+    color: #999;
+    font-style: italic;
+}
+
+/* ── Sections ── */
+
+.obm-section {
+    padding: 16px;
+    border-bottom: 1px solid #eee;
+}
+.obm-section:last-child {
+    border-bottom: none;
+}
+.obm-section-title {
+    margin: 0 0 12px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #444;
+}
+.obm-muted {
+    color: #999;
+    font-size: 12px;
+}
+
+/* ── Info Table ── */
+
+.obm-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.obm-table th {
+    text-align: left;
+    width: 120px;
+    padding: 6px 12px 6px 0;
+    font-weight: 600;
+    font-size: 13px;
+    color: #555;
+    vertical-align: top;
+}
+.obm-table td {
+    padding: 6px 0;
+    font-size: 13px;
+    color: #1d2327;
+}
+
+/* ── Documents ── */
+
+.obm-documents {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+}
+.obm-doc-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.obm-doc-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+.obm-doc-preview img {
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fafafa;
+}
+.obm-doc-preview:hover img {
+    border-color: #2271b1;
+}
+
+/* ── Admin Notes ── */
+
+.obm-textarea {
+    width: 100%;
+    min-height: 60px;
+    resize: vertical;
+    margin-bottom: 8px;
+}
+
+/* ── Actions ── */
+
+.obm-actions-section {
+    background: #fafafa;
+}
+.obm-actions {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.obm-deny-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.obm-deny-btn {
+    color: #c62828 !important;
+    border-color: #c62828 !important;
+}
+.obm-deny-btn:hover:not(:disabled) {
+    background: #c62828 !important;
+    color: #fff !important;
+}
+.obm-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ── AJAX feedback ── */
+
+.obm-feedback {
+    padding: 10px 16px;
+    border-radius: 4px;
+    font-size: 13px;
+    margin-top: 12px;
+}
+.obm-feedback-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+}
+.obm-feedback-error {
+    background: #ffebee;
+    color: #c62828;
+    border: 1px solid #ef9a9a;
+}
