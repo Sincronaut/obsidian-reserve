@@ -119,7 +119,7 @@ function obsidian_create_payment_intent( $booking_id, $payment_option = 'down', 
 					'description'            => sprintf( 'Booking #%d — %s', $booking_id, $car_name ),
 					'statement_descriptor'   => 'Obsidian Reserve',
 					'metadata'               => array(
-						'booking_id' => $booking_id,
+						'booking_id' => (string) $booking_id,
 					),
 				),
 			),
