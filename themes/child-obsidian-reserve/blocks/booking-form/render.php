@@ -2,9 +2,10 @@
 /**
  * Booking Form Block — render.php
  *
- * Renders either the local or international renter form based on
- * the customer_type URL parameter. Reads car_id, start, end, color
- * from the URL and fetches car data server-side.
+ * Routes between three steps based on ob_step query var:
+ *   (none)        → Booking form (local / international)
+ *   payment       → Payment page (PayMongo)
+ *   confirmation  → Confirmation receipt
  *
  * @package child-obsidian-reserve
  */
@@ -12,6 +13,28 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+$ob_step = get_query_var( 'ob_step', '' );
+
+/* ═══════════════════════════════════════════════════════════
+   STEP: PAYMENT
+   ═══════════════════════════════════════════════════════════ */
+if ( $ob_step === 'payment' ) {
+	require __DIR__ . '/render-payment.php';
+	return;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STEP: CONFIRMATION
+   ═══════════════════════════════════════════════════════════ */
+if ( $ob_step === 'confirmation' ) {
+	require __DIR__ . '/render-confirmation.php';
+	return;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STEP: BOOKING FORM (default)
+   ═══════════════════════════════════════════════════════════ */
 
 if ( ! is_user_logged_in() ) {
 	printf(

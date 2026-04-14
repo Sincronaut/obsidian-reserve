@@ -879,51 +879,66 @@ After successful payment, the user lands on this page. It also serves as the rec
 └──────────────────────────────────────────────────────┘
 ```
 
-### Step 6.5 — PayMongo Integration
+### Step 6.5 — PayMongo Integration ✅
 
-Create `includes/payment.php`:
+Created `includes/payment.php`:
 
-- `obsidian_create_payment_intent()` — creates a PayMongo Payment Intent with the calculated amount
-- `obsidian_handle_paymongo_webhook()` — receives POST from PayMongo confirming payment
-- Webhook verifies the PayMongo signature (security)
-- On success: updates booking status to `paid`, stores `payment_id` in meta
+- `obsidian_generate_payment_token( $booking_id )` — generates a secure SHA-256 token, stored as `_booking_payment_token`
+- `obsidian_verify_payment_token( $booking_id, $token )` — constant-time comparison
+- `obsidian_get_payment_url( $booking_id, $token )` — builds `/booking/payment/?booking_id=X&token=Y`
+- `obsidian_create_payment_intent( $booking_id )` — creates PayMongo Payment Intent (amount = rental + security deposit in centavos)
+- REST endpoint `POST /obsidian-booking/v1/create-payment-intent` — verifies token + status + user, then calls `obsidian_create_payment_intent()`
+- REST endpoint `POST /obsidian-booking/v1/paymongo-webhook` — receives PayMongo `payment.paid` event, finds booking by `_booking_payment_id`, transitions `awaiting_payment` → `paid` → `confirmed`
 
-You'll need:
-1. A PayMongo account (free to create at paymongo.com)
-2. API keys (test mode first, live mode for production)
-3. Store keys in `wp-config.php` as constants:
-   ```php
-   define( 'PAYMONGO_SECRET_KEY', 'sk_test_...' );
-   define( 'PAYMONGO_PUBLIC_KEY', 'pk_test_...' );
-   ```
+Created `assets/js/payment-form.js`:
 
-### Step 6.6 — Page template routing
+Client-side PIPM (Payment Intent + Payment Method) flow:
+1. Creates Payment Intent via our REST API (`create-payment-intent`)
+2. Creates Payment Method directly with PayMongo (card data never touches our server)
+3. Attaches Payment Method to Payment Intent
+4. Handles 3D Secure redirect if needed (`awaiting_next_action`)
+5. On success → redirects to `/booking/confirmation/?booking_id=X`
 
-Create `includes/booking-pages.php`:
-
-Instead of step parameters on a single URL, register child pages:
-
+PayMongo API keys stored in `wp-config.php`:
 ```php
-// Rewrite rules
-add_rewrite_rule( '^booking/payment/?$', 'index.php?pagename=booking&ob_step=payment', 'top' );
-add_rewrite_rule( '^booking/confirmation/?$', 'index.php?pagename=booking&ob_step=confirmation', 'top' );
-add_filter( 'query_vars', fn($vars) => array_merge($vars, ['ob_step']) );
+define( 'PAYMONGO_SECRET_KEY', 'sk_test_...' );
+define( 'PAYMONGO_PUBLIC_KEY', 'pk_test_...' );
 ```
 
-Each page template checks `get_query_var('ob_step')` and renders the right content:
-- No step → booking form (Step 6.1)
-- `payment` → payment page (Step 6.3)
-- `confirmation` → confirmation page (Step 6.4)
+### Step 6.6 — Page template routing (Option A) ✅
 
-This keeps everything under the `/booking/` parent URL for clean structure, but each step is its own distinct page load with its own URL.
+Created `includes/booking-pages.php`:
+
+Uses WordPress rewrite rules to create clean sub-URLs under `/booking/`:
+
+```php
+add_rewrite_rule( '^booking/payment/?$', 'index.php?pagename=booking&ob_step=payment', 'top' );
+add_rewrite_rule( '^booking/confirmation/?$', 'index.php?pagename=booking&ob_step=confirmation', 'top' );
+```
+
+The existing `booking-form` block's `render.php` checks `get_query_var('ob_step')` and routes:
+- No step → booking form (Step 6.1) — existing `render.php` logic
+- `payment` → `render-payment.php` (Step 6.3) — validates token + status + user ownership
+- `confirmation` → `render-confirmation.php` (Step 6.4) — shows receipt
+
+All three are rendered within the same `page-booking.html` FSE template (header/footer).
+Single WordPress page, three distinct URLs, one block with routing logic.
+
+### Step 6.7 — Approval triggers payment link ✅
+
+When admin clicks "Approve Documents" in `admin/booking-meta-box.php`:
+1. Status changes to `awaiting_payment`
+2. `obsidian_generate_payment_token()` creates a secure token
+3. `wp_mail()` sends the payment link to the customer
+4. Booking's `_booking_status` auto-updates — user sees "Awaiting Payment" in their account
 
 ### ✅ Phase 6 Done When:
-- [ ] `/booking/` renders the booking form with correct car info from URL params
-- [ ] Form submits documents and creates booking (status: `pending_review`)
-- [ ] `/booking/payment/` only loads if docs are approved (server-side token check)
+- [x] `/booking/` renders the booking form with correct car info from URL params
+- [x] Form submits documents and creates booking (status: `pending_review`)
+- [x] `/booking/payment/` only loads if docs are approved (server-side token check)
 - [ ] PayMongo test payment works (use test card 4242 4242 4242 4242)
 - [ ] Webhook updates booking status to `paid`
-- [ ] `/booking/confirmation/` shows confirmation with payment receipt
+- [x] `/booking/confirmation/` shows confirmation with payment receipt
 - [ ] All three pages work on mobile
 - [ ] Git commit: "Add booking form, payment, and confirmation pages"
 
