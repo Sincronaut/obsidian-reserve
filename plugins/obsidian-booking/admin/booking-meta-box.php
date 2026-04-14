@@ -56,6 +56,16 @@ function obsidian_render_booking_meta_box( $post ) {
 	$gov_id_type   = get_post_meta( $booking_id, '_booking_gov_id_type', true );
 	$gov_id_type_2 = get_post_meta( $booking_id, '_booking_gov_id_type_2', true );
 
+	// Delivery info
+	$delivery_contact = get_post_meta( $booking_id, '_booking_delivery_contact', true );
+	$delivery_dropoff = get_post_meta( $booking_id, '_booking_delivery_dropoff', true );
+	$delivery_date    = get_post_meta( $booking_id, '_booking_delivery_date', true );
+	$delivery_time    = get_post_meta( $booking_id, '_booking_delivery_time', true );
+	$return_address   = get_post_meta( $booking_id, '_booking_return_address', true );
+	$return_date      = get_post_meta( $booking_id, '_booking_return_date', true );
+	$return_time      = get_post_meta( $booking_id, '_booking_return_time', true );
+	$special_requests = get_post_meta( $booking_id, '_booking_special_requests', true );
+
 	// Passport (international)
 	$passport_num  = get_post_meta( $booking_id, '_booking_passport_number', true );
 
@@ -220,6 +230,63 @@ function obsidian_render_booking_meta_box( $post ) {
 				<?php endif; ?>
 			</table>
 		</div>
+
+		<!-- Delivery Info -->
+		<?php if ( $delivery_dropoff || $delivery_date || $return_address ) : ?>
+		<div class="obm-section">
+			<h4 class="obm-section-title">Delivery Info</h4>
+			<table class="obm-table">
+				<?php if ( $delivery_contact ) : ?>
+				<tr>
+					<th>Contact</th>
+					<td><?php echo esc_html( $delivery_contact ); ?></td>
+				</tr>
+				<?php endif; ?>
+				<?php if ( $delivery_dropoff ) : ?>
+				<tr>
+					<th>Drop Off</th>
+					<td><?php echo esc_html( ucwords( str_replace( '_', ' ', $delivery_dropoff ) ) ); ?></td>
+				</tr>
+				<?php endif; ?>
+				<?php if ( $delivery_date ) : ?>
+				<tr>
+					<th>Delivery</th>
+					<td>
+						<?php
+						$del_dt = DateTime::createFromFormat( 'Y-m-d', $delivery_date );
+						echo esc_html( $del_dt ? $del_dt->format( 'M j, Y' ) : $delivery_date );
+						if ( $delivery_time ) echo ' at ' . esc_html( $delivery_time );
+						?>
+					</td>
+				</tr>
+				<?php endif; ?>
+				<?php if ( $return_address ) : ?>
+				<tr>
+					<th>Return Address</th>
+					<td><?php echo esc_html( $return_address ); ?></td>
+				</tr>
+				<?php endif; ?>
+				<?php if ( $return_date ) : ?>
+				<tr>
+					<th>Return</th>
+					<td>
+						<?php
+						$ret_dt = DateTime::createFromFormat( 'Y-m-d', $return_date );
+						echo esc_html( $ret_dt ? $ret_dt->format( 'M j, Y' ) : $return_date );
+						if ( $return_time ) echo ' at ' . esc_html( $return_time );
+						?>
+					</td>
+				</tr>
+				<?php endif; ?>
+				<?php if ( $special_requests ) : ?>
+				<tr>
+					<th>Special Requests</th>
+					<td><?php echo nl2br( esc_html( $special_requests ) ); ?></td>
+				</tr>
+				<?php endif; ?>
+			</table>
+		</div>
+		<?php endif; ?>
 
 		<!-- Uploaded Documents -->
 		<div class="obm-section">

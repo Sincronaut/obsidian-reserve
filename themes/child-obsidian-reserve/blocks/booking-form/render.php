@@ -124,13 +124,13 @@ $locations = array(
 	<input type="hidden" id="obf-customer-type" value="<?php echo esc_attr( $customer_type ); ?>" />
 
 	<!-- Header -->
-	<div class="obsidian-bf-header">
+	<div class="obsidian-bf-header" id="obf-header">
 		<?php if ( $is_international ) : ?>
-			<h1 class="obsidian-bf-title"><span class="text-gold">International</span> Renters Form</h1>
-			<p class="obsidian-bf-subtitle">Land and drive. Fill in the details below.</p>
+			<h1 class="obsidian-bf-title" id="obf-title"><span class="text-gold">International</span> Renters Form</h1>
+			<p class="obsidian-bf-subtitle" id="obf-subtitle">Land and drive. Fill in the details below.</p>
 		<?php else : ?>
-			<h1 class="obsidian-bf-title"><span class="text-gold">Local</span> Renters Form</h1>
-			<p class="obsidian-bf-subtitle">Your exact vehicle starts with this form.</p>
+			<h1 class="obsidian-bf-title" id="obf-title"><span class="text-gold">Local</span> Renters Form</h1>
+			<p class="obsidian-bf-subtitle" id="obf-subtitle">Your exact vehicle starts with this form.</p>
 		<?php endif; ?>
 	</div>
 
@@ -161,208 +161,288 @@ $locations = array(
 		</div>
 	</div>
 
-	<!-- View Documents Requirements -->
-	<button type="button" class="obsidian-bf-docs-toggle" id="obf-docs-toggle">View Documents Requirements</button>
-	<div class="obsidian-bf-docs-info" id="obf-docs-info" style="display:none;">
-		<?php if ( $is_international ) : ?>
-			<ul>
-				<li>Valid Driver's License (held for at least 2 years)</li>
-				<li>Passport ID (photo page)</li>
-				<li>Proof of Arrival (e-ticket, airline booking, or arrival stamp)</li>
-			</ul>
-		<?php else : ?>
-			<ul>
-				<li>Valid Driver's License (held for at least 2 years)</li>
-				<li>Two (2) valid Government-issued IDs (front &amp; back)</li>
-			</ul>
-		<?php endif; ?>
-	</div>
-
 	<!-- Form -->
 	<form id="obsidian-booking-form" class="obsidian-bf-form" novalidate>
 
-		<!-- ── SHARED: Contact Fields ── -->
-		<div class="obsidian-bf-field">
-			<label for="obf-first-name">First Name</label>
-			<input type="text" id="obf-first-name" name="first_name" placeholder="ex : Juan Miguel" required />
-		</div>
+		<!-- ═══════════════════════════════════════════════
+		     SUB-STEP 1A: RENTER FORM
+		     ═══════════════════════════════════════════════ -->
+		<div id="obf-step-renter">
 
-		<div class="obsidian-bf-field">
-			<label for="obf-last-name">Last Name:</label>
-			<input type="text" id="obf-last-name" name="last_name" placeholder="ex : Dela Cruz" required />
-		</div>
-
-		<div class="obsidian-bf-field">
-			<label for="obf-address">Address</label>
-			<input type="text" id="obf-address" name="address" placeholder="ex : 123 Street, City of Manila" required />
-		</div>
-
-		<div class="obsidian-bf-field obsidian-bf-field-split">
-			<div>
-				<label for="obf-birth-date">Birth Date</label>
-				<input type="text" id="obf-birth-date" name="birth_date" placeholder="Month / Day / Year" required readonly />
+			<!-- View Documents Requirements -->
+			<button type="button" class="obsidian-bf-docs-toggle" id="obf-docs-toggle">View Documents Requirements</button>
+			<div class="obsidian-bf-docs-info" id="obf-docs-info" style="display:none;">
+				<?php if ( $is_international ) : ?>
+					<ul>
+						<li>Valid Driver's License (held for at least 2 years)</li>
+						<li>Passport ID (photo page)</li>
+						<li>Proof of Arrival (e-ticket, airline booking, or arrival stamp)</li>
+					</ul>
+				<?php else : ?>
+					<ul>
+						<li>Valid Driver's License (held for at least 2 years)</li>
+						<li>Two (2) valid Government-issued IDs (front &amp; back)</li>
+					</ul>
+				<?php endif; ?>
 			</div>
-			<span class="obsidian-bf-field-note">Age must be 21 years old above*</span>
-		</div>
 
-		<!-- ── LOCAL ONLY: Mobile Number ── -->
-		<?php if ( ! $is_international ) : ?>
-		<div class="obsidian-bf-field obsidian-bf-local-only">
-			<label for="obf-phone">Mobile Number</label>
-			<input type="tel" id="obf-phone" name="phone" placeholder="+63" required />
-		</div>
-		<?php endif; ?>
+			<div class="obsidian-bf-fields-group">
 
-		<!-- ── SHARED: Driver License ── -->
-		<div class="obsidian-bf-field obsidian-bf-field-split">
-			<div>
-				<label for="obf-license-number">Enter Driver License Number</label>
-				<input type="text" id="obf-license-number" name="license_number"
-					placeholder="<?php echo $is_international ? '000-000-000-000' : 'N04-000-000-000'; ?>" required />
-			</div>
-			<span class="obsidian-bf-field-note"><em>License Held must be full 2 years</em></span>
-		</div>
-
-		<div class="obsidian-bf-upload-group">
-			<label>Upload Drivers License</label>
-			<div class="obsidian-bf-upload-zone" data-doc-key="license">
-				<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="obf-file-input" />
-				<div class="obf-upload-placeholder">
-					<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-					<span>Upload Drivers License</span>
+				<!-- ── SHARED: Contact Fields ── -->
+				<div class="obsidian-bf-field">
+					<label for="obf-first-name">First Name</label>
+					<input type="text" id="obf-first-name" name="first_name" placeholder="ex : Juan Miguel" required />
 				</div>
-				<div class="obf-upload-preview" style="display:none;">
-					<img src="" alt="Preview" />
-					<button type="button" class="obf-upload-remove">&times;</button>
+
+				<div class="obsidian-bf-field">
+					<label for="obf-last-name">Last Name:</label>
+					<input type="text" id="obf-last-name" name="last_name" placeholder="ex : Dela Cruz" required />
 				</div>
-			</div>
-		</div>
 
-		<?php if ( $is_international ) : ?>
-		<!-- ── INTERNATIONAL: 90-Day Rule ── -->
-		<div class="obsidian-bf-notice">
-			<strong>90-Day Rule:</strong> Your foreign driver's license is valid for driving in the Philippines for up to 90 days from your date of arrival. If you plan to stay or drive beyond 90 days, you must visit the Land Transportation Office (LTO) to convert your license or obtain a Philippine driver's license.
-		</div>
-
-		<!-- ── INTERNATIONAL: Passport ── -->
-		<div class="obsidian-bf-field">
-			<label for="obf-passport-number">Passport ID Number</label>
-			<input type="text" id="obf-passport-number" name="passport_number" placeholder="000-000-000-000" required />
-		</div>
-
-		<div class="obsidian-bf-upload-group">
-			<label>Upload Passport ID</label>
-			<div class="obsidian-bf-upload-zone" data-doc-key="passport">
-				<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="obf-file-input" />
-				<div class="obf-upload-placeholder">
-					<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-					<span>Upload Passport ID</span>
+				<div class="obsidian-bf-field">
+					<label for="obf-address">Address</label>
+					<input type="text" id="obf-address" name="address" placeholder="ex : 123 Street, City of Manila" required />
 				</div>
-				<div class="obf-upload-preview" style="display:none;">
-					<img src="" alt="Preview" />
-					<button type="button" class="obf-upload-remove">&times;</button>
-				</div>
-			</div>
-		</div>
 
-		<!-- ── INTERNATIONAL: Proof of Arrival ── -->
-		<div class="obsidian-bf-upload-group">
-			<label>Proof of Arrival</label>
-			<div class="obsidian-bf-upload-zone" data-doc-key="proof_of_arrival">
-				<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="obf-file-input" />
-				<div class="obf-upload-placeholder">
-					<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-					<span>Upload Passport ID</span>
-				</div>
-				<div class="obf-upload-preview" style="display:none;">
-					<img src="" alt="Preview" />
-					<button type="button" class="obf-upload-remove">&times;</button>
-				</div>
-			</div>
-			<p class="obsidian-bf-upload-help">your e-ticket, airline booking confirmation, or arrival stamp confirming your date of entry to the Philippines (relevant for verifying the 90-day driving window).</p>
-		</div>
-
-		<?php else : ?>
-		<!-- ── LOCAL: Government ID ── -->
-		<div class="obsidian-bf-section-label">Government Identification Card</div>
-
-		<div class="obsidian-bf-field">
-			<select id="obf-gov-id-type" name="gov_id_type" required>
-				<?php foreach ( $gov_id_options as $val => $label ) : ?>
-					<option value="<?php echo esc_attr( $val ); ?>"><?php echo esc_html( $label ); ?></option>
-				<?php endforeach; ?>
-			</select>
-		</div>
-
-		<div class="obsidian-bf-field">
-			<select id="obf-gov-id-type-2" name="gov_id_type_2" required>
-				<?php foreach ( $gov_id_options as $val => $label ) : ?>
-					<option value="<?php echo esc_attr( $val ); ?>"><?php echo esc_html( $label ); ?></option>
-				<?php endforeach; ?>
-			</select>
-		</div>
-
-		<div class="obsidian-bf-upload-row">
-			<div class="obsidian-bf-upload-group">
-				<div class="obsidian-bf-upload-zone" data-doc-key="gov_id_front">
-					<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="obf-file-input" />
-					<div class="obf-upload-placeholder">
-						<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-						<span>Upload ID</span>
+				<div class="obsidian-bf-field obsidian-bf-field-split">
+					<div>
+						<label for="obf-birth-date">Birth Date</label>
+						<input type="text" id="obf-birth-date" name="birth_date" placeholder="Month / Day / Year" required readonly />
 					</div>
-					<div class="obf-upload-preview" style="display:none;">
-						<img src="" alt="Preview" />
-						<button type="button" class="obf-upload-remove">&times;</button>
+					<span class="obsidian-bf-field-note">Age must be 21 years old above*</span>
+				</div>
+
+				<!-- ── LOCAL ONLY: Mobile Number ── -->
+				<?php if ( ! $is_international ) : ?>
+				<div class="obsidian-bf-field obsidian-bf-local-only">
+					<label for="obf-phone">Mobile Number</label>
+					<input type="tel" id="obf-phone" name="phone" placeholder="+63" required />
+				</div>
+				<?php endif; ?>
+
+				<!-- ── SHARED: Driver License ── -->
+				<div class="obsidian-bf-field obsidian-bf-field-split">
+					<div>
+						<label for="obf-license-number">Enter Driver License Number</label>
+						<input type="text" id="obf-license-number" name="license_number"
+							placeholder="<?php echo $is_international ? '000-000-000-000' : 'N04-000-000-000'; ?>" required />
+					</div>
+					<span class="obsidian-bf-field-note"><em>License Held must be full 2 years</em></span>
+				</div>
+
+				<div class="obsidian-bf-upload-group">
+					<label>Upload Drivers License</label>
+					<div class="obsidian-bf-upload-zone" data-doc-key="license">
+						<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="obf-file-input" />
+						<div class="obf-upload-placeholder">
+							<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+							<span>Upload Drivers License</span>
+						</div>
+						<div class="obf-upload-preview" style="display:none;">
+							<img src="" alt="Preview" />
+							<button type="button" class="obf-upload-remove">&times;</button>
+						</div>
 					</div>
 				</div>
-			</div>
-			<div class="obsidian-bf-upload-group">
-				<div class="obsidian-bf-upload-zone" data-doc-key="gov_id_back">
-					<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="obf-file-input" />
-					<div class="obf-upload-placeholder">
-						<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-						<span>Upload ID</span>
-					</div>
-					<div class="obf-upload-preview" style="display:none;">
-						<img src="" alt="Preview" />
-						<button type="button" class="obf-upload-remove">&times;</button>
+
+				<?php if ( $is_international ) : ?>
+				<!-- ── INTERNATIONAL: 90-Day Rule ── -->
+				<div class="obsidian-bf-notice">
+					<strong>90-Day Rule:</strong> Your foreign driver's license is valid for driving in the Philippines for up to 90 days from your date of arrival. If you plan to stay or drive beyond 90 days, you must visit the Land Transportation Office (LTO) to convert your license or obtain a Philippine driver's license.
+				</div>
+
+				<!-- ── INTERNATIONAL: Passport ── -->
+				<div class="obsidian-bf-field">
+					<label for="obf-passport-number">Passport ID Number</label>
+					<input type="text" id="obf-passport-number" name="passport_number" placeholder="000-000-000-000" required />
+				</div>
+
+				<div class="obsidian-bf-upload-group">
+					<label>Upload Passport ID</label>
+					<div class="obsidian-bf-upload-zone" data-doc-key="passport">
+						<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="obf-file-input" />
+						<div class="obf-upload-placeholder">
+							<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+							<span>Upload Passport ID</span>
+						</div>
+						<div class="obf-upload-preview" style="display:none;">
+							<img src="" alt="Preview" />
+							<button type="button" class="obf-upload-remove">&times;</button>
+						</div>
 					</div>
 				</div>
+
+				<!-- ── INTERNATIONAL: Proof of Arrival ── -->
+				<div class="obsidian-bf-upload-group">
+					<label>Proof of Arrival</label>
+					<div class="obsidian-bf-upload-zone" data-doc-key="proof_of_arrival">
+						<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="obf-file-input" />
+						<div class="obf-upload-placeholder">
+							<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+							<span>Upload Proof of Arrival</span>
+						</div>
+						<div class="obf-upload-preview" style="display:none;">
+							<img src="" alt="Preview" />
+							<button type="button" class="obf-upload-remove">&times;</button>
+						</div>
+					</div>
+					<p class="obsidian-bf-upload-help">your e-ticket, airline booking confirmation, or arrival stamp confirming your date of entry to the Philippines (relevant for verifying the 90-day driving window).</p>
+				</div>
+
+				<?php else : ?>
+				<!-- ── LOCAL: Government ID ── -->
+				<div class="obsidian-bf-section-label">Government Identification Card</div>
+
+				<div class="obsidian-bf-field">
+					<select id="obf-gov-id-type" name="gov_id_type" required>
+						<?php foreach ( $gov_id_options as $val => $label ) : ?>
+							<option value="<?php echo esc_attr( $val ); ?>"><?php echo esc_html( $label ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</div>
+
+				<div class="obsidian-bf-field">
+					<select id="obf-gov-id-type-2" name="gov_id_type_2" required>
+						<?php foreach ( $gov_id_options as $val => $label ) : ?>
+							<option value="<?php echo esc_attr( $val ); ?>"><?php echo esc_html( $label ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</div>
+
+				<div class="obsidian-bf-upload-row">
+					<div class="obsidian-bf-upload-group">
+						<div class="obsidian-bf-upload-zone" data-doc-key="gov_id_front">
+							<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="obf-file-input" />
+							<div class="obf-upload-placeholder">
+								<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+								<span>Upload ID</span>
+							</div>
+							<div class="obf-upload-preview" style="display:none;">
+								<img src="" alt="Preview" />
+								<button type="button" class="obf-upload-remove">&times;</button>
+							</div>
+						</div>
+					</div>
+					<div class="obsidian-bf-upload-group">
+						<div class="obsidian-bf-upload-zone" data-doc-key="gov_id_back">
+							<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="obf-file-input" />
+							<div class="obf-upload-placeholder">
+								<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+								<span>Upload ID</span>
+							</div>
+							<div class="obf-upload-preview" style="display:none;">
+								<img src="" alt="Preview" />
+								<button type="button" class="obf-upload-remove">&times;</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<?php endif; ?>
+
+			</div><!-- .obsidian-bf-fields-group -->
+
+			<!-- Renter step "Next" button -->
+			<div class="obsidian-bf-actions">
+				<button type="button" class="obsidian-bf-submit" id="obf-next" disabled>
+					<span>Next</span>
+				</button>
 			</div>
-		</div>
-		<?php endif; ?>
 
-		<!-- ── SHARED: Location ── -->
-		<div class="obsidian-bf-field">
-			<label for="obf-location">Select Obsidian Location</label>
-			<select id="obf-location" name="location" required>
-				<?php foreach ( $locations as $val => $label ) : ?>
-					<option value="<?php echo esc_attr( $val ); ?>"><?php echo esc_html( $label ); ?></option>
-				<?php endforeach; ?>
-			</select>
-		</div>
+		</div><!-- #obf-step-renter -->
 
-		<!-- ── SHARED: Agreements ── -->
-		<div class="obsidian-bf-agreements">
-			<label class="obsidian-bf-checkbox">
-				<input type="checkbox" name="agree_terms" required />
-				<span class="obf-check-box"></span>
-				<span>I confirm all details are accurate and I agree to the <strong>Obsidian Reserve Terms and Conditions</strong> prior to making my reservation.</span>
-			</label>
-			<label class="obsidian-bf-checkbox">
-				<input type="checkbox" name="agree_privacy" required />
-				<span class="obf-check-box"></span>
-				<span>I have read and agree to the <strong>Obsidian Reserve Privacy Policy</strong> and consent to the processing of my personal data accordingly.</span>
-			</label>
-		</div>
+		<!-- ═══════════════════════════════════════════════
+		     SUB-STEP 1B: DELIVERY FORM
+		     ═══════════════════════════════════════════════ -->
+		<div id="obf-step-delivery" style="display:none;">
 
-		<!-- ── Submit ── -->
-		<div class="obsidian-bf-actions">
-			<button type="submit" class="obsidian-bf-submit" id="obf-submit" disabled>
-				<span class="obf-submit-text">Submit for Review</span>
-				<span class="obf-submit-spinner" style="display:none;"></span>
-			</button>
-		</div>
+			<div class="obsidian-bf-fields-group">
+
+				<!-- ── Contact Number (pre-filled from renter form for local) ── -->
+				<div class="obsidian-bf-field">
+					<label for="obf-delivery-contact">Contact Number</label>
+					<input type="tel" id="obf-delivery-contact" name="delivery_contact" placeholder="ex : +639234-2312-4345" required />
+				</div>
+
+				<!-- ── Delivery Drop Off ── -->
+				<div class="obsidian-bf-field">
+					<label for="obf-delivery-dropoff">Delivery Drop Off</label>
+					<select id="obf-delivery-dropoff" name="delivery_dropoff" required>
+						<option value="">Delivery Drop Off</option>
+						<option value="self_pickup">Self Pickup</option>
+						<option value="hotel_delivery">Hotel Delivery</option>
+						<option value="airport_delivery">Airport Delivery</option>
+						<option value="address_delivery">Address Delivery</option>
+					</select>
+				</div>
+
+				<!-- ── Delivery Date and Time ── -->
+				<div class="obsidian-bf-field">
+					<label>Delivery Date and Time</label>
+					<div class="obf-datetime-row">
+						<div class="obf-datetime-field">
+							<svg class="obf-datetime-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+							<input type="text" id="obf-delivery-date" name="delivery_date" placeholder="MM / DD / YR" required readonly />
+						</div>
+						<div class="obf-datetime-field">
+							<svg class="obf-datetime-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+							<input type="text" id="obf-delivery-time" name="delivery_time" placeholder="00 : 00 : 00 AM / PM" required />
+						</div>
+					</div>
+				</div>
+
+				<!-- ── Return Address ── -->
+				<div class="obsidian-bf-field">
+					<label for="obf-return-address"><svg class="obf-label-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Return Address</label>
+					<input type="text" id="obf-return-address" name="return_address" placeholder="ex : 123 Street, City of Manila" required />
+				</div>
+
+				<!-- ── Return Date and Time ── -->
+				<div class="obsidian-bf-field">
+					<label>Return Date and Time</label>
+					<div class="obf-datetime-row">
+						<div class="obf-datetime-field">
+							<svg class="obf-datetime-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+							<input type="text" id="obf-return-date" name="return_date" placeholder="MM / DD / YR" required readonly />
+						</div>
+						<div class="obf-datetime-field">
+							<svg class="obf-datetime-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+							<input type="text" id="obf-return-time" name="return_time" placeholder="00 : 00 : 00 AM / PM" required />
+						</div>
+					</div>
+				</div>
+
+				<!-- ── Special Requests ── -->
+				<div class="obsidian-bf-field">
+					<label for="obf-special-requests">Special Requests</label>
+					<textarea id="obf-special-requests" name="special_requests" rows="4" placeholder="Write Special Request Here :"></textarea>
+				</div>
+
+			</div><!-- .obsidian-bf-fields-group -->
+
+			<!-- ── Agreements ── -->
+			<div class="obsidian-bf-agreements">
+				<label class="obsidian-bf-checkbox">
+					<input type="checkbox" name="agree_terms" required />
+					<span class="obf-check-box"></span>
+					<span>I confirm all details are accurate and I agree to the <strong>Obsidian Reserve Terms and Conditions</strong> prior to making my reservation.</span>
+				</label>
+				<label class="obsidian-bf-checkbox">
+					<input type="checkbox" name="agree_privacy" required />
+					<span class="obf-check-box"></span>
+					<span>I have read and agree to the <strong>Obsidian Reserve Privacy Policy</strong> and consent to the processing of my personal data accordingly.</span>
+				</label>
+			</div>
+
+			<!-- Delivery step actions -->
+			<div class="obsidian-bf-actions obf-delivery-actions">
+				<button type="button" class="obsidian-bf-back" id="obf-back">Back</button>
+				<button type="submit" class="obsidian-bf-submit" id="obf-submit" disabled>
+					<span class="obf-submit-text">Submit for Review</span>
+					<span class="obf-submit-spinner" style="display:none;"></span>
+				</button>
+			</div>
+
+		</div><!-- #obf-step-delivery -->
 
 		<div class="obsidian-bf-message" id="obf-message" style="display:none;"></div>
 

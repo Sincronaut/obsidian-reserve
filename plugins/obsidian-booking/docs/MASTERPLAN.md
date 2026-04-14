@@ -775,9 +775,56 @@ logged-in user's account — no email field in the form.
 >
 > **International-only:** Passport ID Number, Upload Passport ID, Proof of Arrival upload, 90-Day Rule notice.
 
-On submit (both forms):
-1. Each document is uploaded individually via `POST /obsidian-booking/v1/upload-document`
-2. Once all uploads complete, JS calls `POST /obsidian-booking/v1/bookings` with form data + attachment IDs
+#### 6.1c — Delivery Form (sub-step 1b) ✅
+
+After the renter form, the user clicks **"Next"** (not "Submit"). JS validates all renter fields,
+then hides the renter form and shows the **Delivery Form** on the same page (no reload).
+The header title changes to "Delivery Form" and the subtitle to "Land and drive. Fill in the details below."
+
+```
+┌──────────────────────────────────────────────────────┐
+│  Delivery Form                                       │
+│  Land and drive. Fill in the details below.          │
+│  (1)───────(2)───────(3)                             │
+│                                                      │
+│  Contact Number     [+639234-2312-4345    ]          │
+│  Delivery Drop Off  [Self Pickup         ▼]          │
+│                                                      │
+│  Delivery Date and Time                              │
+│  📅 [MM / DD / YR]   🕐 [00:00:00 AM/PM]            │
+│                                                      │
+│  📍 Return Address  [123 Street, Manila   ]          │
+│                                                      │
+│  Return Date and Time                                │
+│  📅 [MM / DD / YR]   🕐 [00:00:00 AM/PM]            │
+│                                                      │
+│  Special Requests                                    │
+│  [Write Special Request Here :            ]          │
+│  [                                        ]          │
+│                                                      │
+│  ☐ I agree to the Terms and Conditions               │
+│  ☐ I agree to the Privacy Policy                     │
+│                                                      │
+│  [Back]  [Submit for Review]                         │
+└──────────────────────────────────────────────────────┘
+```
+
+The "Back" button returns to the renter form (no data lost).
+"Submit for Review" creates the booking with **all** data (renter + delivery).
+
+New meta fields saved:
+- `_booking_delivery_contact` — contact number for delivery
+- `_booking_delivery_dropoff` — self_pickup, hotel_delivery, airport_delivery, address_delivery
+- `_booking_delivery_date` — Y-m-d
+- `_booking_delivery_time` — time string
+- `_booking_return_address` — return address text
+- `_booking_return_date` — Y-m-d
+- `_booking_return_time` — time string
+- `_booking_special_requests` — free text
+
+On submit (after delivery form):
+1. Each document is uploaded individually via `POST /obsidian-booking/v1/upload-document` (during renter step)
+2. On "Submit for Review", JS calls `POST /obsidian-booking/v1/bookings` with ALL form data (renter + delivery + attachment IDs)
 3. Server validates fields, re-checks availability, creates booking with status `pending_review`
 4. Email is pulled from `wp_get_current_user()->user_email` (no email field needed)
 5. User sees: "Your documents have been submitted for review!"
