@@ -1115,11 +1115,16 @@ add_action( 'obsidian_booking_status_changed', function( $booking_id, $old, $new
 > For local development, emails won't actually send. Install the **WP Mail Log** plugin to capture and preview emails, or use **MailHog** if your Local Sites setup supports it.
 
 ### ✅ Phase 8 Done When:
-- [ ] Step 1 submit → admin gets email, user gets receipt
-- [ ] Docs approved → user gets "proceed to payment" email with link
-- [ ] Denial → user gets email with reason
-- [ ] Payment → admin notified, user gets confirmation
-- [ ] Emails render correctly across clients
+- [x] `includes/notifications.php` — dispatcher hooked to `obsidian_booking_status_changed`
+- [x] 7 HTML email templates in `templates/emails/` (dark theme + gold accent)
+- [x] Step 1 submit → admin gets email, user gets receipt
+- [x] Docs approved → user gets "proceed to payment" email with payment link
+- [x] Denial → user gets email with reason
+- [x] Payment → admin notified, user gets confirmation
+- [x] 24h pickup reminder via WP-Cron (`obsidian_daily_pickup_reminders`)
+- [x] Inline `wp_mail` removed from `booking-meta-box.php` (now handled by notification system)
+- [x] `OBSIDIAN_BOOKING_FILE` constant added for deactivation hook
+- [ ] Emails render correctly across clients (test with WP Mail Log)
 - [ ] Git commit: "Add email notification system"
 
 ---
