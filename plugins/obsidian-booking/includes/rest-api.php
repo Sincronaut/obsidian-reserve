@@ -216,6 +216,16 @@ function obsidian_api_create_booking( $request ) {
 	// International-only
 	$passport_number = isset( $params['passport_number'] ) ? sanitize_text_field( $params['passport_number'] ) : '';
 
+	// Delivery fields
+	$delivery_contact = isset( $params['delivery_contact'] ) ? sanitize_text_field( $params['delivery_contact'] ) : '';
+	$delivery_dropoff = isset( $params['delivery_dropoff'] ) ? sanitize_text_field( $params['delivery_dropoff'] ) : '';
+	$delivery_date    = isset( $params['delivery_date'] ) ? sanitize_text_field( $params['delivery_date'] ) : '';
+	$delivery_time    = isset( $params['delivery_time'] ) ? sanitize_text_field( $params['delivery_time'] ) : '';
+	$return_address   = isset( $params['return_address'] ) ? sanitize_text_field( $params['return_address'] ) : '';
+	$return_date      = isset( $params['return_date'] ) ? sanitize_text_field( $params['return_date'] ) : '';
+	$return_time      = isset( $params['return_time'] ) ? sanitize_text_field( $params['return_time'] ) : '';
+	$special_requests = isset( $params['special_requests'] ) ? sanitize_textarea_field( $params['special_requests'] ) : '';
+
 	// Documents — structured object with attachment IDs per category
 	$documents = isset( $params['documents'] ) ? $params['documents'] : array();
 
@@ -388,6 +398,16 @@ function obsidian_api_create_booking( $request ) {
 
 	// Documents
 	update_post_meta( $booking_id, '_booking_documents', wp_json_encode( $documents ) );
+
+	// Delivery info
+	update_post_meta( $booking_id, '_booking_delivery_contact', $delivery_contact );
+	update_post_meta( $booking_id, '_booking_delivery_dropoff', $delivery_dropoff );
+	update_post_meta( $booking_id, '_booking_delivery_date', $delivery_date );
+	update_post_meta( $booking_id, '_booking_delivery_time', $delivery_time );
+	update_post_meta( $booking_id, '_booking_return_address', $return_address );
+	update_post_meta( $booking_id, '_booking_return_date', $return_date );
+	update_post_meta( $booking_id, '_booking_return_time', $return_time );
+	update_post_meta( $booking_id, '_booking_special_requests', $special_requests );
 
 	// Admin & payment defaults
 	update_post_meta( $booking_id, '_booking_admin_notes', '' );

@@ -390,6 +390,111 @@
 	text-underline-offset: 2px;
 }
 
+/* ── Fields group (sub-step container) ── */
+.obsidian-bf-fields-group {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+/* ── Date + Time row ── */
+.obf-datetime-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+}
+.obf-datetime-field {
+	position: relative;
+}
+.obf-datetime-icon {
+	position: absolute;
+	left: 14px;
+	top: 50%;
+	transform: translateY(-50%);
+	color: #C5A059;
+	pointer-events: none;
+	z-index: 1;
+}
+.obf-datetime-field input {
+	width: 100%;
+	padding: 14px 16px 14px 40px;
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(197, 160, 89, 0.35);
+	border-radius: 8px;
+	color: #fff;
+	font-family: 'Montserrat', sans-serif;
+	font-size: 14px;
+	outline: none;
+	box-sizing: border-box;
+	transition: border-color 0.2s ease;
+	-webkit-appearance: none;
+	appearance: none;
+}
+.obf-datetime-field input::placeholder {
+	color: rgba(197, 160, 89, 0.45);
+}
+.obf-datetime-field input:focus {
+	border-color: #C5A059;
+}
+
+/* ── Label icon (pin icon next to label text) ── */
+.obf-label-icon {
+	vertical-align: -2px;
+	color: #C5A059;
+	margin-right: 2px;
+}
+
+/* ── Textarea ── */
+.obsidian-bf-field textarea {
+	width: 100%;
+	padding: 14px 16px;
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(197, 160, 89, 0.35);
+	border-radius: 8px;
+	color: #fff;
+	font-family: 'Montserrat', sans-serif;
+	font-size: 14px;
+	outline: none;
+	box-sizing: border-box;
+	resize: vertical;
+	min-height: 100px;
+	transition: border-color 0.2s ease;
+}
+.obsidian-bf-field textarea::placeholder {
+	color: rgba(197, 160, 89, 0.45);
+}
+.obsidian-bf-field textarea:focus {
+	border-color: #C5A059;
+}
+
+/* ── Back Button ── */
+.obsidian-bf-back {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 14px 32px;
+	background: transparent;
+	color: rgba(255, 255, 255, 0.7);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	border-radius: 6px;
+	font-family: 'Montserrat', sans-serif;
+	font-size: 15px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: border-color 0.2s ease, color 0.2s ease;
+}
+.obsidian-bf-back:hover {
+	border-color: rgba(255, 255, 255, 0.5);
+	color: #fff;
+}
+
+/* ── Delivery actions row ── */
+.obf-delivery-actions {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+}
+
 /* ── Submit Button ── */
 .obsidian-bf-actions {
 	margin-top: 8px;
@@ -814,6 +919,15 @@
 	.obsidian-bf-field-note {
 		position: static;
 		margin-top: 4px;
+	}
+	.obf-datetime-row {
+		grid-template-columns: 1fr;
+	}
+	.obf-delivery-actions {
+		flex-direction: column;
+	}
+	.obsidian-bf-back {
+		width: 100%;
 	}
 	.obp-card-row {
 		grid-template-columns: 1fr;
