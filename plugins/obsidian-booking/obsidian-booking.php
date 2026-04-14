@@ -20,6 +20,7 @@ if (!defined('ABSPATH')) {
    Constants
    ────────────────────────────────────────────── */
 define('OBSIDIAN_BOOKING_VERSION', '1.0.0');
+define('OBSIDIAN_BOOKING_FILE', __FILE__);
 define('OBSIDIAN_BOOKING_DIR', plugin_dir_path(__FILE__));
 define('OBSIDIAN_BOOKING_URL', plugin_dir_url(__FILE__));
 

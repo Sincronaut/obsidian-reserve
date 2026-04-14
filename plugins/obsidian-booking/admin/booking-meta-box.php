@@ -404,30 +404,7 @@ function obsidian_handle_booking_action() {
 			}
 			update_post_meta( $booking_id, '_booking_status', 'awaiting_payment' );
 
-			// Generate secure payment token and send email
-			if ( function_exists( 'obsidian_generate_payment_token' ) ) {
-				$payment_token = obsidian_generate_payment_token( $booking_id );
-				$payment_url   = obsidian_get_payment_url( $booking_id, $payment_token );
-
-				$user_id = (int) get_post_meta( $booking_id, '_booking_user_id', true );
-				$user    = get_userdata( $user_id );
-
-				if ( $user && $user->user_email ) {
-					$car_id   = (int) get_post_meta( $booking_id, '_booking_car_id', true );
-					$car_name = get_the_title( $car_id );
-
-					$subject = sprintf( 'Booking #%d Approved — Complete Your Payment', $booking_id );
-					$message = sprintf(
-						"Hello %s,\n\nGreat news! Your documents for %s have been approved.\n\nPlease complete your payment to confirm your reservation:\n%s\n\nThis link is unique to your booking. Do not share it.\n\nThank you,\nObsidian Reserve",
-						$user->display_name,
-						$car_name,
-						$payment_url
-					);
-
-					wp_mail( $user->user_email, $subject, $message );
-				}
-			}
-
+			// Notification system handles token generation + email.
 			do_action( 'obsidian_booking_status_changed', $booking_id, $current_status, 'awaiting_payment' );
 			wp_send_json_success( array(
 				'message'    => 'Documents approved. Payment link emailed to customer.',
