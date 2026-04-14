@@ -20,7 +20,7 @@
 
 	if ( typeof obsidianPayment === 'undefined' ) return;
 
-	const { restUrl, nonce, publicKey, confirmationUrl } = obsidianPayment;
+	const { restUrl, nonce, publicKey, confirmationUrl, userEmail } = obsidianPayment;
 	const PAYMONGO_API = 'https://api.paymongo.com/v1';
 
 	const form    = document.getElementById( 'obsidian-payment-form' );
@@ -275,7 +275,8 @@
 							cvc:         cardCvcInput.value.trim(),
 						},
 						billing: {
-							name: cardNameInput.value.trim(),
+							name:  cardNameInput.value.trim(),
+							email: userEmail,
 						},
 					},
 				},
@@ -315,6 +316,10 @@
 				data: {
 					attributes: {
 						type: selectedMethod,
+						billing: {
+							name:  'Customer',
+							email: userEmail,
+						},
 					},
 				},
 			});
