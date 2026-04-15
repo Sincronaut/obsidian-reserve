@@ -132,7 +132,20 @@ function obsidian_booking_enqueue_assets()
             'confirmationUrl' => home_url('/booking/confirmation/'),
             'userEmail'       => $current_user->user_email,
          ));
-      } else if ($ob_step !== 'confirmation') {
+      } else if ($ob_step === 'confirmation') {
+         wp_enqueue_script(
+            'obsidian-confirmation',
+            OBSIDIAN_BOOKING_URL . 'assets/js/confirmation.js',
+            array(),
+            OBSIDIAN_BOOKING_VERSION,
+            true
+         );
+
+         wp_localize_script('obsidian-confirmation', 'obsidianPayment', array(
+            'publicKey'       => defined('PAYMONGO_PUBLIC_KEY') ? PAYMONGO_PUBLIC_KEY : '',
+            'confirmationUrl' => home_url('/booking/confirmation/'),
+         ));
+      } else {
          wp_enqueue_script(
             'obsidian-booking-form',
             OBSIDIAN_BOOKING_URL . 'assets/js/booking-form.js',

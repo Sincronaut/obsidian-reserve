@@ -1,19 +1,10 @@
 /**
- * Payment Form — PayMongo PIPM Flow
+ * Payment Form — PayMongo PIPM Flow (Step 2: Collect Details)
  *
- * Card flow:
- *   1. Create Payment Intent via our REST API
- *   2. Create Payment Method directly with PayMongo
- *   3. Attach Payment Method to Payment Intent
- *   4. Handle 3D Secure if needed
- *   5. Redirect to confirmation
- *
- * Bank / e-wallet flow:
- *   1. Create Payment Intent via our REST API (with method type)
- *   2. Create Payment Method with PayMongo (type: dob/dob_ubp/grab_pay)
- *   3. Attach → PayMongo returns redirect URL
- *   4. User authorizes on bank/wallet portal
- *   5. Redirected back to confirmation
+ * Creates a Payment Intent (server-side) and a Payment Method (PayMongo)
+ * but does NOT attach them. Stores IDs + masked card info in sessionStorage
+ * and redirects to the confirmation page where the user reviews everything
+ * before the charge is finalized.
  */
 (function () {
 	'use strict';
@@ -56,6 +47,13 @@
 		card:     'Visa / Mastercard',
 		dob_ubp:  'BPI Online',
 		dob:      'BDO Online',
+		grab_pay: 'GrabPay',
+	};
+
+	const BANK_NAMES = {
+		card:     '',
+		dob_ubp:  'BPI - Unibank',
+		dob:      'BDO - Unibank',
 		grab_pay: 'GrabPay',
 	};
 
@@ -106,7 +104,7 @@
 		if ( cardFieldsEl ) cardFieldsEl.style.display = isCard ? '' : 'none';
 		if ( bankNoticeEl ) bankNoticeEl.style.display  = isCard ? 'none' : '';
 		if ( bankNameEl )   bankNameEl.textContent       = METHOD_LABELS[ selectedMethod ] || 'your provider';
-		if ( submitTextEl ) submitTextEl.textContent      = isCard ? 'Complete Payment' : 'Pay with ' + ( METHOD_LABELS[ selectedMethod ] || 'Bank' );
+		if ( submitTextEl ) submitTextEl.textContent      = 'Continue to Review';
 	}
 
 	/* ── Payment option toggle ── */
@@ -221,31 +219,18 @@
 		return data;
 	}
 
-	/* ── Handle redirect after attach ── */
+	/* ── Mask helpers ── */
 
-	function handleAttachResult( attachRes ) {
-		const status = attachRes.data?.attributes?.status;
-
-		if ( status === 'awaiting_next_action' ) {
-			const nextAction = attachRes.data.attributes.next_action;
-			if ( nextAction?.type === 'redirect' && nextAction?.redirect?.url ) {
-				window.location.href = nextAction.redirect.url;
-				return true;
-			}
-		}
-
-		if ( status === 'succeeded' ) {
-			showMessage( 'Payment successful! Redirecting...', 'success' );
-			setTimeout( () => {
-				window.location.href = confirmationUrl + '?booking_id=' + bookingId;
-			}, 1500 );
-			return true;
-		}
-
-		return false;
+	function maskCardNumber( num ) {
+		const clean = num.replace( /\s/g, '' );
+		return '****  ****' + clean.slice( -4 );
 	}
 
-	/* ── CARD payment flow ── */
+	function maskCvc( cvc ) {
+		return '*'.repeat( cvc.length );
+	}
+
+	/* ── CARD flow: create PI + PM, store, redirect ── */
 
 	async function processCardPayment() {
 		if ( ! validateCard() ) {
@@ -258,7 +243,7 @@
 
 		try {
 			const intentData = await createPaymentIntent();
-			const { client_key: clientKey, intent_id: intentId } = intentData;
+			const { client_key: clientKey, intent_id: intentId, rental_charge, deposit, rental_total } = intentData;
 
 			const expRaw   = cardExpiryInput.value.replace( /\s/g, '' ).split( '/' );
 			const expMonth = parseInt( expRaw[0], 10 );
@@ -282,19 +267,26 @@
 				},
 			});
 
-			const attachRes = await paymongoRequest( '/payment_intents/' + intentId + '/attach', {
-				data: {
-					attributes: {
-						payment_method: pmRes.data.id,
-						client_key:     clientKey,
-						return_url:     confirmationUrl + '?booking_id=' + bookingId,
-					},
-				},
-			});
+			sessionStorage.setItem( 'obPayment', JSON.stringify({
+				bookingId:      bookingId,
+				token:          token,
+				intentId:       intentId,
+				clientKey:      clientKey,
+				pmId:           pmRes.data.id,
+				method:         'card',
+				methodLabel:    METHOD_LABELS.card,
+				bankName:       '',
+				cardName:       cardNameInput.value.trim(),
+				cardNumber:     maskCardNumber( cardNumberInput.value ),
+				cardExpiry:     cardExpiryInput.value,
+				cardCvc:        maskCvc( cardCvcInput.value.trim() ),
+				paymentOption:  getSelectedOption(),
+				rentalCharge:   rental_charge,
+				deposit:        deposit,
+				rentalTotal:    rental_total,
+			}));
 
-			if ( ! handleAttachResult( attachRes ) ) {
-				showMessage( 'Payment is being processed. You will receive a confirmation email shortly.', 'success' );
-			}
+			window.location.href = confirmationUrl + '?booking_id=' + bookingId;
 
 		} catch ( err ) {
 			showMessage( err.message || 'An error occurred. Please try again.', 'error' );
@@ -302,7 +294,7 @@
 		}
 	}
 
-	/* ── BANK / E-WALLET payment flow ── */
+	/* ── BANK / E-WALLET flow: create PI + PM, store, redirect ── */
 
 	async function processBankPayment() {
 		setLoading( true );
@@ -310,7 +302,7 @@
 
 		try {
 			const intentData = await createPaymentIntent();
-			const { client_key: clientKey, intent_id: intentId } = intentData;
+			const { client_key: clientKey, intent_id: intentId, rental_charge, deposit, rental_total } = intentData;
 
 			const pmRes = await paymongoRequest( '/payment_methods', {
 				data: {
@@ -324,19 +316,26 @@
 				},
 			});
 
-			const attachRes = await paymongoRequest( '/payment_intents/' + intentId + '/attach', {
-				data: {
-					attributes: {
-						payment_method: pmRes.data.id,
-						client_key:     clientKey,
-						return_url:     confirmationUrl + '?booking_id=' + bookingId,
-					},
-				},
-			});
+			sessionStorage.setItem( 'obPayment', JSON.stringify({
+				bookingId:      bookingId,
+				token:          token,
+				intentId:       intentId,
+				clientKey:      clientKey,
+				pmId:           pmRes.data.id,
+				method:         selectedMethod,
+				methodLabel:    METHOD_LABELS[ selectedMethod ] || selectedMethod,
+				bankName:       BANK_NAMES[ selectedMethod ] || '',
+				cardName:       '',
+				cardNumber:     '',
+				cardExpiry:     '',
+				cardCvc:        '',
+				paymentOption:  getSelectedOption(),
+				rentalCharge:   rental_charge,
+				deposit:        deposit,
+				rentalTotal:    rental_total,
+			}));
 
-			if ( ! handleAttachResult( attachRes ) ) {
-				showMessage( 'Redirecting to ' + ( METHOD_LABELS[ selectedMethod ] || 'payment portal' ) + '...', 'success' );
-			}
+			window.location.href = confirmationUrl + '?booking_id=' + bookingId;
 
 		} catch ( err ) {
 			showMessage( err.message || 'An error occurred. Please try again.', 'error' );
