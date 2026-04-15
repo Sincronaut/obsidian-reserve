@@ -936,6 +936,64 @@
 }
 
 /* ═══════════════════════════════════════════
+   RESERVED (Success) PAGE
+   ═══════════════════════════════════════════ */
+
+.obsidian-reserved-wrap {
+	text-align: center;
+	border: 1px solid rgba(197, 160, 89, 0.25);
+}
+.obr-title {
+	font-size: 48px;
+	font-weight: 900;
+	color: #C5A059;
+	letter-spacing: 6px;
+	margin: 0 0 32px;
+	text-transform: uppercase;
+}
+.obr-car-img {
+	max-width: 420px;
+	width: 100%;
+	height: auto;
+	object-fit: contain;
+	display: block;
+	margin: 0 auto 16px;
+}
+.obr-car-name {
+	font-size: 18px;
+	font-weight: 600;
+	color: #fff;
+	margin: 0 0 28px;
+}
+.obr-specs {
+	text-align: left;
+	margin: 0 0 32px;
+	padding-top: 16px;
+	border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.obr-specs-label {
+	font-size: 14px;
+	color: #fff;
+	margin: 0 0 8px;
+}
+.obr-specs-line {
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.6);
+	margin: 0 0 4px;
+	line-height: 1.6;
+}
+.obr-specs-line strong {
+	color: rgba(255, 255, 255, 0.85);
+}
+.obr-actions {
+	margin-top: 8px;
+}
+.obr-actions .obsidian-bf-submit {
+	display: inline-flex;
+	text-decoration: none;
+}
+
+/* ═══════════════════════════════════════════
    Responsive
    ═══════════════════════════════════════════ */
 @media (max-width: 768px) {

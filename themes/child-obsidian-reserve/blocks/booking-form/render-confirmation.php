@@ -2,9 +2,8 @@
 /**
  * Confirmation Page — render-confirmation.php
  *
- * Review page before final payment. Shows car details, specs, pricing,
- * personal info, and payment info. The "Confirm Reservation" button
- * triggers the actual PayMongo charge via confirmation.js.
+ * Pre-payment: Review page before final charge (Step 3).
+ * Post-payment: "Reserved" success page with car details.
  *
  * @package child-obsidian-reserve
  */
@@ -36,8 +35,6 @@ if ( $booking_user !== get_current_user_id() ) {
 }
 
 $status = get_post_meta( $booking_id, '_booking_status', true );
-
-// Allow both awaiting_payment (pre-confirm) and paid/confirmed (post-confirm).
 $is_paid = in_array( $status, array( 'paid', 'confirmed', 'active', 'completed' ), true );
 
 // Booking data
@@ -51,34 +48,6 @@ $daily_rate    = (float) get_field( 'car_daily_rate', $car_id );
 $deposit_amt   = (float) get_post_meta( $booking_id, '_booking_deposit_amount', true );
 if ( ! $deposit_amt ) {
 	$deposit_amt = max( 10000, $total * 0.40 );
-}
-
-$first_name    = get_post_meta( $booking_id, '_booking_first_name', true );
-$last_name     = get_post_meta( $booking_id, '_booking_last_name', true );
-$address       = get_post_meta( $booking_id, '_booking_address', true );
-$birth_date    = get_post_meta( $booking_id, '_booking_birth_date', true );
-$license_no    = get_post_meta( $booking_id, '_booking_license_number', true );
-
-$start_dt = DateTime::createFromFormat( 'Y-m-d', $start_date );
-$end_dt   = DateTime::createFromFormat( 'Y-m-d', $end_date );
-$num_days = ( $start_dt && $end_dt ) ? $start_dt->diff( $end_dt )->days : 0;
-
-// Calculate age from birth date
-$age = '';
-if ( $birth_date ) {
-	$birth_dt = DateTime::createFromFormat( 'Y-m-d', $birth_date );
-	if ( $birth_dt ) {
-		$age = $birth_dt->diff( new DateTime() )->y;
-	}
-}
-
-// Format birth date for display
-$birth_display = $birth_date;
-if ( $birth_date ) {
-	$bd = DateTime::createFromFormat( 'Y-m-d', $birth_date );
-	if ( $bd ) {
-		$birth_display = $bd->format( 'm / d / Y' );
-	}
 }
 
 // Car specs
@@ -102,32 +71,92 @@ if ( ! $variant_img ) {
 }
 
 $color_display = ucfirst( $color );
+
+// ── If already paid, show the "Reserved" success page ──
+if ( $is_paid ) : ?>
+
+<div class="obsidian-booking-form-wrap obsidian-reserved-wrap" id="obsidian-confirmation-wrap">
+
+	<h1 class="obr-title">RESERVED</h1>
+
+	<?php if ( $variant_img ) : ?>
+		<img src="<?php echo esc_url( $variant_img ); ?>" alt="<?php echo esc_attr( $car_name ); ?>" class="obr-car-img" />
+	<?php endif; ?>
+
+	<h3 class="obr-car-name"><?php echo esc_html( $car_name ); ?> <span class="text-gold"><?php echo esc_html( $color_display ); ?></span></h3>
+
+	<?php if ( ! empty( $specs_lines ) ) : ?>
+	<div class="obr-specs">
+		<p class="obr-specs-label"><strong>Specifications</strong></p>
+		<?php foreach ( $specs_lines as $line ) :
+			$parts = explode( ':', $line, 2 );
+			if ( count( $parts ) === 2 ) : ?>
+				<p class="obr-specs-line"><strong><?php echo esc_html( trim( $parts[0] ) ); ?>:</strong> <?php echo esc_html( trim( $parts[1] ) ); ?></p>
+			<?php else : ?>
+				<p class="obr-specs-line"><?php echo esc_html( $line ); ?></p>
+			<?php endif;
+		endforeach; ?>
+	</div>
+	<?php endif; ?>
+
+	<div class="obr-actions">
+		<a href="<?php echo esc_url( home_url( '/fleet/' ) ); ?>" class="obsidian-bf-submit">Back to Fleet</a>
+	</div>
+
+</div>
+
+<?php return; endif;
+
+// ── Pre-payment: confirmation / review page (Step 3) ──
+
+$first_name    = get_post_meta( $booking_id, '_booking_first_name', true );
+$last_name     = get_post_meta( $booking_id, '_booking_last_name', true );
+$address       = get_post_meta( $booking_id, '_booking_address', true );
+$birth_date    = get_post_meta( $booking_id, '_booking_birth_date', true );
+$license_no    = get_post_meta( $booking_id, '_booking_license_number', true );
+
+$age = '';
+if ( $birth_date ) {
+	$birth_dt = DateTime::createFromFormat( 'Y-m-d', $birth_date );
+	if ( $birth_dt ) {
+		$age = $birth_dt->diff( new DateTime() )->y;
+	}
+}
+
+$birth_display = $birth_date;
+if ( $birth_date ) {
+	$bd = DateTime::createFromFormat( 'Y-m-d', $birth_date );
+	if ( $bd ) {
+		$birth_display = $bd->format( 'm / d / Y' );
+	}
+}
 ?>
 
 <div class="obsidian-booking-form-wrap obsidian-confirmation-wrap" id="obsidian-confirmation-wrap">
 
+	<!-- Hidden data for JS reserved page -->
+	<input type="hidden" id="obc-car-img-url" value="<?php echo esc_attr( $variant_img ); ?>" />
+	<input type="hidden" id="obc-car-name" value="<?php echo esc_attr( $car_name ); ?>" />
+	<input type="hidden" id="obc-car-color" value="<?php echo esc_attr( $color_display ); ?>" />
+	<input type="hidden" id="obc-car-specs" value="<?php echo esc_attr( wp_json_encode( $specs_lines ) ); ?>" />
+
 	<!-- Header -->
 	<div class="obsidian-bf-header obc-header">
-		<?php if ( $is_paid ) : ?>
-			<h1 class="obsidian-bf-title" id="obc-title"><span class="text-gold">Confirmed!</span></h1>
-			<p class="obsidian-bf-subtitle" id="obc-subtitle">Your reservation has been confirmed. We'll see you soon.</p>
-		<?php else : ?>
-			<h1 class="obsidian-bf-title" id="obc-title"><span class="text-gold italic">Complete</span></h1>
-			<p class="obsidian-bf-subtitle" id="obc-subtitle">Check your details and confirm to proceed.</p>
-		<?php endif; ?>
+		<h1 class="obsidian-bf-title" id="obc-title"><span class="text-gold italic">Complete</span></h1>
+		<p class="obsidian-bf-subtitle" id="obc-subtitle">Check your details and confirm to proceed.</p>
 	</div>
 
-	<!-- Progress Stepper -->
+	<!-- Progress Stepper — Step 3 active -->
 	<div class="obsidian-bf-stepper">
 		<div class="obsidian-bf-step completed">
 			<span class="obsidian-bf-step-number">&#10003;</span>
 		</div>
 		<div class="obsidian-bf-step-line obsidian-bf-step-line-done"></div>
-		<div class="obsidian-bf-step <?php echo $is_paid ? 'completed' : 'active'; ?>">
-			<span class="obsidian-bf-step-number"><?php echo $is_paid ? '&#10003;' : '2'; ?></span>
+		<div class="obsidian-bf-step completed">
+			<span class="obsidian-bf-step-number">&#10003;</span>
 		</div>
-		<div class="obsidian-bf-step-line <?php echo $is_paid ? 'obsidian-bf-step-line-done' : ''; ?>"></div>
-		<div class="obsidian-bf-step <?php echo $is_paid ? 'active' : ''; ?>">
+		<div class="obsidian-bf-step-line obsidian-bf-step-line-done"></div>
+		<div class="obsidian-bf-step active">
 			<span class="obsidian-bf-step-number">3</span>
 		</div>
 	</div>
@@ -195,51 +224,19 @@ $color_display = ucfirst( $color );
 			<span class="obc-info-value"><?php echo esc_html( $license_no ); ?></span>
 		</div>
 
-		<!-- Payment Information (populated by JS from sessionStorage, or from meta if already paid) -->
 		<p class="obc-info-subheading italic">Payment Information</p>
-
-		<?php if ( $is_paid ) :
-			$payment_method = get_post_meta( $booking_id, '_booking_payment_method', true );
-			$payment_option = get_post_meta( $booking_id, '_booking_payment_option', true );
-			$payment_amount = (float) get_post_meta( $booking_id, '_booking_payment_amount', true );
-		?>
-			<div class="obc-info-row">
-				<span class="obc-info-label">Method:</span>
-				<span class="obc-info-value"><?php echo esc_html( ucfirst( $payment_method ?: 'Card' ) ); ?></span>
-			</div>
-			<div class="obc-info-row">
-				<span class="obc-info-label">Amount Paid:</span>
-				<span class="obc-info-value text-gold">₱<?php echo esc_html( number_format( $payment_amount, 2 ) ); ?></span>
-			</div>
-		<?php else : ?>
-			<div id="obc-payment-info">
-				<!-- Filled by confirmation.js from sessionStorage -->
-			</div>
-		<?php endif; ?>
+		<div id="obc-payment-info">
+			<!-- Filled by confirmation.js from sessionStorage -->
+		</div>
 	</div>
 
-	<?php if ( $is_paid ) : ?>
-		<!-- Post-payment success -->
-		<div class="obc-booking-id">
-			<span>Booking ID</span>
-			<strong>#<?php echo esc_html( $booking_id ); ?></strong>
-		</div>
-		<div class="obc-status">
-			<span class="obc-status-dot"></span>
-			<span>Status: <strong>Confirmed</strong></span>
-		</div>
-		<div class="obsidian-bf-actions obc-actions">
-			<a href="<?php echo esc_url( home_url( '/fleet/' ) ); ?>" class="obsidian-bf-submit">Back to Fleet</a>
-		</div>
-	<?php else : ?>
-		<!-- Pre-payment: Confirm button -->
-		<div class="obsidian-bf-actions obc-actions">
-			<button type="button" class="obsidian-bf-submit obc-confirm-btn" id="obc-confirm-btn">
-				<span class="obf-submit-text">Confirm Reservation</span>
-				<span class="obf-submit-spinner" style="display:none;"></span>
-			</button>
-		</div>
-		<div class="obsidian-bf-message" id="obc-message" style="display:none;"></div>
-	<?php endif; ?>
+	<!-- Confirm button -->
+	<div class="obsidian-bf-actions obc-actions">
+		<button type="button" class="obsidian-bf-submit obc-confirm-btn" id="obc-confirm-btn">
+			<span class="obf-submit-text">Confirm Reservation</span>
+			<span class="obf-submit-spinner" style="display:none;"></span>
+		</button>
+	</div>
+	<div class="obsidian-bf-message" id="obc-message" style="display:none;"></div>
 
 </div>
