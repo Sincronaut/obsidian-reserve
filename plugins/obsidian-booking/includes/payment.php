@@ -173,6 +173,15 @@ function obsidian_register_payment_routes() {
 		},
 	) );
 
+	// Confirm Payment (called by confirmation.js after successful attach)
+	register_rest_route( $namespace, '/confirm-payment', array(
+		'methods'             => 'POST',
+		'callback'            => 'obsidian_api_confirm_payment',
+		'permission_callback' => function () {
+			return is_user_logged_in();
+		},
+	) );
+
 	// PayMongo Webhook (called by PayMongo servers)
 	register_rest_route( $namespace, '/paymongo-webhook', array(
 		'methods'             => 'POST',
@@ -226,6 +235,73 @@ function obsidian_api_create_payment_intent( $request ) {
 	}
 
 	return rest_ensure_response( $result );
+}
+
+/**
+ * POST /confirm-payment
+ * Called by confirmation.js after PayMongo attach returns succeeded.
+ * Verifies the intent status server-side before updating booking.
+ */
+function obsidian_api_confirm_payment( $request ) {
+
+	$params     = $request->get_json_params();
+	$booking_id = (int) ( $params['booking_id'] ?? 0 );
+	$intent_id  = sanitize_text_field( $params['intent_id'] ?? '' );
+
+	if ( ! $booking_id || ! $intent_id ) {
+		return new WP_Error( 'missing_data', 'Booking ID and intent ID are required.', array( 'status' => 400 ) );
+	}
+
+	// Verify user owns this booking.
+	$booking_user = (int) get_post_meta( $booking_id, '_booking_user_id', true );
+	if ( $booking_user !== get_current_user_id() ) {
+		return new WP_Error( 'unauthorized', 'You do not own this booking.', array( 'status' => 403 ) );
+	}
+
+	// Verify the stored intent ID matches.
+	$stored_intent = get_post_meta( $booking_id, '_booking_payment_id', true );
+	if ( $stored_intent !== $intent_id ) {
+		return new WP_Error( 'intent_mismatch', 'Payment intent does not match this booking.', array( 'status' => 400 ) );
+	}
+
+	$current_status = get_post_meta( $booking_id, '_booking_status', true );
+	if ( $current_status !== 'awaiting_payment' ) {
+		return rest_ensure_response( array( 'message' => 'Booking already processed.', 'status' => $current_status ) );
+	}
+
+	// Verify with PayMongo that the intent actually succeeded.
+	$verify_response = wp_remote_get( 'https://api.paymongo.com/v1/payment_intents/' . $intent_id, array(
+		'headers' => array(
+			'Authorization' => 'Basic ' . base64_encode( PAYMONGO_SECRET_KEY . ':' ),
+		),
+		'timeout' => 15,
+	) );
+
+	if ( is_wp_error( $verify_response ) ) {
+		return new WP_Error( 'verify_failed', 'Could not verify payment with PayMongo.', array( 'status' => 500 ) );
+	}
+
+	$verify_body   = json_decode( wp_remote_retrieve_body( $verify_response ), true );
+	$intent_status = $verify_body['data']['attributes']['status'] ?? '';
+
+	if ( $intent_status !== 'succeeded' ) {
+		return new WP_Error( 'not_paid', 'Payment intent has not succeeded. Status: ' . $intent_status, array( 'status' => 400 ) );
+	}
+
+	// Payment verified — update booking.
+	$amount_paid = ( $verify_body['data']['attributes']['amount'] ?? 0 ) / 100;
+
+	update_post_meta( $booking_id, '_booking_status', 'paid' );
+	update_post_meta( $booking_id, '_booking_payment_status', 'paid' );
+	update_post_meta( $booking_id, '_booking_payment_amount', $amount_paid );
+
+	do_action( 'obsidian_booking_status_changed', $booking_id, 'awaiting_payment', 'paid' );
+
+	// Auto-transition to confirmed.
+	update_post_meta( $booking_id, '_booking_status', 'confirmed' );
+	do_action( 'obsidian_booking_status_changed', $booking_id, 'paid', 'confirmed' );
+
+	return rest_ensure_response( array( 'message' => 'Booking confirmed.', 'status' => 'confirmed' ) );
 }
 
 /**

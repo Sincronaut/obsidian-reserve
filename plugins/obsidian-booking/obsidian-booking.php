@@ -144,6 +144,8 @@ function obsidian_booking_enqueue_assets()
          wp_localize_script('obsidian-confirmation', 'obsidianPayment', array(
             'publicKey'       => defined('PAYMONGO_PUBLIC_KEY') ? PAYMONGO_PUBLIC_KEY : '',
             'confirmationUrl' => home_url('/booking/confirmation/'),
+            'restUrl'         => esc_url_raw(rest_url('obsidian-booking/v1/')),
+            'nonce'           => wp_create_nonce('wp_rest'),
          ));
       } else {
          wp_enqueue_script(
