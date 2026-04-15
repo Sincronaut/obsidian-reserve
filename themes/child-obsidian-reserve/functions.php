@@ -56,8 +56,49 @@ function obsidian_reserve_enqueue_styles() {
 		array('child-obsidian-reserve-style'),
 		wp_get_theme()->get( 'Version' )
 	);
+
+	// Theme My Login Split Screen Styles
+	if ( class_exists( 'Theme_My_Login' ) ) {
+		$action = theme_my_login()->get_request_action();
+		if ( $action ) {
+			wp_enqueue_style(
+				'obsidian-reserve-tml',
+				get_stylesheet_directory_uri() . '/assets/css/tml.css',
+				array('child-obsidian-reserve-style'),
+				wp_get_theme()->get( 'Version' )
+			);
+		}
+	}
 }
 add_action( 'wp_enqueue_scripts', 'obsidian_reserve_enqueue_styles' );
+
+/**
+ * --------------------------------------------------------------------------
+ * TML Custom Placeholders Script
+ * --------------------------------------------------------------------------
+ */
+function obsidian_reserve_tml_script() {
+	if ( class_exists( 'Theme_My_Login' ) && theme_my_login()->get_request_action() ) {
+		?>
+		<script>
+			document.addEventListener('DOMContentLoaded', function() {
+				const inputs = {
+					'user_login': 'Email',
+					'user_pass': 'Password',
+					'user_email': 'Email',
+					'pass1': 'New Password',
+					'pass2': 'Confirm Password'
+				};
+				for (const [id, ph] of Object.entries(inputs)) {
+					const el = document.getElementById(id);
+					if (el) el.placeholder = ph;
+				}
+			});
+		</script>
+		<?php
+	}
+}
+add_action( 'wp_footer', 'obsidian_reserve_tml_script' );
 
 /**
  * --------------------------------------------------------------------------
@@ -114,90 +155,25 @@ function obsidian_reserve_register_blocks() {
 	register_block_type( get_stylesheet_directory() . '/blocks/contact' );
 	register_block_type( get_stylesheet_directory() . '/blocks/car-grid' );
 	register_block_type( get_stylesheet_directory() . '/blocks/booking-form' );
-	register_block_type( get_stylesheet_directory() . '/blocks/faq' );
 }
 add_action( 'init', 'obsidian_reserve_register_blocks' );
 
+/**
+ * --------------------------------------------------------------------------
+ * 5. THEME MY LOGIN INTEGRATION
+ * --------------------------------------------------------------------------
+ */
+function obsidian_reserve_tml_body_class( $classes ) {
+	if ( class_exists( 'Theme_My_Login' ) ) {
+		$action = theme_my_login()->get_request_action();
+		if ( $action ) {
+			$classes[] = 'is-tml-page';
+			$classes[] = 'tml-action-' . $action;
+		}
+	}
+	return $classes;
+}
+add_filter( 'body_class', 'obsidian_reserve_tml_body_class' );
+
 /* Disable the WordPress Admin Bar on the front-end */
 add_filter( 'show_admin_bar', '__return_false' );
-
-/**
- * --------------------------------------------------------------------------
- * 5. CUSTOM LOGIN PAGE
- * --------------------------------------------------------------------------
- */
-function obsidian_reserve_login_scripts() {
-	// Enqueue our custom login stylesheet
-	wp_enqueue_style(
-		'obsidian-login-style',
-		get_stylesheet_directory_uri() . '/assets/css/login.css',
-		array(),
-		wp_get_theme()->get( 'Version' )
-	);
-
-	// Enqueue Google Fonts
-	wp_enqueue_style(
-		'obsidian-login-fonts',
-		'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap',
-		array(),
-		null
-	);
-}
-add_action( 'login_enqueue_scripts', 'obsidian_reserve_login_scripts' );
-
-/**
- * JS to modify the login form DOM to match the design.
- */
-function obsidian_reserve_login_js() {
-	?>
-	<script>
-	document.addEventListener("DOMContentLoaded", function() {
-		// 1. Add placeholders to inputs
-		var userLogin = document.getElementById("user_login");
-		if (userLogin) userLogin.placeholder = "Email";
-		
-		var userPass = document.getElementById("user_pass");
-		if (userPass) userPass.placeholder = "Password";
-		
-		// 2. Hide labels for the main inputs
-		var labels = document.querySelectorAll("#loginform label");
-		labels.forEach(function(label) {
-			if (label.getAttribute("for") === "user_login" || label.getAttribute("for") === "user_pass") {
-				label.style.display = "none";
-			}
-		});
-
-		// 3. Change button text
-		var btn = document.getElementById("wp-submit");
-		if (btn) btn.value = "Login";
-
-		// 4. Wrap form in a new structure for the right pane
-		var loginDiv = document.getElementById("login");
-		var loginForm = document.getElementById("loginform");
-		
-		if (loginDiv && loginForm) {
-			// Create wrapper
-			var rightPane = document.createElement("div");
-			rightPane.className = "login-right-pane";
-			
-			// Add title
-			var signinTitle = document.createElement("h2");
-			signinTitle.className = "signin-title";
-			signinTitle.textContent = "Sign-in";
-			
-			// Add signup link below
-			var signupText = document.createElement("p");
-			signupText.className = "signup-text";
-			signupText.innerHTML = "Don't have an account? <a href='/register/'>Signup Here</a>";
-
-			// Move elements
-			rightPane.appendChild(signinTitle);
-			loginDiv.insertBefore(rightPane, loginForm);
-			rightPane.appendChild(loginForm);
-			rightPane.appendChild(signupText);
-		}
-	});
-	</script>
-	<?php
-}
-add_action( 'login_head', 'obsidian_reserve_login_js' );
