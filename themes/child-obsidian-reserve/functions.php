@@ -139,3 +139,31 @@ add_action( 'init', 'obsidian_reserve_register_blocks' );
 
 /* Disable the WordPress Admin Bar on the front-end */
 add_filter( 'show_admin_bar', '__return_false' );
+
+/**
+ * --------------------------------------------------------------------------
+ * 5. LOGIN / REGISTER REDIRECTS
+ * --------------------------------------------------------------------------
+ * Non-admin users go to the homepage after login.
+ * Block non-admin users from accessing wp-admin.
+ */
+function obsidian_reserve_login_redirect( $redirect_to, $request, $user ) {
+	if ( isset( $user->roles ) && ! in_array( 'administrator', (array) $user->roles, true ) ) {
+		return home_url( '/' );
+	}
+	return $redirect_to;
+}
+add_filter( 'login_redirect', 'obsidian_reserve_login_redirect', 10, 3 );
+
+function obsidian_reserve_registration_redirect( $redirect_to ) {
+	return home_url( '/' );
+}
+add_filter( 'registration_redirect', 'obsidian_reserve_registration_redirect' );
+
+function obsidian_reserve_block_admin_access() {
+	if ( is_admin() && ! current_user_can( 'edit_posts' ) && ! wp_doing_ajax() ) {
+		wp_safe_redirect( home_url( '/' ) );
+		exit;
+	}
+}
+add_action( 'admin_init', 'obsidian_reserve_block_admin_access' );
