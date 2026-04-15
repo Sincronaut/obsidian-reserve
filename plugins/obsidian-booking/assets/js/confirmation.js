@@ -109,28 +109,43 @@
 		if ( spinnerEl )    spinnerEl.style.display    = loading ? 'inline-block' : 'none';
 	}
 
-	/* ── Show success state ── */
+	/* ── Show "Reserved" success page ── */
 
 	function showSuccess() {
-		const titleEl    = document.getElementById( 'obc-title' );
-		const subtitleEl = document.getElementById( 'obc-subtitle' );
+		sessionStorage.removeItem( 'obPayment' );
 
-		if ( titleEl )    titleEl.innerHTML    = '<span class="text-gold">Confirmed!</span>';
-		if ( subtitleEl ) subtitleEl.textContent = 'Your reservation has been confirmed. We\'ll see you soon.';
+		const carImgUrl = document.getElementById( 'obc-car-img-url' )?.value || '';
+		const carName   = document.getElementById( 'obc-car-name' )?.value || '';
+		const carColor  = document.getElementById( 'obc-car-color' )?.value || '';
 
-		confirmBtn.style.display = 'none';
-		if ( messageEl ) messageEl.style.display = 'none';
+		let specsJson = [];
+		try {
+			specsJson = JSON.parse( document.getElementById( 'obc-car-specs' )?.value || '[]' );
+		} catch (e) { /* ignore */ }
 
-		const actionsEl = confirmBtn.parentElement;
-		if ( actionsEl ) {
-			const link = document.createElement( 'a' );
-			link.href      = '/fleet/';
-			link.className = 'obsidian-bf-submit';
-			link.textContent = 'Back to Fleet';
-			actionsEl.appendChild( link );
+		let specsHtml = '';
+		if ( specsJson.length ) {
+			specsHtml += '<div class="obr-specs"><p class="obr-specs-label"><strong>Specifications</strong></p>';
+			specsJson.forEach( function( line ) {
+				const parts = line.split( ':' );
+				if ( parts.length >= 2 ) {
+					specsHtml += '<p class="obr-specs-line"><strong>' + escHtml( parts[0].trim() ) + ':</strong> ' + escHtml( parts.slice(1).join(':').trim() ) + '</p>';
+				} else {
+					specsHtml += '<p class="obr-specs-line">' + escHtml( line ) + '</p>';
+				}
+			});
+			specsHtml += '</div>';
 		}
 
-		sessionStorage.removeItem( 'obPayment' );
+		const imgTag = carImgUrl ? '<img src="' + escHtml( carImgUrl ) + '" alt="' + escHtml( carName ) + '" class="obr-car-img" />' : '';
+
+		wrap.className = 'obsidian-booking-form-wrap obsidian-reserved-wrap';
+		wrap.innerHTML =
+			'<h1 class="obr-title">RESERVED</h1>' +
+			imgTag +
+			'<h3 class="obr-car-name">' + escHtml( carName ) + ' <span class="text-gold">' + escHtml( carColor ) + '</span></h3>' +
+			specsHtml +
+			'<div class="obr-actions"><a href="/fleet/" class="obsidian-bf-submit">Back to Fleet</a></div>';
 	}
 
 	/* ── Handle attach result ── */
