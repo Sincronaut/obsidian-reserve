@@ -58,16 +58,13 @@ function obsidian_reserve_enqueue_styles() {
 	);
 
 	// Theme My Login Split Screen Styles
-	if ( class_exists( 'Theme_My_Login' ) ) {
-		$action = theme_my_login()->get_request_action();
-		if ( $action ) {
-			wp_enqueue_style(
-				'obsidian-reserve-tml',
-				get_stylesheet_directory_uri() . '/assets/css/tml.css',
-				array('child-obsidian-reserve-style'),
-				wp_get_theme()->get( 'Version' )
-			);
-		}
+	if ( function_exists( 'tml_is_action' ) && tml_is_action() ) {
+		wp_enqueue_style(
+			'obsidian-reserve-tml',
+			get_stylesheet_directory_uri() . '/assets/css/tml.css',
+			array('child-obsidian-reserve-style'),
+			wp_get_theme()->get( 'Version' )
+		);
 	}
 }
 add_action( 'wp_enqueue_scripts', 'obsidian_reserve_enqueue_styles' );
@@ -78,7 +75,7 @@ add_action( 'wp_enqueue_scripts', 'obsidian_reserve_enqueue_styles' );
  * --------------------------------------------------------------------------
  */
 function obsidian_reserve_tml_script() {
-	if ( class_exists( 'Theme_My_Login' ) && theme_my_login()->get_request_action() ) {
+	if ( function_exists( 'tml_is_action' ) && tml_is_action() ) {
 		?>
 		<script>
 			document.addEventListener('DOMContentLoaded', function() {
@@ -164,12 +161,10 @@ add_action( 'init', 'obsidian_reserve_register_blocks' );
  * --------------------------------------------------------------------------
  */
 function obsidian_reserve_tml_body_class( $classes ) {
-	if ( class_exists( 'Theme_My_Login' ) ) {
-		$action = theme_my_login()->get_request_action();
-		if ( $action ) {
-			$classes[] = 'is-tml-page';
-			$classes[] = 'tml-action-' . $action;
-		}
+	if ( function_exists( 'tml_is_action' ) && tml_is_action() ) {
+		$action = tml_get_action();
+		$classes[] = 'is-tml-page';
+		$classes[] = 'tml-action-' . ( $action ? $action->get_name() : 'login' );
 	}
 	return $classes;
 }
