@@ -10,7 +10,7 @@
 
 	if ( typeof obsidianPayment === 'undefined' ) return;
 
-	const { publicKey, confirmationUrl } = obsidianPayment;
+	const { publicKey, confirmationUrl, restUrl, nonce } = obsidianPayment;
 	const PAYMONGO_API = 'https://api.paymongo.com/v1';
 
 	const wrap      = document.getElementById( 'obsidian-confirmation-wrap' );
@@ -148,6 +148,26 @@
 			'<div class="obr-actions"><a href="/fleet/" class="obsidian-bf-submit">Back to Fleet</a></div>';
 	}
 
+	/* ── Confirm payment server-side ── */
+
+	async function confirmPaymentOnServer() {
+		try {
+			await fetch( restUrl + 'confirm-payment', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce':   nonce,
+				},
+				body: JSON.stringify({
+					booking_id: pd.bookingId,
+					intent_id:  pd.intentId,
+				}),
+			});
+		} catch (e) {
+			// Non-blocking — webhook will catch it if this fails.
+		}
+	}
+
 	/* ── Handle attach result ── */
 
 	function handleAttachResult( attachRes ) {
@@ -163,6 +183,7 @@
 
 		if ( status === 'succeeded' ) {
 			showMessage( 'Payment successful!', 'success' );
+			confirmPaymentOnServer();
 			sessionStorage.removeItem( 'obPayment' );
 			setTimeout( showSuccess, 800 );
 			return true;
