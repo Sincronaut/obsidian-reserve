@@ -1,0 +1,196 @@
+/* ============================================================
+   FAQ BLOCK STYLES
+   ============================================================ */
+
+.obsidian-faq-block {
+    position: relative;
+    padding-top: 200px;
+    padding-bottom: 200px;
+    padding-left: var(--wp--preset--spacing--section-padding-h, 20px);
+    padding-right: var(--wp--preset--spacing--section-padding-h, 20px);
+    background-color: #0B0B0B;
+    color: #FFFFFF;
+    overflow: hidden;
+    max-width: 1920px;
+    margin: 0 auto;
+}
+
+/* Gold Smudges */
+.faq-smudge {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(197, 160, 89, 0.15) 0%, rgba(197, 160, 89, 0) 70%);
+    border-radius: 50%;
+    filter: blur(50px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.faq-smudge-left {
+    top: -100px;
+    left: -200px;
+}
+
+.faq-smudge-right {
+    bottom: -150px;
+    right: -150px;
+}
+
+/* Container */
+.faq-container {
+    position: relative;
+    z-index: 10;
+    max-width: var(--wp--style--global--wide-size, 1400px);
+    margin: 0 auto;
+}
+
+/* Main Title Section */
+.faq-main-title {
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 700;
+    margin-bottom: 60px;
+}
+
+.faq-main-title .gold-text {
+    color: #C5A059;
+}
+
+/* Two-column layout */
+.faq-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: start;
+}
+
+/* Mobile responsive */
+@media (max-width: 991px) {
+    .faq-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .faq-main-title {
+        margin-bottom: 40px;
+    }
+}
+
+/* Sidebar Info */
+.faq-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.faq-sidebar h3 {
+    font-size: clamp(1.5rem, 2.5vw, 2rem);
+    font-weight: 700;
+    margin: 0;
+}
+
+.faq-sidebar-desc {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #E0E0E0;
+    margin: 0 0 20px 0;
+}
+
+.faq-support-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.faq-support-row p {
+    margin: 0;
+    font-weight: 600;
+}
+
+.faq-support-row .wp-block-button__link {
+    background-color: #C5A059;
+    color: #000000;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    border: 1px solid #C5A059;
+}
+
+.faq-support-row .wp-block-button__link:hover {
+    background-color: transparent;
+    color: #C5A059;
+}
+
+/* Accordion Items */
+.faq-accordion-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.faq-item {
+    border: 1px solid rgba(197, 160, 89, 0.4);
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    transition: border-color 0.3s ease;
+}
+
+.faq-item:hover,
+.faq-item.is-active {
+    border-color: rgba(197, 160, 89, 1);
+}
+
+.faq-question {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #C5A059;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    gap: 20px;
+}
+
+.faq-icon {
+    font-size: 1.25rem;
+    font-weight: 400;
+    transition: transform 0.3s ease;
+}
+
+.faq-item.is-active .faq-icon {
+    transform: rotate(45deg);
+}
+
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.4s ease;
+    opacity: 0;
+    color: #E0E0E0;
+}
+
+.faq-item.is-active .faq-answer {
+    max-height: 500px;
+    opacity: 1;
+}
+
+.faq-answer-inner {
+    padding: 0 24px 24px 24px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.faq-answer-inner p {
+    margin: 0;
+}
