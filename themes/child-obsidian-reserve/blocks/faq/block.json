@@ -1,0 +1,41 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/faq",
+	"title": "FAQ Block",
+	"category": "theme",
+	"description": "FAQ Layout with Accordions",
+	"attributes": {
+		"titlePart1": { "type": "string", "default": "Frequently Asked " },
+		"titlePart2": { "type": "string", "default": "Questions" },
+		"sidebarTitle": { "type": "string", "default": "Need Common Question?" },
+		"sidebarDesc": { "type": "string", "default": "Find the Answer to Frequently asked question here." },
+		"sidebarSupport": { "type": "string", "default": "Need Support?" },
+		"buttonText": { "type": "string", "default": "Contact Us" },
+		"buttonLink": { "type": "string", "default": "/contact-us/" },
+		"faqs": {
+			"type": "array",
+			"default": [
+				{
+					"q": "Can I cancel or change my reservation after confirming?",
+					"a": "Yes, you can modify or cancel your reservation with a certain notice period. Extra details can be discussed with our support agent."
+				},
+				{
+					"q": "What if my flight is delayed and I miss my vehicle delivery?",
+					"a": "We monitor flight schedules for airport pickups to ensure your reservation adapts to delays seamlessly."
+				},
+				{
+					"q": "Can I drive the car outside Metro Manila?",
+					"a": "Yes, out-of-town trips are permitted based on your designated rental agreement conditions."
+				}
+			]
+		}
+	},
+	"supports": {
+		"html": false,
+		"align": ["full", "wide"]
+	},
+	"style": "file:./style.css",
+	"viewScript": "file:./script.js",
+	"render": "file:./render.php"
+}
