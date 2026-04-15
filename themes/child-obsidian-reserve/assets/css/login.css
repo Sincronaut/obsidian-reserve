@@ -1,0 +1,169 @@
+/* Obsidian Reserve Custom Login Styles */
+
+body.login {
+    display: flex !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 100vh;
+    background-color: #fff !important;
+    font-family: 'Montserrat', sans-serif !important;
+}
+
+body.login::before {
+    content: "obsidianreserve.com.ph";
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 40px;
+    color: rgba(255, 255, 255, 0.6);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    flex: 0 0 50%;
+    background-color: #151515;
+    background-image: url('../images/logo.webp');
+    background-repeat: no-repeat;
+    background-position: center 45%;
+    background-size: 320px auto;
+}
+
+#login {
+    flex: 0 0 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Hide WP defaults */
+#login > h1,
+#login > p#nav,
+#login > p#backtoblog,
+.language-switcher {
+    display: none !important;
+}
+
+.login-right-pane {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.signin-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #000;
+    margin: 0 0 40px;
+    text-align: left;
+}
+
+#loginform {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+#loginform .forgetmenot {
+    display: none; /* Hide remember me checkbox if needed, based on design it's absent */
+}
+
+#loginform p {
+    margin-bottom: 24px;
+}
+
+/* Custom inputs with bottom borders */
+#loginform input[type="text"],
+#loginform input[type="password"] {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    box-shadow: none;
+    padding: 12px 0;
+    font-size: 14px;
+    color: #333;
+    font-family: 'Montserrat', sans-serif;
+    background: transparent;
+    border-radius: 0;
+    transition: border-color 0.3s;
+}
+
+#loginform input[type="text"]:focus,
+#loginform input[type="password"]:focus {
+    border-bottom: 1px solid #C5A059;
+    outline: none;
+    box-shadow: none;
+}
+
+/* Placeholders */
+#loginform input::placeholder {
+    color: #aaa;
+    font-weight: 400;
+}
+
+/* Submit button */
+#loginform .submit {
+    margin-top: 32px;
+    padding: 0;
+}
+
+#loginform input[type="submit"] {
+    width: 100%;
+    background-color: #C5A059 !important;
+    color: #fff !important;
+    border: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    padding: 14px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    font-family: 'Montserrat', sans-serif !important;
+    border-radius: 4px !important;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    height: auto !important;
+    line-height: normal !important;
+}
+
+#loginform input[type="submit"]:hover {
+    background-color: #b08d4b !important;
+}
+
+.signup-text {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 13px;
+    color: #666;
+}
+
+.signup-text a {
+    color: #C5A059;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.signup-text a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    body.login {
+        flex-direction: column;
+    }
+    body.login::before {
+        flex: 0 0 250px;
+        padding-bottom: 20px;
+        background-size: 200px auto;
+    }
+    #login {
+        flex: 1;
+        padding: 30px 20px;
+    }
+}

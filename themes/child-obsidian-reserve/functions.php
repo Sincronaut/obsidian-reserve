@@ -120,3 +120,84 @@ add_action( 'init', 'obsidian_reserve_register_blocks' );
 
 /* Disable the WordPress Admin Bar on the front-end */
 add_filter( 'show_admin_bar', '__return_false' );
+
+/**
+ * --------------------------------------------------------------------------
+ * 5. CUSTOM LOGIN PAGE
+ * --------------------------------------------------------------------------
+ */
+function obsidian_reserve_login_scripts() {
+	// Enqueue our custom login stylesheet
+	wp_enqueue_style(
+		'obsidian-login-style',
+		get_stylesheet_directory_uri() . '/assets/css/login.css',
+		array(),
+		wp_get_theme()->get( 'Version' )
+	);
+
+	// Enqueue Google Fonts
+	wp_enqueue_style(
+		'obsidian-login-fonts',
+		'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap',
+		array(),
+		null
+	);
+}
+add_action( 'login_enqueue_scripts', 'obsidian_reserve_login_scripts' );
+
+/**
+ * JS to modify the login form DOM to match the design.
+ */
+function obsidian_reserve_login_js() {
+	?>
+	<script>
+	document.addEventListener("DOMContentLoaded", function() {
+		// 1. Add placeholders to inputs
+		var userLogin = document.getElementById("user_login");
+		if (userLogin) userLogin.placeholder = "Email";
+		
+		var userPass = document.getElementById("user_pass");
+		if (userPass) userPass.placeholder = "Password";
+		
+		// 2. Hide labels for the main inputs
+		var labels = document.querySelectorAll("#loginform label");
+		labels.forEach(function(label) {
+			if (label.getAttribute("for") === "user_login" || label.getAttribute("for") === "user_pass") {
+				label.style.display = "none";
+			}
+		});
+
+		// 3. Change button text
+		var btn = document.getElementById("wp-submit");
+		if (btn) btn.value = "Login";
+
+		// 4. Wrap form in a new structure for the right pane
+		var loginDiv = document.getElementById("login");
+		var loginForm = document.getElementById("loginform");
+		
+		if (loginDiv && loginForm) {
+			// Create wrapper
+			var rightPane = document.createElement("div");
+			rightPane.className = "login-right-pane";
+			
+			// Add title
+			var signinTitle = document.createElement("h2");
+			signinTitle.className = "signin-title";
+			signinTitle.textContent = "Sign-in";
+			
+			// Add signup link below
+			var signupText = document.createElement("p");
+			signupText.className = "signup-text";
+			signupText.innerHTML = "Don't have an account? <a href='/register/'>Signup Here</a>";
+
+			// Move elements
+			rightPane.appendChild(signinTitle);
+			loginDiv.insertBefore(rightPane, loginForm);
+			rightPane.appendChild(loginForm);
+			rightPane.appendChild(signupText);
+		}
+	});
+	</script>
+	<?php
+}
+add_action( 'login_head', 'obsidian_reserve_login_js' );
