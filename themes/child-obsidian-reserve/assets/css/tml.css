@@ -1,0 +1,312 @@
+/* ============================================================
+   THEME MY LOGIN — Split-Screen Layout
+   Uses TML's built-in body.tml-action class.
+   ============================================================ */
+
+/* Hide header, footer, and template parts on TML pages */
+body.tml-action .wp-block-template-part,
+body.tml-action header,
+body.tml-action footer {
+	display: none !important;
+}
+
+body.tml-action {
+	margin: 0;
+	padding: 0;
+	height: 100vh;
+	overflow: hidden;
+	background: #ffffff;
+	font-family: 'Montserrat', sans-serif;
+}
+
+/* Flex container: left dark + right white */
+body.tml-action .wp-site-blocks {
+	display: flex !important;
+	flex-direction: row !important;
+	width: 100vw;
+	height: 100vh;
+	margin: 0;
+	padding: 0 !important;
+	max-width: none !important;
+	gap: 0 !important;
+}
+
+/* ── LEFT PANEL (Dark + Logo) ── */
+body.tml-action .wp-site-blocks::before {
+	content: '';
+	display: block;
+	width: 40%;
+	min-width: 40%;
+	height: 100vh;
+	background-color: #1a1a1a;
+	background-image: url('/wp-content/themes/child-obsidian-reserve/assets/images/logo.webp');
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: 320px;
+	flex-shrink: 0;
+}
+
+/* URL text at bottom-left */
+body.tml-action .wp-site-blocks::after {
+	content: 'obsidianreserve.com.ph';
+	position: fixed;
+	bottom: 40px;
+	left: 20%;
+	transform: translateX(-50%);
+	color: #ffffff;
+	font-size: 12px;
+	letter-spacing: 1px;
+	opacity: 0.5;
+	z-index: 10;
+	pointer-events: none;
+}
+
+/* ── RIGHT PANEL (Form) ── */
+
+/* Target the page content area — everything that isn't the ::before */
+body.tml-action .wp-site-blocks > *:not(style):not(script) {
+	flex: 1;
+	display: flex !important;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	padding: 40px;
+	background: #ffffff;
+	overflow-y: auto;
+}
+
+/* ── TML Container ── */
+body.tml-action .tml {
+	width: 100%;
+	max-width: 400px;
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	box-shadow: none;
+	border: none;
+}
+
+body.tml-action .tml form {
+	width: 100%;
+}
+
+/* ── Heading ── */
+body.tml-action .tml .tml-action-title {
+	font-size: 32px;
+	font-weight: 700;
+	color: #1a1a1a;
+	margin: 0 0 40px;
+	font-style: italic;
+	font-family: 'Montserrat', sans-serif;
+}
+
+/* ── Field Wrappers ── */
+body.tml-action .tml .tml-field-wrap {
+	margin-bottom: 20px;
+}
+
+/* Hide labels — we use placeholders */
+body.tml-action .tml .tml-label {
+	display: none;
+}
+
+/* ── Inputs — Underline Style ── */
+body.tml-action .tml .tml-field {
+	width: 100%;
+	padding: 12px 0;
+	font-size: 15px;
+	font-family: 'Montserrat', sans-serif;
+	color: #1a1a1a;
+	background: transparent;
+	border: none;
+	border-bottom: 1px solid #e0e0e0;
+	border-radius: 0;
+	outline: none;
+	transition: border-color 0.3s;
+	box-shadow: none;
+	-webkit-appearance: none;
+}
+
+body.tml-action .tml .tml-field::placeholder {
+	color: #a0a0a0;
+	font-weight: 400;
+}
+
+body.tml-action .tml .tml-field:focus {
+	border-bottom-color: #C5A059;
+	box-shadow: none;
+	outline: none;
+}
+
+/* ── Remember Me — hidden ── */
+body.tml-action .tml .tml-rememberme-wrap {
+	display: none;
+}
+
+/* ── Submit Button ── */
+body.tml-action .tml .tml-submit-wrap {
+	margin-top: 32px;
+}
+
+body.tml-action .tml .tml-button {
+	width: 100%;
+	padding: 16px;
+	font-size: 14px;
+	font-weight: 600;
+	font-family: 'Montserrat', sans-serif;
+	color: #ffffff;
+	background-color: #C5A059;
+	border: 1px solid #C5A059;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.3s;
+	text-transform: none;
+	letter-spacing: 0;
+}
+
+body.tml-action .tml .tml-button:hover {
+	background-color: #b59048;
+	border-color: #b59048;
+}
+
+/* ── Links (Register / Lost Password) ── */
+body.tml-action .tml .tml-links {
+	list-style: none;
+	padding: 0;
+	margin: 24px 0 0;
+	text-align: center;
+}
+
+body.tml-action .tml .tml-links li {
+	margin: 8px 0;
+	font-size: 13px;
+	color: #666;
+}
+
+body.tml-action .tml .tml-links li a {
+	color: #C5A059;
+	text-decoration: none;
+	font-weight: 500;
+}
+
+body.tml-action .tml .tml-links li a:hover {
+	text-decoration: underline;
+}
+
+/* Hide lost password link */
+body.tml-action .tml .tml-links .tml-lostpassword-link {
+	display: none;
+}
+
+/* Login page: "Don't have an account? Signup Here" */
+body.tml-action-login .tml .tml-links .tml-register-link a {
+	font-size: 0;
+}
+body.tml-action-login .tml .tml-links .tml-register-link a::before {
+	content: "Don't have an account? ";
+	font-size: 13px;
+	color: #666;
+	font-weight: 400;
+}
+body.tml-action-login .tml .tml-links .tml-register-link a::after {
+	content: "Signup Here";
+	font-size: 13px;
+	color: #C5A059;
+	font-weight: 500;
+}
+
+/* Register page: "Already have an account? Login Here" */
+body.tml-action-register .tml .tml-links .tml-login-link a {
+	font-size: 0;
+}
+body.tml-action-register .tml .tml-links .tml-login-link a::before {
+	content: "Already have an account? ";
+	font-size: 13px;
+	color: #666;
+	font-weight: 400;
+}
+body.tml-action-register .tml .tml-links .tml-login-link a::after {
+	content: "Login Here";
+	font-size: 13px;
+	color: #C5A059;
+	font-weight: 500;
+}
+
+/* ── Alerts / Errors ── */
+body.tml-action .tml .tml-alerts {
+	margin-bottom: 16px;
+}
+
+body.tml-action .tml .tml-errors,
+body.tml-action .tml .tml-messages {
+	list-style: none;
+	padding: 0;
+	margin: 0 0 16px;
+}
+
+body.tml-action .tml .tml-error {
+	background: #fff3f3;
+	border-left: 4px solid #f44336;
+	color: #721c24;
+	padding: 12px 16px;
+	border-radius: 4px;
+	font-size: 14px;
+	margin-bottom: 8px;
+}
+
+body.tml-action .tml .tml-message {
+	background: #f0f8ff;
+	border-left: 4px solid #2196f3;
+	color: #0c5460;
+	padding: 12px 16px;
+	border-radius: 4px;
+	font-size: 14px;
+	margin-bottom: 8px;
+}
+
+/* ── Override TML's default stylesheet ── */
+body.tml-action .tml,
+body.tml-action .tml *,
+body.tml-action .tml *::before,
+body.tml-action .tml *::after {
+	box-sizing: border-box;
+}
+
+/* ═══════════════════════════════════════════
+   Responsive: Stack on mobile
+   ═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+	body.tml-action {
+		height: auto;
+		overflow: auto;
+	}
+
+	body.tml-action .wp-site-blocks {
+		flex-direction: column !important;
+		height: auto;
+		min-height: 100vh;
+	}
+
+	body.tml-action .wp-site-blocks::before {
+		width: 100%;
+		min-width: 100%;
+		height: 35vh;
+		background-size: 220px;
+	}
+
+	body.tml-action .wp-site-blocks::after {
+		position: absolute;
+		bottom: auto;
+		top: calc(35vh - 30px);
+		left: 50%;
+	}
+
+	body.tml-action .wp-site-blocks > *:not(style):not(script) {
+		padding: 40px 24px;
+		justify-content: flex-start;
+	}
+
+	body.tml-action .tml .tml-action-title {
+		text-align: center;
+	}
+}
