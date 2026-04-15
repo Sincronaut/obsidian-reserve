@@ -764,87 +764,125 @@
    ═══════════════════════════════════════════ */
 
 .obc-header {
-	text-align: center;
+	text-align: left;
 }
-.obc-check-circle {
-	width: 80px;
-	height: 80px;
-	border-radius: 50%;
-	border: 2px solid #C5A059;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	margin: 0 auto 20px;
+.italic {
+	font-style: italic;
 }
 
-/* Booking card */
-.obc-booking-card {
-	display: flex;
-	gap: 20px;
-	padding: 20px;
-	background: rgba(255, 255, 255, 0.04);
+/* Car Card */
+.obc-car-card {
+	padding: 24px;
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid rgba(197, 160, 89, 0.15);
+	border-radius: 10px;
+	margin-bottom: 24px;
+	text-align: center;
+}
+.obc-car-card-img {
+	max-width: 300px;
+	width: 100%;
+	height: auto;
+	object-fit: contain;
+	margin: 0 auto 12px;
+	display: block;
+}
+.obc-car-card-name {
+	font-size: 18px;
+	font-weight: 600;
+	color: #fff;
+	margin: 0 0 16px;
+}
+
+/* Specs */
+.obc-specs {
+	text-align: left;
+	margin-top: 12px;
+	padding-top: 12px;
+	border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.obc-specs-label {
+	font-size: 14px;
+	color: #fff;
+	margin: 0 0 8px;
+}
+.obc-specs-line {
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.6);
+	margin: 0 0 4px;
+	line-height: 1.5;
+}
+.obc-specs-line strong {
+	color: rgba(255, 255, 255, 0.85);
+}
+
+/* Totals Card */
+.obc-totals-card {
+	padding: 24px;
+	background: rgba(255, 255, 255, 0.03);
 	border: 1px solid rgba(197, 160, 89, 0.15);
 	border-radius: 10px;
 	margin-bottom: 24px;
 }
-.obc-car-img {
-	width: 180px;
-	height: 120px;
-	object-fit: cover;
-	border-radius: 8px;
-	flex-shrink: 0;
-}
-.obc-booking-info {
+.obc-totals-header {
 	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	gap: 6px;
-}
-.obc-booking-info h3 {
-	font-size: 20px;
-	font-weight: 700;
-	color: #fff;
-	margin: 0;
-}
-.obc-color {
-	font-size: 13px;
-	color: rgba(255, 255, 255, 0.65);
-}
-.obc-dates {
-	font-size: 13px;
-	color: rgba(255, 255, 255, 0.55);
-}
-
-/* Receipt */
-.obc-receipt {
-	padding: 20px;
-	background: rgba(255, 255, 255, 0.03);
-	border: 1px solid rgba(197, 160, 89, 0.15);
-	border-radius: 10px;
+	justify-content: space-between;
+	align-items: center;
 	margin-bottom: 20px;
 }
-.obc-receipt-line {
+.obc-totals-label {
+	font-size: 22px;
+	font-weight: 700;
+	color: #fff;
+}
+.obc-totals-value {
+	font-size: 22px;
+	font-weight: 700;
+	color: #fff;
+}
+.obc-totals-row {
 	display: flex;
 	justify-content: space-between;
 	font-size: 14px;
-	color: rgba(255, 255, 255, 0.65);
-	padding: 8px 0;
+	color: rgba(255, 255, 255, 0.6);
+	padding: 6px 0;
 }
-.obc-receipt-total {
-	font-size: 16px;
-	font-weight: 700;
-	color: #fff;
-	border-top: 1px solid rgba(197, 160, 89, 0.2);
-	margin-top: 8px;
-	padding-top: 12px;
+
+/* Info Card */
+.obc-info-card {
+	padding: 24px;
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid rgba(197, 160, 89, 0.15);
+	border-radius: 10px;
+	margin-bottom: 24px;
 }
-.obc-receipt-total span:last-child {
+.obc-info-heading {
+	font-size: 14px;
 	color: #C5A059;
+	margin: 0 0 20px;
 }
-.obc-receipt-balance {
-	font-size: 12px;
-	color: rgba(255, 255, 255, 0.45);
-	font-style: italic;
+.obc-info-subheading {
+	font-size: 14px;
+	color: rgba(255, 255, 255, 0.85);
+	margin: 20px 0 12px;
+	padding-top: 16px;
+	border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.obc-info-row {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+	padding: 6px 0;
+	font-size: 14px;
+}
+.obc-info-label {
+	color: rgba(255, 255, 255, 0.85);
+	font-weight: 600;
+	min-width: 140px;
+	flex-shrink: 0;
+}
+.obc-info-value {
+	color: rgba(255, 255, 255, 0.6);
 }
 
 /* Booking ID */
@@ -886,11 +924,15 @@
 
 /* CTA */
 .obc-actions {
-	text-align: center;
+	text-align: right;
 }
-.obc-actions .obsidian-bf-submit {
+.obc-actions .obsidian-bf-submit,
+.obc-actions .obc-confirm-btn {
 	display: inline-flex;
 	text-decoration: none;
+}
+.obc-confirm-btn {
+	min-width: 220px;
 }
 
 /* ═══════════════════════════════════════════
@@ -932,14 +974,19 @@
 	.obp-card-row {
 		grid-template-columns: 1fr;
 	}
-	.obc-booking-card {
+	.obc-totals-header {
 		flex-direction: column;
+		gap: 4px;
 		text-align: center;
 	}
-	.obc-car-img {
-		width: 100%;
-		height: auto;
-		max-height: 200px;
+	.obc-info-row {
+		flex-wrap: wrap;
+	}
+	.obc-info-label {
+		min-width: 120px;
+	}
+	.obc-actions {
+		text-align: center;
 	}
 }
 

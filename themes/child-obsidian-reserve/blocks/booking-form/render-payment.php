@@ -240,7 +240,7 @@ $color_display = ucfirst( $color );
 		<!-- Submit -->
 		<div class="obsidian-bf-actions">
 			<button type="submit" class="obsidian-bf-submit obp-submit" id="obp-submit">
-				<span class="obf-submit-text">Complete Payment</span>
+				<span class="obf-submit-text">Continue to Review</span>
 				<span class="obf-submit-spinner" style="display:none;"></span>
 			</button>
 		</div>
