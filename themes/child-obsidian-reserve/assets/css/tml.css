@@ -8,7 +8,6 @@
 body.tml-action {
 	margin: 0;
 	padding: 0;
-	overflow: auto;
 	background: #ffffff;
 	font-family: 'Montserrat', sans-serif;
 }
@@ -26,13 +25,16 @@ body.tml-action .wp-site-blocks {
 }
 
 /* Let header and footer span the full row, and enforce visual order */
-body.tml-action .wp-site-blocks > header {
+body.tml-action .wp-site-blocks > header,
+body.tml-action .wp-site-blocks > .wp-block-template-part:has(.obsidian-site-header) {
 	width: 100% !important;
 	flex: none !important;
 	order: -2 !important;
+	align-self: flex-start !important;
 }
 
-body.tml-action .wp-site-blocks > footer {
+body.tml-action .wp-site-blocks > footer,
+body.tml-action .wp-site-blocks > .wp-block-template-part:has(.obsidian-site-footer) {
 	width: 100% !important;
 	flex: none !important;
 	order: 99 !important;
