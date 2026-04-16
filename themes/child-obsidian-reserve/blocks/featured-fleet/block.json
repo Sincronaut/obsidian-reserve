@@ -1,0 +1,56 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/featured-fleet",
+	"version": "1.0.0",
+	"title": "Featured Fleet Showcase",
+	"category": "theme",
+	"description": "A featured car section with a large hero item and a grid of secondary vehicles.",
+	"attributes": {
+		"mainTitle": {
+			"type": "string",
+			"default": "The Rolls-Royce Ghost Series II — The Ultimate Corporate Saloon."
+		},
+		"mainDescription": {
+			"type": "string",
+			"default": "The C-suite standard for luxury travel and board transfers. Commanding presence, exceptional rear-cabin silence, and our Exact Model Guarantee on every reservation."
+		},
+		"mainButtonText": {
+			"type": "string",
+			"default": "Reserve Yours"
+		},
+		"mainButtonUrl": {
+			"type": "string",
+			"default": "#"
+		},
+		"mainImageUrl": {
+			"type": "string",
+			"default": "/assets/images/cars/ghost-feature.webp"
+		},
+		"gridItems": {
+			"type": "array",
+			"default": [
+				{
+					"title": "Mercedes-Benz S-Class — The Industry-Standard Executive Saloon.",
+					"description": "The default for senior executives and high-profile client hospitality. Exceptional rear-cabin legroom, privacy glass, and the Exact Model Guarantee for single-day or weekly corporate hire.",
+					"imageUrl": "/assets/images/cars/s-class.webp"
+				},
+				{
+					"title": "Range Rover Autobiography — The Flagship Executive SUV.",
+					"description": "Full-size executive SUV for site visits, mount resort hospitality, and multi-passenger board transit. Privacy glass is fitted as standard. Exact Model Guarantee on every booking.",
+					"imageUrl": "/assets/images/cars/range-rover.webp"
+				},
+				{
+					"title": "Mercedes-Benz V-Class — Premium Seven-People Carrier.",
+					"description": "Seven-seat executive layout for group event transit, roadshow logistics, and VIP group transfers. Business class rear seating available.",
+					"imageUrl": "/assets/images/cars/v-class.webp"
+				}
+			]
+		}
+	},
+	"supports": {
+		"html": false
+	},
+	"style": "file:./style.css",
+	"render": "file:./render.php"
+}

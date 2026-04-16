@@ -229,3 +229,14 @@ textarea,
 ::-webkit-scrollbar-thumb:hover {
 	background: #c49e5d;
 }
+
+/* ============================================================
+   TEMPLATE SPECIFIC OVERRIDES
+   ============================================================ */
+
+/* Business Page Hero Height Override */
+@media (min-width: 1025px) {
+    .is-business-hero.obsidian-text-img-bg {
+        min-height: 520px !important;
+    }
+}
