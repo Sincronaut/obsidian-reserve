@@ -198,6 +198,13 @@ body.tml-action .tml .tml-links .tml-lostpassword-link {
 	display: none;
 }
 
+/* Hide TML password strength indicator + hint on register form (keeps form clean) */
+body.tml-action-register .tml #pass-strength-result,
+body.tml-action-register .tml .indicator-hint,
+body.tml-action-register .tml #reg_passmail {
+	display: none !important;
+}
+
 /* Login page: "Don't have an account? Signup Here" */
 body.tml-action-login .tml .tml-links .tml-register-link a {
 	font-size: 0;
