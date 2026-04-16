@@ -1,0 +1,194 @@
+/* ============================================================
+   FEATURED FLEET SHOWCASE BLOCK STYLES
+   ============================================================ */
+
+.featured-fleet-section {
+    padding-top: var(--wp--preset--spacing--section-padding-v);
+    padding-bottom: var(--wp--preset--spacing--section-padding-v);
+    padding-left: var(--wp--preset--spacing--section-padding-h);
+    padding-right: var(--wp--preset--spacing--section-padding-h);
+    background-color: transparent;
+    color: #FFFFFF;
+    /* Global text color for this section */
+}
+
+.featured-fleet-container {
+    max-width: var(--wp--style--global--wide-size);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Ensures children like the main card are centered */
+    gap: 40px;
+    width: 100%;
+}
+
+/* Main Feature Card */
+.fleet-main-card {
+    border: 2px solid #C5A059;
+    padding: 30px 60px;
+    /* Tighter top/bottom padding to give image more vertical room */
+    position: relative;
+    color: #FFFFFF;
+    /* Force white text */
+    box-sizing: border-box;
+}
+
+@media (min-width: 1025px) {
+    .fleet-main-card {
+        width: 1600px;
+        height: 800px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+/* Gold Smudge Effect on Main Card */
+.fleet-main-card::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -400px;
+    /* Pushed significantly further to the right edge */
+    transform: translateY(-50%);
+    width: clamp(500px, 60vw, 1200px);
+    /* Increased size for a grander glow */
+    height: clamp(500px, 60vw, 1200px);
+    background-color: rgba(197, 160, 89, 0.25);
+    filter: blur(clamp(150px, 20vw, 350px));
+    /* Softer, wider blur */
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.fleet-main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 40px;
+    margin-bottom: 20px;
+    /* Reduced from 40px */
+    position: relative;
+    z-index: 2;
+    /* Keep above the smudge */
+}
+
+.fleet-main-text {
+    max-width: 800px;
+}
+
+.fleet-main-title {
+    margin-bottom: 20px;
+    /* Inherits global h2 styles */
+}
+
+.fleet-main-description {
+    opacity: 0.8;
+    max-width: 700px;
+    /* Inherits global p styles */
+}
+
+.fleet-main-image {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+    /* Reduced from 20px */
+    min-height: 0;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+    /* Keep image above the smudge */
+}
+
+.fleet-main-image img {
+    max-width: 100%;
+    max-height: 110%;
+    /* Allow image to breathe slightly larger vertically */
+    width: auto;
+    height: auto;
+    display: block;
+    object-fit: contain;
+    transform: scale(1.15);
+    /* Subtle scale boost to make the car feel more dominant */
+    filter: drop-shadow(0 20px 50px rgba(0, 0, 0, 0.5));
+}
+
+/* Secondary Grid */
+.fleet-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    width: 100%;
+    /* Ensure grid stretches back to container width after parent center alignment */
+}
+
+.fleet-grid-item {
+    border: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+}
+
+.fleet-grid-item:hover {
+    transform: translateY(-5px);
+}
+
+.fleet-item-image {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    /* Fixed aspect ratio for consistent sizing */
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #C5A059;
+    /* Gold border moved here */
+    overflow: hidden;
+}
+
+.fleet-item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Ensures images fill the frame consistently */
+    display: block;
+}
+
+.fleet-item-title {
+    margin-bottom: 15px;
+    /* Inherits global h3 styles */
+}
+
+.fleet-item-description {
+    font-size: 16px;
+    opacity: 0.8;
+    line-height: 1.5;
+}
+
+/* Responsive Overrides */
+@media (max-width: 1024px) {
+    .fleet-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 767px) {
+    .fleet-main-header {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .fleet-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .fleet-main-card,
+    .fleet-grid-item {
+        padding: 25px;
+    }
+}

@@ -135,6 +135,7 @@ function obsidian_reserve_register_blocks() {
 	register_block_type( get_stylesheet_directory() . '/blocks/car-grid' );
 	register_block_type( get_stylesheet_directory() . '/blocks/booking-form' );
 	register_block_type( get_stylesheet_directory() . '/blocks/faq' );
+	register_block_type( get_stylesheet_directory() . '/blocks/featured-fleet' );
 }
 add_action( 'init', 'obsidian_reserve_register_blocks' );
 
