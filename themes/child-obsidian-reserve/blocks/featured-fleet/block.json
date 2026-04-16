@@ -46,6 +46,10 @@
 					"imageUrl": "/assets/images/cars/v-class.webp"
 				}
 			]
+		},
+		"variant": {
+			"type": "string",
+			"default": "standard"
 		}
 	},
 	"supports": {

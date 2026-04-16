@@ -170,6 +170,34 @@
     line-height: 1.5;
 }
 
+/* ============================================================
+   VARIANT: HEADER OUTSIDE (AIRPORT STYLE)
+   ============================================================ */
+
+.variant-header-outside .fleet-main-header {
+    width: 100%;
+    max-width: 1600px; /* Match main card width */
+    margin-bottom: 40px;
+}
+
+.variant-header-outside .fleet-main-card {
+    padding: 0; /* Full bleed image within the card */
+    overflow: hidden;
+}
+
+.variant-header-outside .fleet-main-image {
+    margin: 0;
+    height: 100%;
+}
+
+.variant-header-outside .fleet-main-image img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    transform: none; /* Reset boost for cover images */
+    max-height: 100%;
+}
+
 /* Responsive Overrides */
 @media (max-width: 1024px) {
     .fleet-grid {
