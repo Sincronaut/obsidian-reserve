@@ -9,38 +9,54 @@ $main_button_text = $attributes['mainButtonText'] ?? '';
 $main_button_url  = $attributes['mainButtonUrl'] ?? '#';
 $main_image_url   = $attributes['mainImageUrl'] ?? '';
 $grid_items        = $attributes['gridItems'] ?? [];
+$variant           = $attributes['variant'] ?? 'standard';
 
 $theme_uri = get_stylesheet_directory_uri();
 $main_img_src = ! empty( $main_image_url ) ? ( strpos($main_image_url, 'http') === 0 ? $main_image_url : $theme_uri . $main_image_url ) : '';
 
+// Prepare Header HTML
+$header_html = '';
+if ( $main_title || $main_description || $main_button_text ) {
+    ob_start();
+    ?>
+    <div class="fleet-main-header">
+        <div class="fleet-main-text">
+            <?php if ( $main_title ) : ?>
+                <h2 class="fleet-main-title"><?php echo wp_kses_post( $main_title ); ?></h2>
+            <?php endif; ?>
+            
+            <?php if ( $main_description ) : ?>
+                <p class="fleet-main-description"><?php echo wp_kses_post( $main_description ); ?></p>
+            <?php endif; ?>
+        </div>
+
+        <?php if ( $main_button_text ) : ?>
+            <div class="fleet-main-cta wp-block-buttons">
+                <div class="wp-block-button is-style-solid-gold">
+                    <a href="<?php echo esc_url($main_button_url); ?>" class="wp-block-button__link wp-element-button">
+                        <?php echo esc_html($main_button_text); ?>
+                    </a>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
+    <?php
+    $header_html = ob_get_clean();
+}
 ?>
 
-<section <?php echo get_block_wrapper_attributes(['class' => 'featured-fleet-section']); ?>>
+<section <?php echo get_block_wrapper_attributes(['class' => 'featured-fleet-section variant-' . esc_attr($variant)]); ?>>
 	<div class="featured-fleet-container">
 		
+		<?php if ( 'header-outside' === $variant ) : ?>
+			<?php echo $header_html; ?>
+		<?php endif; ?>
+
 		<!-- Main Feature Card -->
 		<div class="fleet-main-card">
-			<div class="fleet-main-header">
-				<div class="fleet-main-text">
-					<?php if ( $main_title ) : ?>
-						<h2 class="fleet-main-title"><?php echo wp_kses_post( $main_title ); ?></h2>
-					<?php endif; ?>
-					
-					<?php if ( $main_description ) : ?>
-						<p class="fleet-main-description"><?php echo wp_kses_post( $main_description ); ?></p>
-					<?php endif; ?>
-				</div>
-
-				<?php if ( $main_button_text ) : ?>
-					<div class="fleet-main-cta wp-block-buttons">
-						<div class="wp-block-button is-style-solid-gold">
-							<a href="<?php echo esc_url($main_button_url); ?>" class="wp-block-button__link wp-element-button">
-								<?php echo esc_html($main_button_text); ?>
-							</a>
-						</div>
-					</div>
-				<?php endif; ?>
-			</div>
+			<?php if ( 'standard' === $variant ) : ?>
+				<?php echo $header_html; ?>
+			<?php endif; ?>
 
 			<?php if ( $main_img_src ) : ?>
 				<div class="fleet-main-image">
