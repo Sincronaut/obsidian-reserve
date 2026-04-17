@@ -55,7 +55,7 @@ A WordPress block theme (FSE). Uses `templates/`, `parts/`, and custom `blocks/`
 ### Data Model
 
 **Cars** — Custom Post Type, public, uses ACF + custom meta:
-- ACF fields: `car_make`, `car_model`, `car_year`, `car_daily_rate`, `car_total_units` (deprecated — now derived from color variants)
+- ACF fields: `car_make`, `car_model`, `car_year`, `car_daily_rate` (`car_total_units` was removed in Phase 11; total is now derived live from `_car_inventory`)
 - ACF: `car_colors` (checkbox — source of truth for which colors exist), `car_status` (select: available/maintenance/retired)
 - ACF: `car_img_exterior`, `car_img_interior`, `car_img_engine`, `car_img_detail` (gallery images for the modal)
 - Custom meta: `_car_color_variants` (JSON) — per-color units + image ID, e.g. `{"orange":{"units":3,"image_id":456},"black":{"units":2,"image_id":789}}`

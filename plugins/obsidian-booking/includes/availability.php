@@ -230,9 +230,8 @@ function obsidian_get_car_total_units_in_region( $car_id, $region_slug ) {
  *
  * Backwards-compatibility:
  *   - If `_car_inventory` is empty, falls back to the legacy
- *     `_car_color_variants` JSON (Phase 4 format).
- *   - If THAT is also empty, splits ACF `car_total_units` evenly across
- *     `car_colors` (very old fallback).
+ *     `_car_color_variants` JSON (Phase 4 format) so cars created
+ *     before Phase 11 keep working until the migration touches them.
  *
  * @param int $car_id      The Car post ID.
  * @param int $location_id Optional branch ID. 0 = aggregate across branches.
@@ -303,25 +302,7 @@ function obsidian_get_color_variants( $car_id, $location_id = 0 ) {
 		return $variants;
 	}
 
-	/* ── Ancient fallback: car_total_units split across car_colors ── */
-
-	$colors      = get_field( 'car_colors', $car_id );
-	$total_units = (int) get_field( 'car_total_units', $car_id );
-
-	if ( empty( $colors ) || ! is_array( $colors ) ) {
-		return array();
-	}
-
-	$per_color = max( 1, intdiv( $total_units, count( $colors ) ) );
-	$fallback  = array();
-	foreach ( $colors as $color ) {
-		$fallback[ strtolower( $color ) ] = array(
-			'units'  => $per_color,
-			'images' => array(),
-		);
-	}
-
-	return $fallback;
+	return array();
 }
 
 /**
@@ -335,20 +316,11 @@ function obsidian_get_total_units( $car_id, $location_id = 0 ) {
 
 	$variants = obsidian_get_color_variants( $car_id, $location_id );
 
-	if ( ! empty( $variants ) ) {
-		$total = 0;
-		foreach ( $variants as $data ) {
-			$total += (int) ( $data['units'] ?? 0 );
-		}
-		return $total;
+	$total = 0;
+	foreach ( $variants as $data ) {
+		$total += (int) ( $data['units'] ?? 0 );
 	}
-
-	// Legacy fallback only meaningful when not scoped to a branch.
-	if ( $location_id === 0 ) {
-		return (int) get_field( 'car_total_units', $car_id );
-	}
-
-	return 0;
+	return $total;
 }
 
 /* ══════════════════════════════════════════════════════════════

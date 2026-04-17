@@ -256,7 +256,7 @@ Assign to: Post Type = Car
 | Model | `car_model` | Text | e.g. "GTR" |
 | Year | `car_year` | Number | e.g. 2024 |
 | Daily Rate | `car_daily_rate` | Number | In PHP peso, e.g. 850.00 |
-| Total Units | `car_total_units` | Number | **DEPRECATED** — now derived from color variants. Kept as fallback. |
+| ~~Total Units~~ | ~~`car_total_units`~~ | ~~Number~~ | **REMOVED in Phase 11.** Hidden from the admin UI via `acf/prepare_field/name=car_total_units` → `__return_false`. The total is now computed live from `_car_inventory`. Delete the field from Custom Fields → Field Groups → "Car Details" if you want to clean up the database. |
 | Colors | `car_colors` | Checkbox | Orange, Red, Black, Blue (expandable) — source of truth for which colors exist |
 | Car Status | `car_status` | Select | Choices: available, maintenance, retired |
 | Image - Exterior | `car_img_exterior` | Image | Return: Image URL (modal gallery) |

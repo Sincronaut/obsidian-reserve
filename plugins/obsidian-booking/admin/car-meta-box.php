@@ -33,6 +33,20 @@ if ( ! defined( 'OBSIDIAN_IMAGES_PER_COLOR' ) ) {
 }
 
 /**
+ * Hide the deprecated `car_total_units` ACF field from the Car edit screen.
+ *
+ * The field group was originally created in the ACF admin UI (not in code), so
+ * we can't delete it programmatically without touching the database. Returning
+ * `false` from `acf/prepare_field` suppresses the field from rendering on every
+ * screen — admin, REST, and any other ACF context — without altering the field
+ * group definition itself.
+ *
+ * If you want to remove it permanently: Custom Fields → Field Groups →
+ * "Car Details" → delete the "Total Units" field, then drop this filter.
+ */
+add_filter( 'acf/prepare_field/name=car_total_units', '__return_false' );
+
+/**
  * Register both meta boxes on the Car CPT edit screen.
  */
 function obsidian_add_car_meta_boxes() {
