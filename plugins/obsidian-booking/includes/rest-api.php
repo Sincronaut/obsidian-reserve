@@ -61,6 +61,36 @@ function obsidian_register_rest_routes() {
 		),
 	) );
 
+	/* ── Phase 11: Locations & Regions ─────────────────── */
+
+	// GET /regions — All regions, each with its child branches.
+	register_rest_route( $namespace, '/regions', array(
+		'methods'             => 'GET',
+		'callback'            => 'obsidian_api_get_regions',
+		'permission_callback' => '__return_true',
+	) );
+
+	// GET /locations — All branches (filterable by ?region=slug or ?status=)
+	register_rest_route( $namespace, '/locations', array(
+		'methods'             => 'GET',
+		'callback'            => 'obsidian_api_get_locations',
+		'permission_callback' => '__return_true',
+	) );
+
+	// GET /locations/{id} — Single branch detail
+	register_rest_route( $namespace, '/locations/(?P<id>\d+)', array(
+		'methods'             => 'GET',
+		'callback'            => 'obsidian_api_get_location',
+		'permission_callback' => '__return_true',
+		'args'                => array(
+			'id' => array(
+				'validate_callback' => function ( $param ) {
+					return is_numeric( $param );
+				},
+			),
+		),
+	) );
+
 	/* ══════════════════════════════════════════════
 	   PROTECTED ENDPOINTS (login required)
 	   ══════════════════════════════════════════════ */
@@ -101,23 +131,46 @@ add_action( 'rest_api_init', 'obsidian_register_rest_routes' );
 
 /**
  * GET /cars
- * Returns all published cars with their ACF fields and featured image.
+ *
+ * Optional query params:
+ *   ?location_id=12  → only cars stocked at that branch (and counts scoped to it)
+ *   ?region=luzon    → only cars stocked at any branch in that region
+ *
+ * When neither is provided, returns every published car with units summed
+ * across all branches (legacy behaviour).
  */
 function obsidian_api_get_cars( $request ) {
 
-	$args = array(
+	$location_id  = isset( $request['location_id'] ) ? (int) $request['location_id'] : 0;
+	$region_slug  = isset( $request['region'] ) ? sanitize_title( $request['region'] ) : '';
+
+	$cars = get_posts( array(
 		'post_type'      => 'car',
 		'post_status'    => 'publish',
 		'posts_per_page' => -1,
 		'orderby'        => 'title',
 		'order'          => 'ASC',
-	);
+	) );
 
-	$cars  = get_posts( $args );
-	$data  = array();
+	$data = array();
 
 	foreach ( $cars as $car ) {
-		$data[] = obsidian_format_car_data( $car->ID );
+
+		// Apply branch / region filtering.
+		$branches = obsidian_get_car_branches( $car->ID );
+
+		if ( $location_id > 0 ) {
+			if ( ! in_array( $location_id, $branches, true ) ) {
+				continue;
+			}
+		} elseif ( $region_slug !== '' ) {
+			$regions = obsidian_get_car_regions( $car->ID );
+			if ( ! in_array( $region_slug, $regions, true ) ) {
+				continue;
+			}
+		}
+
+		$data[] = obsidian_format_car_data( $car->ID, $location_id );
 	}
 
 	return rest_ensure_response( $data );
@@ -125,12 +178,17 @@ function obsidian_api_get_cars( $request ) {
 
 /**
  * GET /cars/{id}
- * Returns a single car's full details.
+ *
+ * Optional query param:
+ *   ?location_id=12 — scope color_variants and units to that branch.
+ *   Without it, returns the multi-branch aggregated view + a `branches`
+ *   array describing every branch this car is stocked at.
  */
 function obsidian_api_get_car( $request ) {
 
-	$car_id = (int) $request['id'];
-	$car    = get_post( $car_id );
+	$car_id      = (int) $request['id'];
+	$location_id = isset( $request['location_id'] ) ? (int) $request['location_id'] : 0;
+	$car         = get_post( $car_id );
 
 	if ( ! $car || $car->post_type !== 'car' || $car->post_status !== 'publish' ) {
 		return new WP_Error(
@@ -140,17 +198,33 @@ function obsidian_api_get_car( $request ) {
 		);
 	}
 
-	return rest_ensure_response( obsidian_format_car_data( $car_id ) );
+	if ( $location_id > 0 && ! obsidian_branch_has_car( $car_id, $location_id ) ) {
+		return new WP_Error(
+			'car_not_at_branch',
+			__( 'This vehicle is not available at the selected branch.', 'obsidian-booking' ),
+			array( 'status' => 404 )
+		);
+	}
+
+	return rest_ensure_response( obsidian_format_car_data( $car_id, $location_id ) );
 }
 
 /**
  * GET /availability/{car_id}
- * Returns unavailable dates and total units for a car.
+ *
+ * Optional query params:
+ *   ?location_id=12 — scope availability to that branch (recommended).
+ *   ?days=N         — how many days ahead to compute (default 90).
+ *
+ * Without `location_id` the response represents aggregated availability
+ * across all branches — which the modal uses when the user hasn't picked
+ * a specific branch yet.
  */
 function obsidian_api_get_availability( $request ) {
 
-	$car_id = (int) $request['car_id'];
-	$car    = get_post( $car_id );
+	$car_id      = (int) $request['car_id'];
+	$location_id = isset( $request['location_id'] ) ? (int) $request['location_id'] : 0;
+	$car         = get_post( $car_id );
 
 	if ( ! $car || $car->post_type !== 'car' ) {
 		return new WP_Error(
@@ -160,18 +234,152 @@ function obsidian_api_get_availability( $request ) {
 		);
 	}
 
-	$days_ahead          = isset( $request['days'] ) ? (int) $request['days'] : 90;
-	$total_units         = obsidian_get_total_units( $car_id );
-	$unavailable         = obsidian_get_unavailable_dates( $car_id, $days_ahead );
-	$unavailable_by_color = obsidian_get_unavailable_dates_by_color( $car_id, $days_ahead );
+	if ( $location_id > 0 && ! obsidian_branch_has_car( $car_id, $location_id ) ) {
+		return new WP_Error(
+			'car_not_at_branch',
+			__( 'This vehicle is not available at the selected branch.', 'obsidian-booking' ),
+			array( 'status' => 404 )
+		);
+	}
+
+	$days_ahead           = isset( $request['days'] ) ? (int) $request['days'] : 90;
+	$total_units          = obsidian_get_total_units( $car_id, $location_id );
+	$unavailable          = obsidian_get_unavailable_dates( $car_id, $days_ahead, $location_id );
+	$unavailable_by_color = obsidian_get_unavailable_dates_by_color( $car_id, $days_ahead, $location_id );
 
 	return rest_ensure_response( array(
 		'car_id'                     => $car_id,
+		'location_id'                => $location_id,
 		'total_units'                => $total_units,
 		'unavailable_dates'          => $unavailable,
 		'unavailable_dates_by_color' => $unavailable_by_color,
 		'days_checked'               => $days_ahead,
 	) );
+}
+
+/**
+ * GET /regions
+ *
+ * Returns every region term with its child active branches embedded.
+ * Used by the header mega-menu, fleet sidebar filters, and any UI that
+ * needs the full hierarchy in one round-trip.
+ */
+function obsidian_api_get_regions( $request ) {
+
+	$regions = get_terms( array(
+		'taxonomy'   => 'region',
+		'hide_empty' => false,
+		'orderby'    => 'name',
+		'order'      => 'ASC',
+	) );
+
+	if ( is_wp_error( $regions ) ) {
+		return rest_ensure_response( array() );
+	}
+
+	$out = array();
+
+	foreach ( $regions as $region ) {
+
+		$branch_ids = get_posts( array(
+			'post_type'      => 'location',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+			'tax_query'      => array(
+				array(
+					'taxonomy' => 'region',
+					'field'    => 'term_id',
+					'terms'    => $region->term_id,
+				),
+			),
+		) );
+
+		$branches = array();
+		foreach ( $branch_ids as $branch_id ) {
+			$branches[] = obsidian_format_location_data( $branch_id, false );
+		}
+
+		$out[] = array(
+			'id'       => $region->term_id,
+			'name'     => $region->name,
+			'slug'     => $region->slug,
+			'branches' => $branches,
+		);
+	}
+
+	return rest_ensure_response( $out );
+}
+
+/**
+ * GET /locations
+ *
+ * Filterable by ?region=slug or ?status=active|coming_soon|closed.
+ * Returns full branch detail (address, contact, coordinates) for each.
+ */
+function obsidian_api_get_locations( $request ) {
+
+	$region_slug = isset( $request['region'] ) ? sanitize_title( $request['region'] ) : '';
+	$status      = isset( $request['status'] ) ? sanitize_text_field( $request['status'] ) : '';
+
+	$args = array(
+		'post_type'      => 'location',
+		'post_status'    => 'publish',
+		'posts_per_page' => -1,
+		'orderby'        => 'title',
+		'order'          => 'ASC',
+		'fields'         => 'ids',
+	);
+
+	if ( $region_slug !== '' ) {
+		$args['tax_query'] = array(
+			array(
+				'taxonomy' => 'region',
+				'field'    => 'slug',
+				'terms'    => $region_slug,
+			),
+		);
+	}
+
+	if ( $status !== '' ) {
+		$args['meta_query'] = array(
+			array(
+				'key'     => 'location_status',
+				'value'   => $status,
+				'compare' => '=',
+			),
+		);
+	}
+
+	$ids  = get_posts( $args );
+	$data = array();
+
+	foreach ( $ids as $id ) {
+		$data[] = obsidian_format_location_data( $id, true );
+	}
+
+	return rest_ensure_response( $data );
+}
+
+/**
+ * GET /locations/{id} — Single branch detail.
+ */
+function obsidian_api_get_location( $request ) {
+
+	$id   = (int) $request['id'];
+	$post = get_post( $id );
+
+	if ( ! $post || $post->post_type !== 'location' || $post->post_status !== 'publish' ) {
+		return new WP_Error(
+			'location_not_found',
+			__( 'Branch not found.', 'obsidian-booking' ),
+			array( 'status' => 404 )
+		);
+	}
+
+	return rest_ensure_response( obsidian_format_location_data( $id, true ) );
 }
 
 /**
@@ -183,7 +391,10 @@ function obsidian_api_create_booking( $request ) {
 	$params = $request->get_json_params();
 
 	// --- Required fields (shared) ---
-	$required = array( 'car_id', 'start_date', 'end_date', 'customer_type', 'first_name', 'last_name', 'address', 'birth_date', 'license_number', 'location' );
+	// Note: `location_id` is the canonical Phase-11 branch reference. The legacy
+	// `location` string field is still accepted for one release (and resolved to
+	// the Main Branch below) so old cached frontends don't break mid-deploy.
+	$required = array( 'car_id', 'start_date', 'end_date', 'customer_type', 'first_name', 'last_name', 'address', 'birth_date', 'license_number' );
 	foreach ( $required as $field ) {
 		if ( empty( $params[ $field ] ) ) {
 			return new WP_Error(
@@ -209,7 +420,28 @@ function obsidian_api_create_booking( $request ) {
 	$birth_date     = sanitize_text_field( $params['birth_date'] );
 	$phone          = isset( $params['phone'] ) ? sanitize_text_field( $params['phone'] ) : '';
 	$license_number = sanitize_text_field( $params['license_number'] );
-	$location       = sanitize_text_field( $params['location'] );
+
+	// Location — prefer the new integer branch ID, fall back to legacy slug.
+	$location_id  = isset( $params['location_id'] ) ? (int) $params['location_id'] : 0;
+	$location_str = isset( $params['location'] ) ? sanitize_text_field( $params['location'] ) : '';
+
+	// Backward-compat: if no branch ID was sent (old form), point this booking
+	// at the Main Branch (the same target the migration uses) so we never
+	// orphan a booking from a branch.
+	if ( $location_id <= 0 ) {
+		$fallback = obsidian_migration_v2_ensure_main_branch();
+		if ( $fallback > 0 ) {
+			$location_id = $fallback;
+		}
+	}
+
+	if ( $location_id <= 0 ) {
+		return new WP_Error(
+			'missing_field',
+			__( 'A pickup branch must be selected.', 'obsidian-booking' ),
+			array( 'status' => 400 )
+		);
+	}
 
 	// Local-only
 	$gov_id_type   = isset( $params['gov_id_type'] ) ? sanitize_text_field( $params['gov_id_type'] ) : '';
@@ -241,13 +473,40 @@ function obsidian_api_create_booking( $request ) {
 		);
 	}
 
-	// --- Validate color exists for this car ---
+	// --- Validate branch exists, is published, and is active ---
+	$branch = get_post( $location_id );
+	if ( ! $branch || $branch->post_type !== 'location' || $branch->post_status !== 'publish' ) {
+		return new WP_Error(
+			'invalid_branch',
+			__( 'The selected branch does not exist.', 'obsidian-booking' ),
+			array( 'status' => 400 )
+		);
+	}
+	$branch_status = get_post_meta( $location_id, 'location_status', true );
+	if ( $branch_status && $branch_status !== 'active' ) {
+		return new WP_Error(
+			'branch_inactive',
+			__( 'The selected branch is not currently accepting bookings.', 'obsidian-booking' ),
+			array( 'status' => 400 )
+		);
+	}
+
+	// --- Validate the car is actually stocked at this branch ---
+	if ( ! obsidian_branch_has_car( $car_id, $location_id ) ) {
+		return new WP_Error(
+			'car_not_at_branch',
+			__( 'This vehicle is not available at the selected branch.', 'obsidian-booking' ),
+			array( 'status' => 400 )
+		);
+	}
+
+	// --- Validate color exists for this car at this branch ---
 	if ( ! empty( $color ) ) {
-		$variants = obsidian_get_color_variants( $car_id );
-		if ( ! isset( $variants[ $color ] ) ) {
+		$variants = obsidian_get_color_variants( $car_id, $location_id );
+		if ( ! isset( $variants[ $color ] ) || (int) $variants[ $color ]['units'] <= 0 ) {
 			return new WP_Error(
 				'invalid_color',
-				__( 'This color is not available for this vehicle.', 'obsidian-booking' ),
+				__( 'This color is not available for this vehicle at the selected branch.', 'obsidian-booking' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -327,19 +586,21 @@ function obsidian_api_create_booking( $request ) {
 	}
 
 	// --- RE-CHECK AVAILABILITY (race condition protection) ---
+	// Always scope to the selected branch so two customers can't race to book
+	// the last Orange GTR at the same branch.
 	if ( ! empty( $color ) ) {
-		$color_available = obsidian_get_available_units_by_color( $car_id, $color, $start_date, $end_date );
+		$color_available = obsidian_get_available_units_by_color( $car_id, $color, $start_date, $end_date, $location_id );
 		if ( $color_available <= 0 ) {
 			return new WP_Error(
 				'not_available',
-				__( 'Sorry, this color variant is no longer available for the selected dates.', 'obsidian-booking' ),
+				__( 'Sorry, this color variant is no longer available at this branch for the selected dates.', 'obsidian-booking' ),
 				array( 'status' => 409 )
 			);
 		}
-	} elseif ( ! obsidian_is_car_available( $car_id, $start_date, $end_date ) ) {
+	} elseif ( ! obsidian_is_car_available( $car_id, $start_date, $end_date, $location_id ) ) {
 		return new WP_Error(
 			'not_available',
-			__( 'Sorry, this car is no longer available for the selected dates.', 'obsidian-booking' ),
+			__( 'Sorry, this car is no longer available at this branch for the selected dates.', 'obsidian-booking' ),
 			array( 'status' => 409 )
 		);
 	}
@@ -391,7 +652,15 @@ function obsidian_api_create_booking( $request ) {
 	update_post_meta( $booking_id, '_booking_birth_date', $birth_date );
 	update_post_meta( $booking_id, '_booking_phone', $phone );
 	update_post_meta( $booking_id, '_booking_license_number', $license_number );
-	update_post_meta( $booking_id, '_booking_location', $location );
+
+	// Phase 11: canonical branch reference + legacy string for one-release compat.
+	update_post_meta( $booking_id, '_booking_location_id', $location_id );
+	if ( $location_str !== '' ) {
+		update_post_meta( $booking_id, '_booking_location', $location_str );
+	} else {
+		// Store the branch title as a human-readable fallback for old reports/UIs.
+		update_post_meta( $booking_id, '_booking_location', get_the_title( $location_id ) );
+	}
 
 	// Type-specific
 	update_post_meta( $booking_id, '_booking_gov_id_type', $gov_id_type );
@@ -584,23 +853,29 @@ function obsidian_api_upload_document( $request ) {
  * Pulls data from WordPress core (title, thumbnail) and ACF fields.
  * Used by both the /cars list and /cars/{id} single endpoints.
  *
- * @param int $car_id The Car post ID.
+ * @param int $car_id      The Car post ID.
+ * @param int $location_id Optional branch to scope inventory & units to.
+ *                         0 = aggregate across all branches.
  * @return array Formatted car data.
  */
-function obsidian_format_car_data( $car_id ) {
+function obsidian_format_car_data( $car_id, $location_id = 0 ) {
+
+	$location_id = (int) $location_id;
 
 	// Get car class terms
 	$classes    = wp_get_post_terms( $car_id, 'car_class', array( 'fields' => 'names' ) );
 	$car_class  = ! is_wp_error( $classes ) && ! empty( $classes ) ? $classes[0] : '';
 
-	// Get ACF color choices
+	// Get ACF color choices (master list — drives the picker even if a colour
+	// happens to have 0 units at the current branch).
 	$colors = get_field( 'car_colors', $car_id );
 	if ( ! is_array( $colors ) ) {
 		$colors = array();
 	}
 
-	// Build per-color variant data with full gallery per color
-	$variants       = obsidian_get_color_variants( $car_id );
+	// Build per-color variant data with full gallery per color, scoped to the
+	// requested branch (or aggregated when $location_id is 0).
+	$variants       = obsidian_get_color_variants( $car_id, $location_id );
 	$color_variants = array();
 	$fallback_img   = get_the_post_thumbnail_url( $car_id, 'large' ) ?: '';
 
@@ -627,6 +902,15 @@ function obsidian_format_car_data( $car_id ) {
 		);
 	}
 
+	// "Available at" — every branch this car is stocked at, regardless of
+	// the current scope. Used by the fleet card badge and the modal's
+	// branch picker.
+	$branch_ids   = obsidian_get_car_branches( $car_id );
+	$car_branches = array();
+	foreach ( $branch_ids as $branch_id ) {
+		$car_branches[] = obsidian_format_location_data( $branch_id, false );
+	}
+
 	// Specifications — WYSIWYG or textarea field
 	$specs_raw = get_field( 'car_specs', $car_id );
 	$specs     = $specs_raw ? wp_kses_post( $specs_raw ) : '';
@@ -642,11 +926,57 @@ function obsidian_format_car_data( $car_id ) {
 		'model'          => get_field( 'car_model', $car_id ) ?: '',
 		'year'           => (int) get_field( 'car_year', $car_id ),
 		'daily_rate'     => (float) get_field( 'car_daily_rate', $car_id ),
-		'total_units'    => obsidian_get_total_units( $car_id ),
+		'total_units'    => obsidian_get_total_units( $car_id, $location_id ),
 		'colors'         => $colors,
 		'color_variants' => $color_variants,
 		'specifications' => $specs,
 		'status'         => get_field( 'car_status', $car_id ) ?: 'available',
 		'link'           => get_permalink( $car_id ),
+		'location_id'    => $location_id,
+		'branches'       => $car_branches,
 	);
+}
+
+/**
+ * Format a Location post for REST output.
+ *
+ * @param int  $id          Location post ID.
+ * @param bool $with_detail When true, include address/contact/coordinates.
+ *                          When false, only the bare minimum (id, name, slug,
+ *                          region) — used inside /cars and /regions to keep
+ *                          payload size reasonable.
+ * @return array
+ */
+function obsidian_format_location_data( $id, $with_detail = true ) {
+
+	$id     = (int) $id;
+	$region = wp_get_post_terms( $id, 'region', array( 'number' => 1 ) );
+	$region = ! is_wp_error( $region ) && ! empty( $region ) ? $region[0] : null;
+
+	$base = array(
+		'id'          => $id,
+		'name'        => get_the_title( $id ),
+		'slug'        => get_post_field( 'post_name', $id ),
+		'status'      => get_post_meta( $id, 'location_status', true ) ?: 'active',
+		'region_id'   => $region ? (int) $region->term_id : 0,
+		'region_name' => $region ? $region->name : '',
+		'region_slug' => $region ? $region->slug : '',
+	);
+
+	if ( ! $with_detail ) {
+		return $base;
+	}
+
+	return array_merge( $base, array(
+		'address'        => get_post_meta( $id, 'location_address', true ),
+		'contact_number' => get_post_meta( $id, 'location_contact_number', true ),
+		'contact_email'  => get_post_meta( $id, 'location_contact_email', true ),
+		'hours'          => get_post_meta( $id, 'location_hours', true ),
+		'map_url'        => get_post_meta( $id, 'location_map_url', true ),
+		'latitude'       => (float) get_post_meta( $id, 'location_latitude', true ),
+		'longitude'      => (float) get_post_meta( $id, 'location_longitude', true ),
+		'image'          => get_the_post_thumbnail_url( $id, 'large' ) ?: '',
+		'description'    => apply_filters( 'the_content', get_post_field( 'post_content', $id ) ),
+		'link'           => get_permalink( $id ),
+	) );
 }
