@@ -324,3 +324,67 @@ function obsidian_get_unavailable_dates( $car_id, $days_ahead = 90 ) {
 
 	return $unavailable;
 }
+
+/**
+ * Get fully-booked dates per color variant.
+ *
+ * Returns an associative array keyed by lowercase color name. Each value
+ * is an array of 'Y-m-d' strings where ALL units of that color are booked.
+ *
+ * Used by the booking modal to disable dates in the calendar when a
+ * specific color is selected (so users don't pick dates for a color that
+ * is sold out, even if other colors are still available).
+ *
+ * @param int $car_id     The Car post ID.
+ * @param int $days_ahead How many days into the future to check (default 90).
+ *
+ * @return array e.g. [ 'orange' => [ '2026-12-10', ... ], 'black' => [...] ]
+ */
+function obsidian_get_unavailable_dates_by_color( $car_id, $days_ahead = 90 ) {
+
+	$variants = obsidian_get_color_variants( $car_id );
+	$result   = array();
+
+	if ( empty( $variants ) ) {
+		return $result;
+	}
+
+	$today = new DateTime( 'today', wp_timezone() );
+
+	foreach ( $variants as $color => $data ) {
+		$result[ $color ] = array();
+		$color_units      = (int) ( $data['units'] ?? 0 );
+
+		// If the color has 0 stock, every date is "unavailable" for it.
+		if ( $color_units <= 0 ) {
+			for ( $i = 0; $i < $days_ahead; $i++ ) {
+				$d = clone $today;
+				$d->modify( "+{$i} days" );
+				$result[ $color ][] = $d->format( 'Y-m-d' );
+			}
+			continue;
+		}
+
+		for ( $i = 0; $i < $days_ahead; $i++ ) {
+			$check_date = clone $today;
+			$check_date->modify( "+{$i} days" );
+			$date_string = $check_date->format( 'Y-m-d' );
+
+			$next_day = clone $check_date;
+			$next_day->modify( '+1 day' );
+
+			$available = obsidian_get_available_units_by_color(
+				$car_id,
+				$color,
+				$date_string,
+				$next_day->format( 'Y-m-d' )
+			);
+
+			if ( $available <= 0 ) {
+				$result[ $color ][] = $date_string;
+			}
+		}
+	}
+
+	return $result;
+}

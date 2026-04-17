@@ -95,11 +95,13 @@
          }
 
          currentCar = car;
-         currentCar._unavailable = (avail && avail.unavailable_dates) ? avail.unavailable_dates : [];
+         currentCar._unavailable         = (avail && avail.unavailable_dates) ? avail.unavailable_dates : [];
+         currentCar._unavailableByColor  = (avail && avail.unavailable_dates_by_color) ? avail.unavailable_dates_by_color : {};
          selectedColor = null;
 
          populateModal(currentCar);
-         initFlatpickr(currentCar._unavailable);
+         initFlatpickr(getDisableDatesForCurrentColor());
+         applyColorDisableDates();
 
          loader.style.display = 'none';
          content.style.display = '';
@@ -245,6 +247,7 @@
             label.classList.add('active');
 
             buildGallery(v.gallery || [], fallbackImg);
+            applyColorDisableDates();
             validateForm();
          });
 
@@ -253,6 +256,62 @@
    }
 
    /* ── Flatpickr ── */
+
+   /**
+    * Merge the car-wide unavailable dates with the dates that are sold-out
+    * for the *currently selected* color. The result is the array of dates
+    * that should be disabled in the pickup/dropoff calendars.
+    */
+   function getDisableDatesForCurrentColor() {
+      if (!currentCar) return [];
+
+      var carWide = currentCar._unavailable || [];
+
+      if (!selectedColor || !currentCar._unavailableByColor) {
+         return carWide.slice();
+      }
+
+      var colorDates = currentCar._unavailableByColor[selectedColor] || [];
+
+      // Use a Set for de-duplication.
+      var merged = {};
+      carWide.forEach(function (d) { merged[d] = true; });
+      colorDates.forEach(function (d) { merged[d] = true; });
+
+      return Object.keys(merged);
+   }
+
+   /**
+    * Refresh the calendars' disabled dates based on the selected color.
+    * If the previously selected pickup/dropoff dates are now disabled,
+    * clear them so the user is forced to re-pick valid dates.
+    */
+   function applyColorDisableDates() {
+      var dates = getDisableDatesForCurrentColor();
+
+      if (pickupFP) {
+         pickupFP.set('disable', dates);
+         if (pickupFP.selectedDates.length > 0) {
+            var p = pickupFP.formatDate(pickupFP.selectedDates[0], 'Y-m-d');
+            if (dates.indexOf(p) !== -1) {
+               pickupFP.clear();
+            }
+         }
+      }
+
+      if (dropoffFP) {
+         dropoffFP.set('disable', dates);
+         if (dropoffFP.selectedDates.length > 0) {
+            var d = dropoffFP.formatDate(dropoffFP.selectedDates[0], 'Y-m-d');
+            if (dates.indexOf(d) !== -1) {
+               dropoffFP.clear();
+            }
+         }
+      }
+
+      calculateTotal();
+      validateForm();
+   }
 
    function initFlatpickr(unavailableDates) {
       pickupFP = flatpickr(pickupInput, {
