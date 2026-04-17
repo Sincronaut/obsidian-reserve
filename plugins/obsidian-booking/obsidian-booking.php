@@ -37,6 +37,9 @@ require_once OBSIDIAN_BOOKING_DIR . 'includes/taxonomies.php';
 // Location/Branch ACF schema (Phase 11)
 require_once OBSIDIAN_BOOKING_DIR . 'includes/location-fields.php';
 
+// One-time data migrations (Phase 11)
+require_once OBSIDIAN_BOOKING_DIR . 'includes/migrations.php';
+
 // Core logic (Phase 3)
 require_once OBSIDIAN_BOOKING_DIR . 'includes/availability.php';
 require_once OBSIDIAN_BOOKING_DIR . 'includes/booking-handler.php';
