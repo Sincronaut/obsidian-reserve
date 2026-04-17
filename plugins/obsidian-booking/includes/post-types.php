@@ -91,3 +91,55 @@ function obsidian_register_booking_post_type() {
 	register_post_type( 'booking', $args );
 }
 add_action( 'init', 'obsidian_register_booking_post_type' );
+
+/* ══════════════════════════════════════════════════
+   LOCATION (Branch) Custom Post Type — Phase 11
+   ══════════════════════════════════════════════════ */
+
+/**
+ * Branches are physical Obsidian Reserve stores (e.g. "Makati", "Cebu City").
+ *
+ * Each Location post:
+ *   - Belongs to one Region taxonomy term (Luzon / Visayas / Mindanao)
+ *   - Carries address + contact + map coordinates via ACF
+ *   - Holds per-color car inventory through the `_car_inventory` meta on each Car
+ *
+ * Bookings reference a single branch via `_booking_location_id`. Inventory
+ * is consumed only at the booking's branch.
+ */
+function obsidian_register_location_post_type() {
+
+	$labels = array(
+		'name'               => __( 'Locations', 'obsidian-booking' ),
+		'singular_name'      => __( 'Location', 'obsidian-booking' ),
+		'menu_name'          => __( 'Locations', 'obsidian-booking' ),
+		'add_new'            => __( 'Add New Branch', 'obsidian-booking' ),
+		'add_new_item'       => __( 'Add New Branch', 'obsidian-booking' ),
+		'edit_item'          => __( 'Edit Branch', 'obsidian-booking' ),
+		'new_item'           => __( 'New Branch', 'obsidian-booking' ),
+		'view_item'          => __( 'View Branch', 'obsidian-booking' ),
+		'search_items'       => __( 'Search Branches', 'obsidian-booking' ),
+		'not_found'          => __( 'No branches found', 'obsidian-booking' ),
+		'not_found_in_trash' => __( 'No branches found in Trash', 'obsidian-booking' ),
+		'all_items'          => __( 'All Branches', 'obsidian-booking' ),
+	);
+
+	$args = array(
+		'labels'              => $labels,
+		'description'         => __( 'Physical Obsidian Reserve branches with their own car inventory.', 'obsidian-booking' ),
+		'public'              => false,        // No front-end archive — branches surface via the fleet page + map block
+		'publicly_queryable'  => false,
+		'show_ui'             => true,
+		'show_in_menu'        => true,
+		'show_in_rest'        => true,
+		'menu_position'       => 7,
+		'menu_icon'           => 'dashicons-location-alt',
+		'has_archive'         => false,
+		'supports'            => array( 'title', 'editor', 'thumbnail' ),
+		'capability_type'     => 'post',
+		'exclude_from_search' => true,
+	);
+
+	register_post_type( 'location', $args );
+}
+add_action( 'init', 'obsidian_register_location_post_type' );
