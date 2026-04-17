@@ -34,6 +34,9 @@ require_once OBSIDIAN_BOOKING_DIR . 'includes/post-types.php';
 require_once OBSIDIAN_BOOKING_DIR . 'includes/meta-fields.php';
 require_once OBSIDIAN_BOOKING_DIR . 'includes/taxonomies.php';
 
+// Location/Branch ACF schema (Phase 11)
+require_once OBSIDIAN_BOOKING_DIR . 'includes/location-fields.php';
+
 // Core logic (Phase 3)
 require_once OBSIDIAN_BOOKING_DIR . 'includes/availability.php';
 require_once OBSIDIAN_BOOKING_DIR . 'includes/booking-handler.php';
@@ -307,13 +310,22 @@ function obsidian_booking_activate()
    if (function_exists('obsidian_register_booking_post_type')) {
       obsidian_register_booking_post_type();
    }
+   if (function_exists('obsidian_register_location_post_type')) {
+      obsidian_register_location_post_type();
+   }
    if (function_exists('obsidian_register_taxonomies')) {
       obsidian_register_taxonomies();
    }
+   if (function_exists('obsidian_register_region_taxonomy')) {
+      obsidian_register_region_taxonomy();
+   }
 
-   // Seed default car classes
+   // Seed default taxonomy terms
    if (function_exists('obsidian_seed_car_classes')) {
       obsidian_seed_car_classes();
+   }
+   if (function_exists('obsidian_seed_regions')) {
+      obsidian_seed_regions();
    }
 
    // Register booking page rewrite rules before flushing

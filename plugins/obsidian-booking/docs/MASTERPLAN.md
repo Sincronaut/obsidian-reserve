@@ -3,7 +3,7 @@
 > **Corrected & enhanced version of the Gemini roadmap.**  
 > Changes from the original are marked with 🔧 (correction) or ➕ (addition).
 > 
-> **Last updated:** April 8, 2026 — Added multi-step booking page, PayMongo payment integration, admin document review gate, and security deposit.
+> **Last updated:** April 8, 2026 — Added multi-step booking page, PayMongo payment integration, admin document review gate, security deposit, and multi-location/branches system (Phase 11).
 
 ---
 
@@ -1269,6 +1269,359 @@ Walk through the entire flow as a new user:
 
 ---
 
+## Phase 11: Multi-Location / Branches
+**⏱ Time: ~10-12 hours (cross-cutting refactor)**
+**Goal: Support multiple physical branches with per-branch inventory. Cars can be stocked at any number of branches with independent per-color unit counts.**
+
+> [!IMPORTANT]
+> This is a **cross-cutting** phase. It touches the data model, admin UI, availability engine, REST API, fleet page, modal, booking form, emails, and the theme header. Build it as a self-contained feature branch and merge in one go. A one-time data migration handles existing cars/bookings.
+
+### Concept
+
+A **Region** is a top-level grouping (Luzon, Visayas, Mindanao). A **Branch** is the actual physical store with an address (e.g. "Makati", "Cebu City", "Davao City"). Inventory is stored **per branch**, per color. A booking is always tied to one branch — units are consumed only at that branch.
+
+**Example:**
+- *Nissan GTR* exists at the Makati branch (3 Orange + 2 Black) and the Davao branch (2 Orange + 0 Black).
+- Booking an Orange GTR in Makati does **not** affect Davao's Orange inventory.
+- Filtering the fleet by "Luzon" sums all Luzon branches; filtering by "Makati" shows only Makati's stock.
+
+### Decisions (locked in)
+
+| Question | Answer |
+|---|---|
+| Hierarchy | Two-level: **Region (taxonomy) → Branch (CPT post)** |
+| Image galleries per branch | **Same images across all branches** (stored once at the car level) |
+| "All Locations" filter | Allowed (default state on `/fleet/`) |
+| Initial regions | Luzon, Visayas, Mindanao |
+| Initial branches | At least one per region (admin adds more anytime) |
+| Branch filter selection | **Single-branch at a time** (pickup happens at one place) |
+| Map vs list under fleet | **Interactive map** (Leaflet + OpenStreetMap, no API key needed) |
+
+### Step 11.1 — Register the Region taxonomy + Location CPT
+
+In `includes/taxonomies.php`, register the `region` taxonomy attached to `location`:
+- Hierarchical: `false` (flat list — Luzon/Visayas/Mindanao)
+- Show in REST: `true`
+- Public: `true` (enables term archives if needed)
+
+In `includes/post-types.php`, register the `location` CPT (branches):
+- Public: `false` (no front-end archive — branches are surfaced via the fleet page + dedicated map section)
+- Show in admin / REST: `true`
+- Supports: `title`, `editor` (description), `thumbnail` (branch photo)
+- Taxonomies: `region`
+- Menu icon: `dashicons-location-alt`
+
+Seed three Region terms on plugin activation: Luzon, Visayas, Mindanao.
+
+### Step 11.2 — ACF Field Group: "Branch Details"
+
+Assign to: Post Type = `location`.
+
+| Field Label | Field Name | Type | Notes |
+|---|---|---|---|
+| Address | `location_address` | Textarea | Full street address |
+| Contact Number | `location_contact_number` | Text | Branch landline / mobile |
+| Contact Email | `location_contact_email` | Email | Branch inbox |
+| Operating Hours | `location_hours` | Textarea | "Mon–Sat 8am–8pm, Sun closed" |
+| Map URL | `location_map_url` | URL | Google Maps link (CTA on the map popup) |
+| Latitude | `location_latitude` | Number | For map pin (decimal degrees) |
+| Longitude | `location_longitude` | Number | For map pin (decimal degrees) |
+| Status | `location_status` | Select | `active`, `coming_soon`, `closed` (only `active` shows on fleet) |
+
+> [!NOTE]
+> **Coming Soon branches** appear on the map (greyed-out pin) but cannot be selected as a pickup branch. This lets you pre-announce expansion.
+
+### Step 11.3 — Refactor `_car_color_variants` → `_car_inventory` + `_car_galleries`
+
+Split the existing single meta field into **two** separate meta fields:
+
+**`_car_inventory`** (per-branch, per-color units):
+```json
+{
+  "12": { "orange": { "units": 3 }, "black": { "units": 2 } },
+  "15": { "orange": { "units": 2 } }
+}
+```
+Keys are branch (location) post IDs. Inner keys are color slugs.
+
+**`_car_galleries`** (color → image array, shared across branches):
+```json
+{
+  "orange": [101, 102, 103, 104, 105, 106],
+  "black":  [201, 202, 203, 204, 205, 206]
+}
+```
+
+Both registered via `register_post_meta()` in `includes/meta-fields.php`.
+
+### Step 11.4 — One-time data migration
+
+On plugin update, run `obsidian_run_migration_v2()` exactly once (gated by an `obsidian_migration_v2_done` option):
+
+1. Auto-create a "Main Branch" location (assigned to Luzon) if no branches exist.
+2. For every Car post with `_car_color_variants`:
+   - Move the per-color `images` arrays into `_car_galleries`.
+   - Move the per-color `units` into `_car_inventory` keyed by the Main Branch ID.
+   - Leave the original `_car_color_variants` in place for one release as a fallback (mark with `_migrated_v2` flag).
+3. For every Booking post with `_booking_location` (string slug):
+   - Convert to `_booking_location_id` matching the Main Branch ID.
+
+### Step 11.5 — Update availability engine
+
+In `includes/availability.php`, add `$location_id` to every signature:
+
+| Function | New Signature |
+|---|---|
+| `obsidian_get_color_variants` | `( $car_id, $location_id = 0 )` — `0` returns the full nested structure |
+| `obsidian_get_total_units` | `( $car_id, $location_id )` |
+| `obsidian_get_available_units` | `( $car_id, $location_id, $start, $end, $exclude = 0 )` |
+| `obsidian_get_available_units_by_color` | `( $car_id, $location_id, $color, $start, $end, $exclude = 0 )` |
+| `obsidian_get_unavailable_dates` | `( $car_id, $location_id, $days = 90 )` |
+| `obsidian_get_unavailable_dates_by_color` | `( $car_id, $location_id, $days = 90 )` |
+
+The booking-overlap query gains `meta_query` clause `_booking_location_id = $location_id`. Bookings only consume inventory at their own branch.
+
+**New helpers:**
+- `obsidian_get_car_branches( $car_id )` → array of branch IDs where the car is stocked (filtered to `location_status=active`)
+- `obsidian_get_car_regions( $car_id )` → array of region term slugs derived from the car's branches
+- `obsidian_branch_has_car( $car_id, $branch_id )` → boolean
+- `obsidian_get_car_total_units_in_region( $car_id, $region_slug )` → sums all branches in the region
+- `obsidian_resolve_color_gallery( $car_id, $color )` → returns the shared image URLs for the given color from `_car_galleries`
+
+### Step 11.6 — REST API additions + updates
+
+**New endpoints** (in `includes/rest-api.php`):
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/regions` | All regions, each with nested `branches: [{id, name, slug, status}]` — used by header dropdown + filter sidebar |
+| GET | `/locations` | All branches with full ACF details. Filter by `?region=luzon` or `?status=active` |
+| GET | `/locations/{id}` | Single branch detail (for confirmation page + email templates) |
+
+**Updated endpoints:**
+
+| Endpoint | Change |
+|---|---|
+| `GET /cars` | Accepts `?location_id=X` or `?region=luzon`. Scopes results + per-scope unit totals |
+| `GET /cars/{id}` | Accepts `?location_id=X`. Without it returns the multi-branch inventory structure |
+| `GET /availability/{car_id}` | **Requires** `?location_id=X` (region-level not allowed — calendar is per-branch) |
+| `POST /bookings` | Body must include `location_id`. Validates: branch is active, car is stocked there, chosen color exists at that branch |
+
+### Step 11.7 — Admin: tabbed Inventory meta box
+
+Redesign `admin/car-meta-box.php`:
+
+```
+┌─ Inventory ─────────────────────────────────────────────┐
+│  Branches: [+ Add Branch ▾]                            │
+│  ┌── Makati [✕] ── BGC ── Cebu City ── Davao City ──┐  │
+│  │                                                   │  │
+│  │  Available colors: ✓ Orange  ✓ Black              │  │
+│  │  (driven by car_colors ACF checkbox)              │  │
+│  │                                                   │  │
+│  │  Orange — Units [3]                               │  │
+│  │  Black  — Units [2]                               │  │
+│  │                                                   │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ─── Galleries (shared across all branches) ───        │
+│  Orange: [img1][img2][img3][img4][img5][img6]          │
+│  Black:  [img1][img2][img3][img4][img5][img6]          │
+└─────────────────────────────────────────────────────────┘
+```
+
+- Tabs across the top, one per branch the car is stocked at.
+- "+ Add Branch" dropdown lists branches not yet added.
+- Removing a branch with active bookings → blocked with admin notice.
+- Galleries are managed once, below the branch tabs (since images are shared).
+- `assets/js/admin-car.js` handles the tabbed UI; on save, the meta box serializes to `_car_inventory` (nested by branch) and `_car_galleries` (flat by color).
+
+### Step 11.8 — Admin: Bookings list "Location" column
+
+In `admin/booking-columns.php`, add a column showing the branch name (linked to the branch edit screen).
+
+### Step 11.9 — Admin: Locations dashboard widget
+
+A second dashboard widget below the existing pipeline widget, showing per-region utilization:
+
+```
+┌──────────────────────────────────────┐
+│  📍 Branch Utilization               │
+│                                      │
+│  ── Luzon ──                         │
+│    Makati: 8/12 cars rented (67%)    │
+│    BGC:    3/8  cars rented (38%)    │
+│  ── Visayas ──                       │
+│    Cebu:   2/5  cars rented (40%)    │
+│  ── Mindanao ──                      │
+│    Davao:  1/4  cars rented (25%)    │
+└──────────────────────────────────────┘
+```
+
+### Step 11.10 — Fleet page: filter sidebar + grid
+
+Rebuild `templates/page-fleet.html` with a two-column layout via FSE columns block (or a custom block group):
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│  HEADER                                                            │
+├──────────────┬─────────────────────────────────────────────────────┤
+│  FILTERS     │  CAR GRID (existing car-grid block)                 │
+│              │                                                     │
+│  CAR CLASS   │   [Card] [Card] [Card]                              │
+│  ☐ Exotic    │   [Card] [Card] [Card]                              │
+│  ☐ Executive │                                                     │
+│  ☐ SUV       │                                                     │
+│  ☐ Sport     │                                                     │
+│              │                                                     │
+│  LOCATION    │                                                     │
+│  ○ All       │                                                     │
+│  ▼ Luzon     │                                                     │
+│    ○ Makati  │                                                     │
+│    ○ BGC     │                                                     │
+│  ▼ Visayas   │                                                     │
+│    ○ Cebu    │                                                     │
+│  ▼ Mindanao  │                                                     │
+│    ○ Davao   │                                                     │
+│              │                                                     │
+│  [Clear]     │                                                     │
+└──────────────┴─────────────────────────────────────────────────────┘
+```
+
+**New block:** `themes/child-obsidian-reserve/blocks/fleet-filters/` — renders the sidebar:
+- Car Class checkboxes (multi-select, OR within group)
+- Location radios grouped by region (single-select, AND across groups)
+- "Clear all filters" button
+
+**Filter behaviour:**
+- Filters are **OR within a group, AND across groups**: e.g. `(Exotic OR Sport) AND Makati`.
+- Class is **multi-select**; location is **single-select** (since pickup happens at one branch).
+- Selecting a region radio = filter to "all branches in that region".
+- Filtering is **client-side JS**: each car card is pre-rendered with `data-class="exotic"` and `data-branches="12,15"` attributes.
+- URL stays in sync: `?location=makati&class=exotic,sport` (or `?region=luzon`). Header dropdown links use this param so deep-links work.
+- On page load, the sidebar pre-selects filters from URL params.
+
+**Car card update:** Each card shows a small "**Available at:** Makati, Davao" badge so users see multi-branch cars at a glance. Per-color unit counts in the card update based on the active location filter (or sum across all when "All" is selected).
+
+### Step 11.11 — Fleet page: interactive map section
+
+A new section below the grid, full-width:
+
+```
+┌───────────────────────────────────────────────────────────────────┐
+│  Visit Us                                                         │
+│                                                                   │
+│  ┌─────────────────────────────────┐  ┌──────────────────────┐   │
+│  │                                 │  │ [Branch name]        │   │
+│  │   Leaflet map of the           │  │ Address              │   │
+│  │   Philippines with branch pins  │  │ Contact              │   │
+│  │   (gold pins for active,        │  │ Hours                │   │
+│  │   greyed for coming soon)       │  │ [View on Google Maps]│   │
+│  │                                 │  │ [See cars at branch] │   │
+│  │   Click pin → side panel        │  │                      │   │
+│  │   updates with branch info      │  └──────────────────────┘   │
+│  └─────────────────────────────────┘                              │
+│                                                                   │
+│  Below: list grouped by region as fallback / SEO content          │
+│  ── Luzon ── Makati · BGC · Quezon City                          │
+│  ── Visayas ── Cebu City · Iloilo                                │
+│  ── Mindanao ── Davao City · CDO                                 │
+└───────────────────────────────────────────────────────────────────┘
+```
+
+**Implementation:**
+- New block: `themes/child-obsidian-reserve/blocks/locations-map/`.
+- Uses **Leaflet** (CDN-hosted, ~40KB) + **OpenStreetMap tiles** (free, no API key).
+- Custom gold pin marker matching the brand.
+- On `DOMContentLoaded`, fetch `/regions` (which embeds branches with lat/lng), then plot pins.
+- Click pin → updates the right-side info card (no page reload).
+- "See cars at this branch" CTA links to `/fleet/?location=<branch-slug>`.
+- A grouped list of branches sits below the map for SEO + fallback when JS fails.
+- The block also appears on a dedicated `/locations/` page (same content, no fleet grid above).
+
+> [!NOTE]
+> **Branch coordinates required** — admins must fill `location_latitude` + `location_longitude` ACF fields for the branch to appear on the map. Branches without coordinates still show in the grouped list and dropdowns, just not on the map.
+
+### Step 11.12 — Header: Locations mega-menu block
+
+A new block: `themes/child-obsidian-reserve/blocks/locations-menu/` (or a custom navigation block extension).
+
+Renders as a dropdown when "Locations" is hovered/clicked in the header:
+
+```
+┌─ Luzon ──────┬─ Visayas ────┬─ Mindanao ────┐
+│  Makati      │  Cebu City   │  Davao City   │
+│  BGC         │  Iloilo      │  CDO          │
+│  Quezon City │              │               │
+│  ...         │              │               │
+│                                              │
+│  [View all branches →]                       │
+└──────────────────────────────────────────────┘
+```
+
+- Each branch item links to `/fleet/?location=<branch-slug>`.
+- Each region header is also clickable: `/fleet/?region=luzon`.
+- Footer link: `/locations/` (full map page).
+- Block fetches data via the REST `/regions` endpoint (cached in a `wp_cache` transient for performance).
+- "Coming Soon" branches appear in the dropdown with a muted style and no link.
+
+### Step 11.13 — Modal: location picker
+
+In the booking modal:
+
+- **If a location filter is already active on the fleet page** → modal opens pre-scoped to that branch. Color swatches show only colors stocked at that branch with their per-branch unit counts. A "Pick up at: Makati ✏️" badge is shown at the top of the right column.
+- **If "All Locations" is active** (no filter selected on fleet) → modal shows a **branch dropdown at the top of the right column**: "Pick up at: [Select branch ▾]". Required before any other interaction.
+- Changing the branch → re-fetches `/cars/{id}?location_id=X` + `/availability/{car_id}?location_id=X` → re-renders color swatches, unit counts, and Flatpickr disabled dates.
+- 0-unit colors at the chosen branch stay disabled (existing logic).
+- The "Reserve" button URL becomes: `/booking/?car_id=X&location_id=Y&start=YYYY-MM-DD&end=YYYY-MM-DD&color=orange&customer_type=local`
+
+### Step 11.14 — Booking form: dynamic location dropdown
+
+In `themes/child-obsidian-reserve/blocks/booking-form/render.php`:
+
+- Remove the hard-coded `$locations` array (currently `Main Office`, `Airport Pickup`, `Hotel Delivery`).
+- Replace with a dynamic dropdown sourced from `WP_Query` of `location` posts with `location_status = active`, grouped by region (`<optgroup>`).
+- Pre-select the dropdown from the URL `location_id` param (passed by the modal).
+- If the URL param is present and valid → render the dropdown as **read-only** (showing the branch name + a "Change location" link that goes back to the modal).
+- On submit, save to `_booking_location_id`.
+
+### Step 11.15 — Confirmation page + emails
+
+**Confirmation page** (`render-confirmation.php` and the post-payment "Reserved" page):
+- Add a "Pickup Location" section showing branch name, address, contact number, operating hours, and a "View on Google Maps" link.
+
+**Email templates** (all 7 in `templates/emails/`):
+- Add a "Pickup Location" block to every template.
+- Especially important for `booking-confirmed.php` and `booking-reminder.php` (the user needs to know where to go).
+
+### Step 11.16 — User dashboard
+
+In the "My Reservations" cards (Phase 9), display the pickup branch under the dates.
+
+### ✅ Phase 11 Done When:
+- [ ] Region taxonomy + Location CPT registered, seeded with 3 regions
+- [ ] At least 4 branches created (one per region + at least one secondary)
+- [ ] `_car_inventory` (per-branch) + `_car_galleries` (shared) meta fields registered
+- [ ] One-time migration ran successfully (existing cars + bookings tied to "Main Branch")
+- [ ] Tabbed inventory meta box on Car edit screen works (add/remove branches, set per-color units)
+- [ ] All availability functions accept `$location_id` and scope correctly
+- [ ] `/regions`, `/locations`, `/locations/{id}` REST endpoints work
+- [ ] `/cars`, `/cars/{id}`, `/availability/{car_id}` accept `?location_id` and `?region`
+- [ ] Fleet page sidebar filters work (class multi-select + branch single-select, URL-synced)
+- [ ] Car cards show "Available at:" branch badges
+- [ ] Interactive Leaflet map shows active branches with gold pins
+- [ ] Header "Locations" mega-menu dropdown works (deep-links to filtered fleet)
+- [ ] Modal location picker refreshes inventory + calendar when branch changes
+- [ ] Booking form dropdown is dynamic and pre-selected from URL
+- [ ] `_booking_location_id` saved on every new booking; bookings only consume inventory at their own branch
+- [ ] Confirmation page + all email templates show pickup branch info
+- [ ] Bookings admin list shows Location column
+- [ ] Per-region dashboard widget shows utilization
+- [ ] Mobile responsive (sidebar collapses to top filter bar; map height reduces)
+- [ ] Git commit: "Add multi-location/branches system"
+
+---
+
 ## Code Conflicts to Resolve
 
 > [!NOTE]
@@ -1294,6 +1647,7 @@ Walk through the entire flow as a new user:
 | **Week 5** | Phase 7 | Admin approval workflow + dashboard |
 | **Week 6** | Phase 8 + 9 | Email notifications + user dashboard/profile |
 | **Week 7** | Phase 10 | Polish, security audit, go-live |
+| **Week 8** | Phase 11 | Multi-location/branches system (cross-cutting refactor) |
 
 > [!TIP]
 > **Phases 1-4 are done.** Start Phase 5 next — build the car grid block and fleet page. This gives you something visible and tangible on the frontend.
