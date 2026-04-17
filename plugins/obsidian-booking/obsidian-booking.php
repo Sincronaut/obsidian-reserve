@@ -63,6 +63,7 @@ if (is_admin()) {
    require_once OBSIDIAN_BOOKING_DIR . 'admin/booking-meta-box.php';
    require_once OBSIDIAN_BOOKING_DIR . 'admin/booking-columns.php';
    require_once OBSIDIAN_BOOKING_DIR . 'admin/dashboard-widget.php';
+   require_once OBSIDIAN_BOOKING_DIR . 'admin/branch-utilization-widget.php';
 }
 
 /* ──────────────────────────────────────────────
