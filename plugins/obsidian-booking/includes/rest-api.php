@@ -160,15 +160,17 @@ function obsidian_api_get_availability( $request ) {
 		);
 	}
 
-	$days_ahead       = isset( $request['days'] ) ? (int) $request['days'] : 90;
-	$total_units      = obsidian_get_total_units( $car_id );
-	$unavailable      = obsidian_get_unavailable_dates( $car_id, $days_ahead );
+	$days_ahead          = isset( $request['days'] ) ? (int) $request['days'] : 90;
+	$total_units         = obsidian_get_total_units( $car_id );
+	$unavailable         = obsidian_get_unavailable_dates( $car_id, $days_ahead );
+	$unavailable_by_color = obsidian_get_unavailable_dates_by_color( $car_id, $days_ahead );
 
 	return rest_ensure_response( array(
-		'car_id'            => $car_id,
-		'total_units'       => $total_units,
-		'unavailable_dates' => $unavailable,
-		'days_checked'      => $days_ahead,
+		'car_id'                     => $car_id,
+		'total_units'                => $total_units,
+		'unavailable_dates'          => $unavailable,
+		'unavailable_dates_by_color' => $unavailable_by_color,
+		'days_checked'               => $days_ahead,
 	) );
 }
 
