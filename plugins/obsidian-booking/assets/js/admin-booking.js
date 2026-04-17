@@ -7,51 +7,136 @@
 
 	$(document).ready(function() {
 
-		/* ── Unit allocation enforcement ── */
+		/* ══════════════════════════════════════════════════════════
+		   INVENTORY META BOX (Phase 11 — tabbed by branch)
+		   ══════════════════════════════════════════════════════════ */
 
-		var $counter   = $('.obsidian-units-counter');
-		var $allocated = $counter.find('.counter-allocated');
-		var totalUnits = parseInt($counter.data('total'), 10) || 0;
+		var $inventory = $('.obsidian-inventory');
 
-		function recalcUnits() {
+		// Recalculate the per-branch units total in a tab's footer row.
+		function recalcBranchTotal($panel) {
 			var sum = 0;
-			$('.variant-units-input').each(function() {
+			$panel.find('.branch-units-input').each(function() {
 				sum += parseInt($(this).val(), 10) || 0;
 			});
-
-			$allocated.text(sum);
-
-			if (sum > totalUnits) {
-				$counter.addClass('over-limit');
-			} else {
-				$counter.removeClass('over-limit');
-			}
+			$panel.find('.branch-units-total').text(sum);
 		}
 
-		$(document).on('input change', '.variant-units-input', function() {
-			var $input = $(this);
-			var val    = parseInt($input.val(), 10) || 0;
-
-			if (val < 0) {
-				$input.val(0);
-			}
-
-			var othersSum = 0;
-			$('.variant-units-input').not($input).each(function() {
-				othersSum += parseInt($(this).val(), 10) || 0;
-			});
-
-			var maxForThis = totalUnits - othersSum;
-			if (val > maxForThis) {
-				$input.val(Math.max(0, maxForThis));
-			}
-
-			recalcUnits();
+		// Initialise totals on first render.
+		$('.obsidian-tab-panel').each(function() {
+			recalcBranchTotal($(this));
 		});
 
-		if ($counter.length) {
-			recalcUnits();
-		}
+		// Live-update the total as the admin types.
+		$(document).on('input change', '.branch-units-input', function() {
+			var $input = $(this);
+			if ((parseInt($input.val(), 10) || 0) < 0) {
+				$input.val(0);
+			}
+			recalcBranchTotal($input.closest('.obsidian-tab-panel'));
+		});
+
+		// Tab switching.
+		$(document).on('click', '.obsidian-tab', function(e) {
+			// Ignore the × inside the tab — handled separately below.
+			if ($(e.target).hasClass('tab-remove')) {
+				return;
+			}
+			var branchId = $(this).data('branch-id');
+
+			$(this).siblings('.obsidian-tab')
+				.removeClass('is-active')
+				.attr('aria-selected', 'false');
+			$(this).addClass('is-active').attr('aria-selected', 'true');
+
+			$(this).closest('.obsidian-inventory')
+				.find('.obsidian-tab-panel')
+				.removeClass('is-active');
+			$(this).closest('.obsidian-inventory')
+				.find('.obsidian-tab-panel[data-branch-id="' + branchId + '"]')
+				.addClass('is-active');
+		});
+
+		// Remove a branch from this car.
+		$(document).on('click', '.tab-remove', function(e) {
+			e.stopPropagation();
+
+			var $tab     = $(this).closest('.obsidian-tab');
+			var branchId = $tab.data('branch-id');
+			var $tabs    = $tab.parent();
+			var $panels  = $tab.closest('.obsidian-inventory').find('.obsidian-tab-panels');
+			var $panel   = $panels.find('.obsidian-tab-panel[data-branch-id="' + branchId + '"]');
+			var label    = $tab.find('.tab-label').text();
+
+			// Block removal if it's the last branch — every car needs at least one.
+			if ($tabs.find('.obsidian-tab').length <= 1) {
+				window.alert('A car must be assigned to at least one branch. Add another branch first, then remove this one.');
+				return;
+			}
+
+			if (!window.confirm('Remove "' + label + '" from this car? Units stocked here will be cleared on save.')) {
+				return;
+			}
+
+			var wasActive = $tab.hasClass('is-active');
+			$tab.remove();
+			$panel.remove();
+
+			// Put the freed branch back into the "+ Add branch" dropdown.
+			var $addSelect = $('#obsidian-add-branch');
+			$addSelect.append(
+				$('<option/>', {
+					value: branchId,
+					'data-name': label,
+					text: label
+				})
+			);
+
+			// If we just removed the active tab, activate the first remaining tab.
+			if (wasActive) {
+				$tabs.find('.obsidian-tab').first().trigger('click');
+			}
+		});
+
+		// "+ Add branch" — clone the hidden template and inject a new tab + panel.
+		$(document).on('change', '#obsidian-add-branch', function() {
+			var $select  = $(this);
+			var branchId = $select.val();
+			if (!branchId) {
+				return;
+			}
+			var $option = $select.find('option[value="' + branchId + '"]');
+			var name    = $option.data('name') || $option.text();
+
+			var $template = $('#obsidian-branch-panel-template');
+			if (!$template.length) {
+				return;
+			}
+
+			// Clone the template and rewrite all __BRANCH_ID__ placeholders.
+			var html = $template.html().replace(/__BRANCH_ID__/g, branchId);
+			var $newPanel = $(html);
+
+			// Build the matching tab.
+			var $newTab = $(
+				'<button type="button" class="obsidian-tab" role="tab" aria-selected="false">' +
+					'<span class="tab-label"></span>' +
+					'<span class="tab-remove" title="Remove branch" aria-label="Remove branch">&times;</span>' +
+				'</button>'
+			);
+			$newTab.attr('data-branch-id', branchId);
+			$newTab.find('.tab-label').text(name);
+
+			$inventory.find('.obsidian-tabs').append($newTab);
+			$inventory.find('.obsidian-tab-panels').append($newPanel);
+
+			// Remove this branch from the dropdown and reset the picker.
+			$option.remove();
+			$select.val('');
+
+			// Activate the new tab immediately so the admin lands on it.
+			$newTab.trigger('click');
+		});
 
 		/* ── Per-Slot Image Picker ── */
 

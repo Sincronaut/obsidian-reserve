@@ -256,7 +256,7 @@ Assign to: Post Type = Car
 | Model | `car_model` | Text | e.g. "GTR" |
 | Year | `car_year` | Number | e.g. 2024 |
 | Daily Rate | `car_daily_rate` | Number | In PHP peso, e.g. 850.00 |
-| Total Units | `car_total_units` | Number | **DEPRECATED** — now derived from color variants. Kept as fallback. |
+| ~~Total Units~~ | ~~`car_total_units`~~ | ~~Number~~ | **REMOVED in Phase 11.** Hidden from the admin UI via `acf/prepare_field/name=car_total_units` → `__return_false`. The total is now computed live from `_car_inventory`. Delete the field from Custom Fields → Field Groups → "Car Details" if you want to clean up the database. |
 | Colors | `car_colors` | Checkbox | Orange, Red, Black, Blue (expandable) — source of truth for which colors exist |
 | Car Status | `car_status` | Select | Choices: available, maintenance, retired |
 | Image - Exterior | `car_img_exterior` | Image | Return: Image URL (modal gallery) |
@@ -1405,7 +1405,7 @@ The booking-overlap query gains `meta_query` clause `_booking_location_id = $loc
 | `GET /cars` | Accepts `?location_id=X` or `?region=luzon`. Scopes results + per-scope unit totals |
 | `GET /cars/{id}` | Accepts `?location_id=X`. Without it returns the multi-branch inventory structure |
 | `GET /availability/{car_id}` | **Requires** `?location_id=X` (region-level not allowed — calendar is per-branch) |
-| `POST /bookings` | Body must include `location_id`. Validates: branch is active, car is stocked there, chosen color exists at that branch |
+| `POST /bookings` | Body must include `location_id`. Validates: branch is active, car is stocked there, chosen color exists at that branch. Legacy callers that send only the old `location` string are auto-routed to the Main Branch for one release. |
 
 ### Step 11.7 — Admin: tabbed Inventory meta box
 
@@ -1430,11 +1430,11 @@ Redesign `admin/car-meta-box.php`:
 └─────────────────────────────────────────────────────────┘
 ```
 
-- Tabs across the top, one per branch the car is stocked at.
-- "+ Add Branch" dropdown lists branches not yet added.
-- Removing a branch with active bookings → blocked with admin notice.
-- Galleries are managed once, below the branch tabs (since images are shared).
-- `assets/js/admin-car.js` handles the tabbed UI; on save, the meta box serializes to `_car_inventory` (nested by branch) and `_car_galleries` (flat by color).
+- Tabs across the top, one per branch the car is stocked at. Each tab shows a per-color units table; the per-branch total is summed live in the table footer.
+- "+ Add Branch" dropdown lists active branches not yet added. A hidden `<template id="obsidian-branch-panel-template">` is cloned into a new tab when selected.
+- The last remaining tab cannot be removed (a car must always belong to at least one branch); removing any other tab pops up a confirm and returns the branch to the dropdown.
+- Galleries are managed once in a **separate** "Color Galleries — shared across branches" meta box below the inventory box.
+- The existing `assets/js/admin-booking.js` was extended with the tab-switching, add/remove-branch, and per-branch-total handlers (the WP Media uploader logic is reused unchanged for gallery slots). On save, two save handlers in `admin/car-meta-box.php` write `_car_inventory` (nested by branch) and `_car_galleries` (flat by color) — each gated by its own nonce so partial form submits can't wipe the other field.
 
 ### Step 11.8 — Admin: Bookings list "Location" column
 
