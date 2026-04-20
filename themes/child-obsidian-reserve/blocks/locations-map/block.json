@@ -1,0 +1,26 @@
+{
+	"$schema": "https://schemas.wp.org/wp/6.9/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/locations-map",
+	"version": "1.0.0",
+	"title": "Locations Map",
+	"category": "theme",
+	"icon": "location-alt",
+	"description": "Interactive map of every branch (Leaflet + OpenStreetMap) plus a region-grouped list as SEO/JS-fallback content. Phase 11.",
+	"attributes": {
+		"title": {
+			"type": "string",
+			"default": "Visit Us"
+		},
+		"description": {
+			"type": "string",
+			"default": "Pick up your reservation at any of our branches across the Philippines. Click a pin to see address, hours, and the cars stocked there."
+		}
+	},
+	"supports": {
+		"html": false,
+		"anchor": true
+	},
+	"style": "file:./style.css",
+	"render": "file:./render.php"
+}
