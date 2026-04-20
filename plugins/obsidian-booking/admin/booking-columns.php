@@ -20,6 +20,7 @@ function obsidian_booking_columns( $columns ) {
 		'cb'               => $columns['cb'],
 		'booking_car'      => __( 'Car', 'obsidian-booking' ),
 		'booking_customer' => __( 'Customer', 'obsidian-booking' ),
+		'booking_location' => __( 'Branch', 'obsidian-booking' ),
 		'booking_color'    => __( 'Color', 'obsidian-booking' ),
 		'booking_dates'    => __( 'Dates', 'obsidian-booking' ),
 		'booking_type'     => __( 'Type', 'obsidian-booking' ),
@@ -61,6 +62,32 @@ function obsidian_booking_column_content( $column, $post_id ) {
 			}
 			if ( $email ) {
 				echo '<br><span class="obsidian-col-muted">' . esc_html( $email ) . '</span>';
+			}
+			break;
+
+		case 'booking_location':
+			$location_id = (int) get_post_meta( $post_id, '_booking_location_id', true );
+
+			if ( $location_id > 0 && get_post( $location_id ) ) {
+				$region_terms = wp_get_post_terms( $location_id, 'region', array( 'number' => 1 ) );
+				$region_name  = ! is_wp_error( $region_terms ) && ! empty( $region_terms ) ? $region_terms[0]->name : '';
+
+				printf(
+					'<a href="%s"><strong>%s</strong></a>',
+					esc_url( get_edit_post_link( $location_id ) ),
+					esc_html( get_the_title( $location_id ) )
+				);
+				if ( $region_name ) {
+					echo '<br><span class="obsidian-col-muted">' . esc_html( $region_name ) . '</span>';
+				}
+			} else {
+				// Pre-Phase-11 booking — fall back to the legacy string label.
+				$legacy = get_post_meta( $post_id, '_booking_location', true );
+				if ( $legacy ) {
+					echo esc_html( $legacy );
+				} else {
+					echo '<span class="obsidian-col-muted">—</span>';
+				}
 			}
 			break;
 
@@ -148,9 +175,10 @@ add_action( 'manage_booking_posts_custom_column', 'obsidian_booking_column_conte
  * Make key columns sortable.
  */
 function obsidian_booking_sortable_columns( $columns ) {
-	$columns['booking_status'] = 'booking_status';
-	$columns['booking_total']  = 'booking_total';
-	$columns['booking_dates']  = 'booking_dates';
+	$columns['booking_status']   = 'booking_status';
+	$columns['booking_total']    = 'booking_total';
+	$columns['booking_dates']    = 'booking_dates';
+	$columns['booking_location'] = 'booking_location';
 	return $columns;
 }
 add_filter( 'manage_edit-booking_sortable_columns', 'obsidian_booking_sortable_columns' );
@@ -174,6 +202,9 @@ function obsidian_booking_sort_query( $query ) {
 	} elseif ( $orderby === 'booking_dates' ) {
 		$query->set( 'meta_key', '_booking_start_date' );
 		$query->set( 'orderby', 'meta_value' );
+	} elseif ( $orderby === 'booking_location' ) {
+		$query->set( 'meta_key', '_booking_location_id' );
+		$query->set( 'orderby', 'meta_value_num' );
 	}
 }
 add_action( 'pre_get_posts', 'obsidian_booking_sort_query' );
@@ -214,6 +245,101 @@ function obsidian_booking_status_filter() {
 add_action( 'restrict_manage_posts', 'obsidian_booking_status_filter' );
 
 /**
+ * Branch filter dropdown — grouped by region for quick scanning when there
+ * are many branches.
+ */
+function obsidian_booking_branch_filter() {
+	global $typenow;
+
+	if ( $typenow !== 'booking' ) {
+		return;
+	}
+
+	$current = isset( $_GET['booking_location_filter'] ) ? (int) $_GET['booking_location_filter'] : 0;
+
+	// Group branches by region term so the <optgroup>s mirror the data model.
+	$regions = get_terms( array(
+		'taxonomy'   => 'region',
+		'hide_empty' => false,
+		'orderby'    => 'name',
+		'order'      => 'ASC',
+	) );
+
+	if ( is_wp_error( $regions ) ) {
+		return;
+	}
+
+	echo '<select name="booking_location_filter">';
+	echo '<option value="0">' . esc_html__( 'All Branches', 'obsidian-booking' ) . '</option>';
+
+	foreach ( $regions as $region ) {
+		$branch_ids = get_posts( array(
+			'post_type'      => 'location',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+			'tax_query'      => array(
+				array(
+					'taxonomy' => 'region',
+					'field'    => 'term_id',
+					'terms'    => $region->term_id,
+				),
+			),
+		) );
+
+		if ( empty( $branch_ids ) ) {
+			continue;
+		}
+
+		printf( '<optgroup label="%s">', esc_attr( $region->name ) );
+		foreach ( $branch_ids as $branch_id ) {
+			printf(
+				'<option value="%d" %s>%s</option>',
+				(int) $branch_id,
+				selected( $current, (int) $branch_id, false ),
+				esc_html( get_the_title( $branch_id ) )
+			);
+		}
+		echo '</optgroup>';
+	}
+
+	// Surface any branches that exist but aren't assigned to a region yet so
+	// they're still filterable.
+	$orphan_ids = get_posts( array(
+		'post_type'      => 'location',
+		'post_status'    => 'publish',
+		'posts_per_page' => -1,
+		'fields'         => 'ids',
+		'orderby'        => 'title',
+		'order'          => 'ASC',
+		'tax_query'      => array(
+			array(
+				'taxonomy' => 'region',
+				'operator' => 'NOT EXISTS',
+			),
+		),
+	) );
+
+	if ( ! empty( $orphan_ids ) ) {
+		printf( '<optgroup label="%s">', esc_attr__( 'Unassigned', 'obsidian-booking' ) );
+		foreach ( $orphan_ids as $branch_id ) {
+			printf(
+				'<option value="%d" %s>%s</option>',
+				(int) $branch_id,
+				selected( $current, (int) $branch_id, false ),
+				esc_html( get_the_title( $branch_id ) )
+			);
+		}
+		echo '</optgroup>';
+	}
+
+	echo '</select>';
+}
+add_action( 'restrict_manage_posts', 'obsidian_booking_branch_filter' );
+
+/**
  * Apply the status filter to the query.
  */
 function obsidian_booking_apply_status_filter( $query ) {
@@ -221,14 +347,28 @@ function obsidian_booking_apply_status_filter( $query ) {
 		return;
 	}
 
-	$filter = isset( $_GET['booking_status_filter'] ) ? sanitize_text_field( $_GET['booking_status_filter'] ) : '';
+	$status_filter = isset( $_GET['booking_status_filter'] ) ? sanitize_text_field( $_GET['booking_status_filter'] ) : '';
+	$branch_filter = isset( $_GET['booking_location_filter'] ) ? (int) $_GET['booking_location_filter'] : 0;
 
-	if ( ! empty( $filter ) ) {
-		$meta_query = $query->get( 'meta_query' ) ?: array();
+	$meta_query = $query->get( 'meta_query' ) ?: array();
+
+	if ( ! empty( $status_filter ) ) {
 		$meta_query[] = array(
 			'key'   => '_booking_status',
-			'value' => $filter,
+			'value' => $status_filter,
 		);
+	}
+
+	if ( $branch_filter > 0 ) {
+		$meta_query[] = array(
+			'key'     => '_booking_location_id',
+			'value'   => $branch_filter,
+			'compare' => '=',
+			'type'    => 'NUMERIC',
+		);
+	}
+
+	if ( ! empty( $meta_query ) ) {
 		$query->set( 'meta_query', $meta_query );
 	}
 }

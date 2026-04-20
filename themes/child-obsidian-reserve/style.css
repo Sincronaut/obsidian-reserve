@@ -241,3 +241,39 @@ textarea,
         min-height: 520px !important;
     }
 }
+
+/* ============================================================
+   FLEET PAGE — 2-COLUMN LAYOUT (Phase 11)
+   ============================================================ */
+
+.fleet-layout {
+	background-color: #0B0B0B;
+	color: #fff;
+}
+
+.fleet-columns.wp-block-columns {
+	gap: 32px;
+	align-items: flex-start;
+}
+
+.fleet-sidebar-col {
+	flex: 0 0 280px !important;
+	max-width: 280px;
+}
+
+.fleet-grid-col {
+	flex: 1 1 auto;
+	min-width: 0; /* allow card grid to shrink within flexbox */
+}
+
+@media (max-width: 900px) {
+	.fleet-columns.wp-block-columns {
+		gap: 20px;
+		flex-direction: column !important;
+	}
+	.fleet-sidebar-col,
+	.fleet-grid-col {
+		flex: 1 1 100% !important;
+		max-width: 100%;
+	}
+}

@@ -1,0 +1,22 @@
+{
+	"$schema": "https://schemas.wp.org/wp/6.9/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/fleet-filters",
+	"version": "1.0.0",
+	"title": "Fleet Filters",
+	"category": "theme",
+	"icon": "filter",
+	"description": "Sidebar with car-class checkboxes and region/branch radios. Pairs with the Car Grid block on the Fleet page.",
+	"attributes": {
+		"title": {
+			"type": "string",
+			"default": "Filters"
+		}
+	},
+	"supports": {
+		"html": false,
+		"anchor": true
+	},
+	"style": "file:./style.css",
+	"render": "file:./render.php"
+}

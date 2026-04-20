@@ -1,0 +1,176 @@
+/* =========================================================
+   Fleet Filters Sidebar (Phase 11)
+   ========================================================= */
+
+.obsidian-fleet-filters {
+    background: #0e0e10;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 24px;
+    color: #eaeaea;
+    font-family: inherit;
+    position: sticky;
+    top: 100px;
+}
+
+.fleet-filters-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 18px;
+}
+
+.fleet-filters-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: #fff;
+    letter-spacing: 0.3px;
+}
+
+.fleet-filters-clear {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #b8b8b8;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    transition: all 0.15s ease;
+}
+.fleet-filters-clear:hover {
+    border-color: var(--wp--preset--color--gold, #d4a64f);
+    color: var(--wp--preset--color--gold, #d4a64f);
+}
+
+.fleet-filter-group {
+    margin-bottom: 24px;
+}
+.fleet-filter-group:last-child {
+    margin-bottom: 0;
+}
+
+.fleet-filter-group-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #8a8a8a;
+    margin: 0 0 12px;
+}
+
+.fleet-filter-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.fleet-filter-item {
+    margin-bottom: 6px;
+}
+
+.fleet-filter-item label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 6px;
+    transition: background 0.12s ease;
+}
+.fleet-filter-item label:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.fleet-filter-item input[type="checkbox"],
+.fleet-filter-item input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--wp--preset--color--gold, #d4a64f);
+    cursor: pointer;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.fleet-filter-label {
+    font-size: 14px;
+    color: #cfcfcf;
+}
+.fleet-filter-item input:checked + .fleet-filter-label {
+    color: #fff;
+    font-weight: 500;
+}
+
+/* ── Region groups (collapsible) ── */
+
+.fleet-filter-region {
+    margin-bottom: 4px;
+}
+
+.fleet-filter-region-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #fff;
+    padding: 8px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    text-align: left;
+    border-radius: 6px;
+    transition: background 0.12s ease;
+}
+.fleet-filter-region-toggle:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.region-caret {
+    color: #8a8a8a;
+    font-size: 12px;
+    transition: transform 0.2s ease;
+}
+.fleet-filter-region.is-collapsed .region-caret {
+    transform: rotate(-90deg);
+}
+
+.fleet-filter-region-list {
+    list-style: none;
+    margin: 4px 0 8px 22px;
+    padding: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+}
+.fleet-filter-region.is-collapsed .fleet-filter-region-list {
+    max-height: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.fleet-filter-item--region .fleet-filter-label {
+    font-style: italic;
+    color: #a8a8a8;
+}
+
+/* ── Mobile collapse: stack on top of the grid ── */
+@media (max-width: 900px) {
+    .obsidian-fleet-filters {
+        position: static;
+        margin-bottom: 24px;
+    }
+    .fleet-filter-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 12px;
+    }
+    .fleet-filter-list--locations {
+        grid-template-columns: 1fr;
+    }
+}
