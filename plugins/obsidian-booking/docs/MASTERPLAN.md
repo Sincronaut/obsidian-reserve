@@ -1553,28 +1553,33 @@ A new section below the grid, full-width:
 > [!NOTE]
 > **Branch coordinates required** — admins must fill `location_latitude` + `location_longitude` ACF fields for the branch to appear on the map. Branches without coordinates still show in the grouped list and dropdowns, just not on the map.
 
-### Step 11.12 — Header: Locations mega-menu block
+### Step 11.12 — Header: Locations mega-menu ✅
 
-A new block: `themes/child-obsidian-reserve/blocks/locations-menu/` (or a custom navigation block extension).
+> **Decision (2026-04):** Implemented as a **shortcode** rather than a custom block. The header already uses a shortcode pattern (`[obsidian_user_menu]`), keeping the new menu consistent and avoiding a redundant block for header-only use.
 
-Renders as a dropdown when "Locations" is hovered/clicked in the header:
+Renders as a multi-column dropdown when "Locations" is clicked in the header:
 
 ```
-┌─ Luzon ──────┬─ Visayas ────┬─ Mindanao ────┐
+┌─ LUZON ──────┬─ VISAYAS ────┬─ MINDANAO ────┐
 │  Makati      │  Cebu City   │  Davao City   │
 │  BGC         │  Iloilo      │  CDO          │
 │  Quezon City │              │               │
 │  ...         │              │               │
 │                                              │
-│  [View all branches →]                       │
+│                          [View all branches →]│
 └──────────────────────────────────────────────┘
 ```
 
-- Each branch item links to `/fleet/?location=<branch-slug>`.
-- Each region header is also clickable: `/fleet/?region=luzon`.
-- Footer link: `/locations/` (full map page).
-- Block fetches data via the REST `/regions` endpoint (cached in a `wp_cache` transient for performance).
-- "Coming Soon" branches appear in the dropdown with a muted style and no link.
+**Implementation:**
+- New file `plugins/obsidian-booking/includes/locations-menu.php` registers `[obsidian_locations_menu]`. The shortcode emits a fully-formed `<li class="obsidian-dropdown obsidian-dropdown--mega">…</li>` so the existing dropdown click/outside-close JS in `parts/header.html` works without changes — only a new `--mega` modifier class drives the multi-column panel.
+- Each region header links to `/fleet/?region=<slug>`; each branch item links to `/fleet/?location=<branch-slug>`. Both URL conventions are read by the Step 11.10 sidebar so deep-links pre-apply the filter.
+- Footer link: `/fleet/` ("View all branches →"). The dedicated `/locations/` page was dropped (see Step 11.11 decision).
+- "Coming Soon" branches render as a muted `<span>` with a small "Coming Soon" pill and no link.
+- **Caching:** menu HTML is stored in a 1-hour transient (`obsidian_locations_menu_html_v1`). The transient is auto-busted on `save_post_location`, `trashed_post`, `untrashed_post`, `deleted_post`, and any `region` taxonomy change (`created_region`, `edited_region`, `delete_region`, `set_object_terms`) — so admin updates appear immediately.
+- The theme's existing `render_block` filter (`obsidian_reserve_html_block_shortcodes` in `functions.php`) was extended with a small whitelist so plugin shortcodes inside `core/html` blocks fire properly. Adding more shortcodes later is a one-line addition to the whitelist.
+- New CSS variant `.obsidian-dropdown--mega` appended to `assets/css/header.css`. The mega panel is a 560px wide multi-column grid that adapts column count via `data-columns="N"`. On ≤1024px the panel collapses to a single-column inline layout that nests inside the existing mobile drawer.
+
+**Header markup** (`parts/header.html`) was simplified — the previous hardcoded `Location` dropdown with its three static items was replaced by a single line: `[obsidian_locations_menu]`.
 
 ### Step 11.13 — Modal: location picker
 

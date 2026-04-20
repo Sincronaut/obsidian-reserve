@@ -319,9 +319,21 @@ add_shortcode( 'obsidian_user_menu', 'obsidian_reserve_user_menu_shortcode' );
  * This filter intercepts HTML block output and runs do_shortcode().
  */
 function obsidian_reserve_html_block_shortcodes( $block_content, $block ) {
-	if ( 'core/html' === $block['blockName'] && has_shortcode( $block_content, 'obsidian_user_menu' ) ) {
-		$block_content = do_shortcode( $block_content );
+	if ( 'core/html' !== $block['blockName'] ) {
+		return $block_content;
 	}
+
+	// Whitelist of plugin-provided shortcodes that may appear inside core/html
+	// blocks in templates. Add new entries here when introducing more.
+	$shortcodes = array( 'obsidian_user_menu', 'obsidian_locations_menu' );
+
+	foreach ( $shortcodes as $tag ) {
+		if ( has_shortcode( $block_content, $tag ) ) {
+			$block_content = do_shortcode( $block_content );
+			break; // do_shortcode runs every registered tag in one pass.
+		}
+	}
+
 	return $block_content;
 }
 add_filter( 'render_block', 'obsidian_reserve_html_block_shortcodes', 10, 2 );

@@ -312,3 +312,138 @@ body .wp-site-blocks > .wp-block-template-part:has(.obsidian-site-header) {
         transform: translateY(-8px) rotate(-45deg);
     }
 }
+
+/* =========================================================
+   LOCATIONS MEGA-MENU (Phase 11.12)
+   Wide multi-column variant of .obsidian-dropdown.
+   Inherits open/close behavior from the base styles above.
+   ========================================================= */
+
+.obsidian-dropdown.obsidian-dropdown--mega .obsidian-dropdown-menu {
+    /* Override the narrow single-column layout — the mega panel needs
+       a fixed width and is anchored to the toggle, not stretched by
+       its <li> items. */
+    min-width: 560px;
+    padding: 24px !important;
+    gap: 0 !important;
+    flex-direction: column;
+    /* Keep the panel from drifting off-screen on smaller laptop widths. */
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    right: auto;
+}
+.obsidian-dropdown.obsidian-dropdown--mega.is-active .obsidian-dropdown-menu {
+    transform: translateX(-50%) translateY(0);
+}
+
+.obsidian-locations-menu__columns {
+    display: grid;
+    grid-template-columns: repeat(var(--ob-mega-cols, 3), 1fr);
+    gap: 24px;
+    padding: 0 0 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 14px;
+}
+/* Adapt the column count to however many regions exist. */
+.obsidian-locations-menu__columns[data-columns="1"] { --ob-mega-cols: 1; }
+.obsidian-locations-menu__columns[data-columns="2"] { --ob-mega-cols: 2; }
+.obsidian-locations-menu__columns[data-columns="3"] { --ob-mega-cols: 3; }
+.obsidian-locations-menu__columns[data-columns="4"] { --ob-mega-cols: 4; }
+
+.obsidian-locations-menu__region {
+    display: block;
+    color: #C5A059 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin: 0 0 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+.obsidian-locations-menu__region:hover {
+    color: #FFFFFF !important;
+}
+
+.obsidian-locations-menu__branches {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Branch rows live INSIDE the mega panel — override the default
+   `.obsidian-dropdown-menu li` padding so they line up flush left
+   under each column. */
+.obsidian-dropdown.obsidian-dropdown--mega .obsidian-dropdown-menu .obsidian-locations-menu__branch {
+    padding: 0;
+}
+
+.obsidian-locations-menu__branch .branch-link {
+    color: #d8d8d8 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.12s ease;
+    white-space: normal;
+}
+.obsidian-locations-menu__branch .branch-link:hover {
+    color: #C5A059 !important;
+}
+.obsidian-locations-menu__branch.is-coming-soon .branch-link {
+    color: #6f6f6f !important;
+    cursor: default;
+}
+
+.branch-pill {
+    display: inline-block;
+    padding: 2px 6px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #8a8a8a;
+    border-radius: 4px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 600;
+}
+
+.obsidian-locations-menu__footer {
+    text-align: right;
+}
+.obsidian-locations-menu__view-all {
+    color: #C5A059 !important;
+    font-size: 13px !important;
+    text-decoration: none;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+}
+.obsidian-locations-menu__view-all:hover {
+    color: #FFFFFF !important;
+}
+
+/* Mobile: drop the mega panel back to a single-column flow inside the
+   slide-out drawer. The mobile toggle pattern in header.html already
+   stacks dropdowns vertically; we just need to release the fixed width. */
+@media (max-width: 1024px) {
+    .obsidian-dropdown.obsidian-dropdown--mega .obsidian-dropdown-menu {
+        position: static;
+        min-width: 0;
+        padding: 12px 24px !important;
+        transform: none;
+        left: auto;
+    }
+    .obsidian-dropdown.obsidian-dropdown--mega.is-active .obsidian-dropdown-menu {
+        transform: none;
+    }
+    .obsidian-locations-menu__columns {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}

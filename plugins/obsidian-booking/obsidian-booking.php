@@ -57,6 +57,9 @@ require_once OBSIDIAN_BOOKING_DIR . 'includes/booking-pages.php';
 // User profile extensions (Phase 4)
 require_once OBSIDIAN_BOOKING_DIR . 'includes/user-fields.php';
 
+// Locations header mega-menu shortcode (Phase 11.12)
+require_once OBSIDIAN_BOOKING_DIR . 'includes/locations-menu.php';
+
 // Admin UI — only load in dashboard (Phase 6)
 if (is_admin()) {
    require_once OBSIDIAN_BOOKING_DIR . 'admin/car-meta-box.php';
