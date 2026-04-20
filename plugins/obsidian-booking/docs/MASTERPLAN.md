@@ -1458,7 +1458,14 @@ A second dashboard widget below the existing pipeline widget, showing per-region
 └──────────────────────────────────────┘
 ```
 
-### Step 11.10 — Fleet page: filter sidebar + grid
+### Step 11.10 — Fleet page: filter sidebar + grid ✅
+
+**Status:** Done. Implementation lives in:
+- `themes/child-obsidian-reserve/blocks/fleet-filters/` — new sidebar block (class checkboxes + region/branch radios + clear).
+- `themes/child-obsidian-reserve/blocks/car-grid/render.php` — cards now carry `data-branches` and `data-regions`; each swatch carries a `data-units-by-scope` JSON map (`all` / `branch_<id>` / `region_<slug>`); a small "Available at: …" badge lists the branches that stock the car. New `showInternalFilters` and `showHeader` block attributes let the Fleet page hide the legacy class-button row and inner header so the sidebar is the sole filter UI.
+- `themes/child-obsidian-reserve/templates/page-fleet.html` — rewritten as `wp:columns` (sidebar 280px + grid 1fr).
+- `themes/child-obsidian-reserve/style.css` — adds `.fleet-layout` background and responsive collapse to a single column at ≤900px.
+- The two blocks talk via a single custom DOM event `obsidianFleet:change` with detail `{ classes: string[], scope: 'all'|'branch_<id>'|'region_<slug>' }`. The sidebar also keeps the URL in sync via `?class=...&location=<slug>` (or `?region=<slug>`) using `history.replaceState`, and reads those params on page load so deep-links from the header dropdown work.
 
 Rebuild `templates/page-fleet.html` with a two-column layout via FSE columns block (or a custom block group):
 

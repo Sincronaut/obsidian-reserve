@@ -15,6 +15,14 @@
 		"description": {
 			"type": "string",
 			"default": "Every vehicle is meticulously maintained to showroom standards. The exact car you reserve is the one waiting for you."
+		},
+		"showInternalFilters": {
+			"type": "boolean",
+			"default": true
+		},
+		"showHeader": {
+			"type": "boolean",
+			"default": true
 		}
 	},
 	"supports": {

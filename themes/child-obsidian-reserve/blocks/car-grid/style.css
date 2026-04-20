@@ -348,3 +348,49 @@
         font-size: 20px;
     }
 }
+
+/* =========================================================
+   Phase 11 — multi-location additions
+   ========================================================= */
+
+.car-card-branches {
+    font-size: 12px;
+    color: #9a9a9a;
+    margin: -4px 0 10px;
+    line-height: 1.4;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 6px;
+}
+.car-card-branches .branches-label {
+    color: #6f6f6f;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-size: 10px;
+    font-weight: 700;
+    align-self: center;
+}
+.car-card-branches .branches-list {
+    color: #cfcfcf;
+}
+
+.car-grid-no-results {
+    text-align: center;
+    color: #9a9a9a;
+    font-size: 15px;
+    padding: 60px 20px;
+    border: 1px dashed rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    margin-top: 20px;
+}
+
+/* ── Fleet page nesting: drop the block's own chrome when used inside the
+   2-col fleet layout (the wrapping section already paints the background
+   and applies page padding). ── */
+.fleet-grid-col .obsidian-car-grid {
+    background: transparent;
+    padding: 0;
+}
+.fleet-grid-col .car-grid-container {
+    max-width: none;
+}
