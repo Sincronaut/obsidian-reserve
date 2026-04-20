@@ -1510,7 +1510,7 @@ Rebuild `templates/page-fleet.html` with a two-column layout via FSE columns blo
 
 **Car card update:** Each card shows a small "**Available at:** Makati, Davao" badge so users see multi-branch cars at a glance. Per-color unit counts in the card update based on the active location filter (or sum across all when "All" is selected).
 
-### Step 11.11 — Fleet page: interactive map section
+### Step 11.11 — Fleet page: interactive map section ✅
 
 A new section below the grid, full-width:
 
@@ -1536,15 +1536,19 @@ A new section below the grid, full-width:
 └───────────────────────────────────────────────────────────────────┘
 ```
 
-**Implementation:**
+**Implementation (✅ Done):**
 - New block: `themes/child-obsidian-reserve/blocks/locations-map/`.
-- Uses **Leaflet** (CDN-hosted, ~40KB) + **OpenStreetMap tiles** (free, no API key).
-- Custom gold pin marker matching the brand.
-- On `DOMContentLoaded`, fetch `/regions` (which embeds branches with lat/lng), then plot pins.
-- Click pin → updates the right-side info card (no page reload).
-- "See cars at this branch" CTA links to `/fleet/?location=<branch-slug>`.
-- A grouped list of branches sits below the map for SEO + fallback when JS fails.
-- The block also appears on a dedicated `/locations/` page (same content, no fleet grid above).
+- Uses **Leaflet 1.9.4** (UI engine, ~40KB) + **OpenStreetMap tiles** (free map data, no API key). Both lazy-loaded via CDN inside the block's `render.php` so they only ship on pages that use the block.
+- Custom **CSS-only gold pins** (no image asset to host); greyed for `coming_soon`.
+- The map fetches `/wp-json/obsidian-booking/v1/locations` (full detail, including lat/lng) on load — `closed` branches are skipped, `coming_soon` get the grey pin, the rest get gold.
+- Map auto-fits to the plotted pins (with a `maxZoom: 11` cap so single-branch deployments don't zoom in too tightly). Scroll-zoom is **disabled until the user clicks the map**, so scrolling past the section doesn't hijack the page.
+- Click pin → side info card populates with name, region, address, contact, hours + two CTAs:
+  - **View on Google Maps** — uses the branch's `location_map_url` field, falls back to a `?query=<lat,lng>` deep-link if absent.
+  - **See cars at this branch** — links to `/fleet/?location=<branch-slug>` (matches the Step 11.10 URL convention).
+- A **grouped, server-rendered branch list** sits below the map for SEO and as the no-JS fallback. `coming_soon` branches show a "Coming Soon" pill and are non-clickable; `closed` branches are excluded.
+- Inserted into `templates/page-fleet.html` immediately below the existing 2-column grid layout.
+
+> **Decision (2026-04):** The dedicated `/locations/` page was **dropped** — the fleet page already surfaces every branch via the sidebar filters, the "Available at" badges on cards, and this map section. A separate page would be redundant.
 
 > [!NOTE]
 > **Branch coordinates required** — admins must fill `location_latitude` + `location_longitude` ACF fields for the branch to appear on the map. Branches without coordinates still show in the grouped list and dropdowns, just not on the map.
