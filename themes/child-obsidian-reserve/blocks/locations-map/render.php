@@ -13,7 +13,7 @@
  *
  * Data flow:
  *   - SEO list: PHP queries `location` posts directly (no REST hop).
- *   - Map pins: client-side JS calls `/wp-json/obsidian/v1/locations` (which
+ *   - Map pins: client-side JS calls `/wp-json/obsidian-booking/v1/locations` (which
  *     returns full detail incl. lat/lng) and plots active pins in gold,
  *     coming-soon pins in grey. Closed branches are excluded server-side.
  *
@@ -107,7 +107,7 @@ if ( ! is_wp_error( $regions ) ) {
 }
 
 // REST URL passed to the JS so it can fetch live branch detail.
-$rest_url = esc_url_raw( rest_url( 'obsidian/v1/locations' ) );
+$rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 ?>
 
 <section <?php echo get_block_wrapper_attributes( array( 'class' => 'obsidian-locations-map' ) ); ?>

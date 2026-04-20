@@ -1540,7 +1540,7 @@ A new section below the grid, full-width:
 - New block: `themes/child-obsidian-reserve/blocks/locations-map/`.
 - Uses **Leaflet 1.9.4** (UI engine, ~40KB) + **OpenStreetMap tiles** (free map data, no API key). Both lazy-loaded via CDN inside the block's `render.php` so they only ship on pages that use the block.
 - Custom **CSS-only gold pins** (no image asset to host); greyed for `coming_soon`.
-- The map fetches `/wp-json/obsidian/v1/locations` (full detail, including lat/lng) on load — `closed` branches are skipped, `coming_soon` get the grey pin, the rest get gold.
+- The map fetches `/wp-json/obsidian-booking/v1/locations` (full detail, including lat/lng) on load — `closed` branches are skipped, `coming_soon` get the grey pin, the rest get gold.
 - Map auto-fits to the plotted pins (with a `maxZoom: 11` cap so single-branch deployments don't zoom in too tightly). Scroll-zoom is **disabled until the user clicks the map**, so scrolling past the section doesn't hijack the page.
 - Click pin → side info card populates with name, region, address, contact, hours + two CTAs:
   - **View on Google Maps** — uses the branch's `location_map_url` field, falls back to a `?query=<lat,lng>` deep-link if absent.
