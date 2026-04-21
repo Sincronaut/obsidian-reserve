@@ -296,10 +296,23 @@ function obsidian_render_booking_meta_box( $post ) {
 			<?php else : ?>
 				<div class="obm-documents">
 					<?php
+					// Friendly labels for each doc key. The two gov-ID slots
+					// pull the actual ID type the renter chose (SSS, PhilHealth,
+					// etc.) so the admin sees what they're looking at.
+					$gov_id_label_1 = $gov_id_type
+						? 'Government ID #1 — ' . ucwords( str_replace( '_', ' ', $gov_id_type ) )
+						: 'Government ID #1';
+					$gov_id_label_2 = $gov_id_type_2
+						? 'Government ID #2 — ' . ucwords( str_replace( '_', ' ', $gov_id_type_2 ) )
+						: 'Government ID #2';
+
 					$doc_labels = array(
 						'license'          => "Driver's License",
-						'gov_id_front'     => 'Government ID (Front)',
-						'gov_id_back'      => 'Government ID (Back)',
+						'gov_id_1'         => $gov_id_label_1,
+						'gov_id_2'         => $gov_id_label_2,
+						// Legacy keys (older bookings created before the rename).
+						'gov_id_front'     => $gov_id_label_1,
+						'gov_id_back'      => $gov_id_label_2,
 						'passport'         => 'Passport',
 						'proof_of_arrival' => 'Proof of Arrival',
 					);

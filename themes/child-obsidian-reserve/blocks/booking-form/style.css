@@ -1207,3 +1207,49 @@
 	font-size: 12px;
 	font-style: italic;
 }
+
+/* ============================================================
+   Renter / Delivery status hint
+   - Always visible above the action button.
+   - Tells the user the *first* missing required field by name.
+   - Three states: warn (something missing), success (all set),
+     info (purely advisory).
+   ============================================================ */
+
+.obsidian-bf-status {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	padding: 12px 14px;
+	margin: 0 0 14px;
+	border-radius: 6px;
+	font-family: 'Montserrat', sans-serif;
+	font-size: 13px;
+	line-height: 1.45;
+}
+
+.obsidian-bf-status svg {
+	flex-shrink: 0;
+	margin-top: 1px;
+}
+
+.obsidian-bf-status.is-warn {
+	background: rgba(255, 160, 60, 0.08);
+	border: 1px solid rgba(255, 160, 60, 0.4);
+	color: #FFD8A8;
+}
+.obsidian-bf-status.is-warn svg { color: #FFB04A; }
+
+.obsidian-bf-status.is-success {
+	background: rgba(80, 200, 120, 0.08);
+	border: 1px solid rgba(80, 200, 120, 0.35);
+	color: #B7F0CA;
+}
+.obsidian-bf-status.is-success svg { color: #50C878; }
+
+.obsidian-bf-status.is-info {
+	background: rgba(197, 160, 89, 0.08);
+	border: 1px solid rgba(197, 160, 89, 0.3);
+	color: rgba(255, 255, 255, 0.85);
+}
+.obsidian-bf-status.is-info svg { color: #C5A059; }

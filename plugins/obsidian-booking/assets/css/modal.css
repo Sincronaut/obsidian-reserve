@@ -682,7 +682,6 @@ span.flatpickr-weekday {
    gap: 10px;
    flex-wrap: wrap;
    padding: 12px 14px;
-   margin: 0 0 18px;
    background: rgba(197, 160, 89, 0.08);
    border: 1px solid rgba(197, 160, 89, 0.35);
    border-radius: 8px;
