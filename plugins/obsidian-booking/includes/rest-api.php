@@ -866,16 +866,30 @@ function obsidian_format_car_data( $car_id, $location_id = 0 ) {
 	$classes    = wp_get_post_terms( $car_id, 'car_class', array( 'fields' => 'names' ) );
 	$car_class  = ! is_wp_error( $classes ) && ! empty( $classes ) ? $classes[0] : '';
 
-	// Get ACF color choices (master list — drives the picker even if a colour
-	// happens to have 0 units at the current branch).
-	$colors = get_field( 'car_colors', $car_id );
-	if ( ! is_array( $colors ) ) {
-		$colors = array();
+	// Master color list (universe of colors this vehicle exists in).
+	$master_colors = get_field( 'car_colors', $car_id );
+	if ( ! is_array( $master_colors ) ) {
+		$master_colors = array();
 	}
 
 	// Build per-color variant data with full gallery per color, scoped to the
 	// requested branch (or aggregated when $location_id is 0).
 	$variants       = obsidian_get_color_variants( $car_id, $location_id );
+
+	// `colors` field served to the frontend = the colors actually relevant
+	// to the current scope. When a branch is selected, this is the subset
+	// stocked at that branch; otherwise it's the master list.
+	if ( $location_id > 0 ) {
+		$scoped_color_keys = array_keys( $variants );
+		$colors            = array();
+		foreach ( $master_colors as $c ) {
+			if ( in_array( strtolower( (string) $c ), $scoped_color_keys, true ) ) {
+				$colors[] = $c;
+			}
+		}
+	} else {
+		$colors = $master_colors;
+	}
 	$color_variants = array();
 	$fallback_img   = get_the_post_thumbnail_url( $car_id, 'large' ) ?: '';
 
@@ -915,25 +929,37 @@ function obsidian_format_car_data( $car_id, $location_id = 0 ) {
 	$specs_raw = get_field( 'car_specs', $car_id );
 	$specs     = $specs_raw ? wp_kses_post( $specs_raw ) : '';
 
+	// Status — when a branch is selected, return the per-branch status
+	// (so the modal/UI can react to that branch being in maintenance even
+	// while the vehicle is globally `available`). Otherwise return the
+	// vehicle-wide ACF `car_status` as the headline status.
+	$global_status = get_field( 'car_status', $car_id ) ?: 'available';
+	$status        = $location_id > 0
+		? obsidian_get_branch_status( $car_id, $location_id )
+		: $global_status;
+
 	return array(
-		'id'             => $car_id,
-		'name'           => get_the_title( $car_id ),
-		'slug'           => get_post_field( 'post_name', $car_id ),
-		'description'    => get_the_excerpt( $car_id ),
-		'image'          => $fallback_img,
-		'car_class'      => $car_class,
-		'make'           => get_field( 'car_make', $car_id ) ?: '',
-		'model'          => get_field( 'car_model', $car_id ) ?: '',
-		'year'           => (int) get_field( 'car_year', $car_id ),
-		'daily_rate'     => (float) get_field( 'car_daily_rate', $car_id ),
-		'total_units'    => obsidian_get_total_units( $car_id, $location_id ),
-		'colors'         => $colors,
-		'color_variants' => $color_variants,
-		'specifications' => $specs,
-		'status'         => get_field( 'car_status', $car_id ) ?: 'available',
-		'link'           => get_permalink( $car_id ),
-		'location_id'    => $location_id,
-		'branches'       => $car_branches,
+		'id'              => $car_id,
+		'name'            => get_the_title( $car_id ),
+		'slug'            => get_post_field( 'post_name', $car_id ),
+		'description'     => get_the_excerpt( $car_id ),
+		'image'           => $fallback_img,
+		'car_class'       => $car_class,
+		'make'            => get_field( 'car_make', $car_id ) ?: '',
+		'model'           => get_field( 'car_model', $car_id ) ?: '',
+		'year'            => (int) get_field( 'car_year', $car_id ),
+		'daily_rate'      => (float) get_field( 'car_daily_rate', $car_id ),
+		'total_units'     => obsidian_get_total_units( $car_id, $location_id ),
+		'colors'          => $colors,
+		'master_colors'   => $master_colors,
+		'color_variants'  => $color_variants,
+		'specifications'  => $specs,
+		'status'          => $status,
+		'global_status'   => $global_status,
+		'branch_status'   => $location_id > 0 ? obsidian_get_branch_status( $car_id, $location_id ) : '',
+		'link'            => get_permalink( $car_id ),
+		'location_id'     => $location_id,
+		'branches'        => $car_branches,
 	);
 }
 

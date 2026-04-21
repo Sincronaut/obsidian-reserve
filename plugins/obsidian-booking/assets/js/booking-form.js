@@ -36,6 +36,7 @@
 		initDocsToggle();
 		initBirthDatePicker();
 		initFileUploads();
+		initGovIdMirror();
 		initRenterValidation();
 
 		if (nextBtn) nextBtn.addEventListener('click', goToDelivery);
@@ -176,6 +177,14 @@
 			var previewImg  = preview ? preview.querySelector('img') : null;
 			var removeBtn   = zone.querySelector('.obf-upload-remove');
 			var docKey      = zone.getAttribute('data-doc-key');
+			// Remember the original placeholder caption so that:
+			//   - on Remove we restore it (was previously stuck on the file name)
+			//   - the gov-id mirror logic can rewrite this baseline as the
+			//     user changes their ID type.
+			var labelSpan   = placeholder ? placeholder.querySelector('span') : null;
+			if (labelSpan && !zone.dataset.defaultLabel) {
+				zone.dataset.defaultLabel = labelSpan.textContent;
+			}
 
 			fileInput.addEventListener('change', function () {
 				var file = fileInput.files[0];
@@ -231,6 +240,11 @@
 					fileInput.value = '';
 					preview.style.display = 'none';
 					placeholder.style.display = '';
+					// Restore the contextual caption (e.g. "Upload SSS ID")
+					// rather than leaving the previous file name behind.
+					if (labelSpan && zone.dataset.defaultLabel) {
+						labelSpan.textContent = zone.dataset.defaultLabel;
+					}
 					validateRenter();
 				});
 			}
@@ -255,6 +269,51 @@
 		});
 	}
 
+	/* ── Gov ID type → upload-zone label mirror ──
+	   Each gov-ID upload zone has a `data-mirror-from="<select-id>"`
+	   attribute pointing at its <select>. When the user picks a value
+	   in that select (e.g. "SSS ID"), the corresponding upload zone's
+	   placeholder caption becomes "Upload SSS ID". The contextual label
+	   is also stored in `zone.dataset.defaultLabel` so the file-Remove
+	   handler restores the right caption. */
+	function initGovIdMirror() {
+		var zones = form.querySelectorAll('.obsidian-bf-upload-zone[data-mirror-from]');
+
+		zones.forEach(function (zone) {
+			var sourceId  = zone.getAttribute('data-mirror-from');
+			var sourceSel = sourceId ? document.getElementById(sourceId) : null;
+			if (!sourceSel) return;
+
+			var labelSpan = zone.querySelector('.obf-upload-label')
+				|| (zone.querySelector('.obf-upload-placeholder') || zone).querySelector('span');
+			if (!labelSpan) return;
+
+			var sync = function () {
+				var optText = '';
+				if (sourceSel.selectedIndex >= 0) {
+					var opt = sourceSel.options[sourceSel.selectedIndex];
+					// Skip the empty "Select Government ID" placeholder option.
+					if (opt && opt.value) optText = opt.text || '';
+				}
+				var newLabel = optText ? ('Upload ' + optText) : 'Upload ID';
+
+				// If a file is already chosen, don't stomp the file name —
+				// just rewrite the default so a future Remove restores it
+				// with the new ID type.
+				zone.dataset.defaultLabel = newLabel;
+
+				var hasFile = (zone.querySelector('.obf-upload-preview') || {}).style;
+				var fileShown = hasFile && hasFile.display !== 'none';
+				if (!fileShown) {
+					labelSpan.textContent = newLabel;
+				}
+			};
+
+			sourceSel.addEventListener('change', sync);
+			sync(); // run once so initial state is correct
+		});
+	}
+
 	/* ── Renter Validation ── */
 
 	function initRenterValidation() {
@@ -268,74 +327,155 @@
 
 	function validateRenter() {
 		var customerType = (document.getElementById('obf-customer-type') || {}).value || 'local';
-		var valid = true;
 
-		var requiredTexts = ['obf-first-name', 'obf-last-name', 'obf-address', 'obf-birth-date', 'obf-license-number'];
-		if (customerType === 'local') requiredTexts.push('obf-phone');
-		if (customerType === 'international') requiredTexts.push('obf-passport-number');
-
-		requiredTexts.forEach(function (id) {
-			var el = document.getElementById(id);
-			if (el && !el.value.trim()) valid = false;
-		});
+		// Build an ordered checklist of every required item in the order
+		// they appear on the page. The first item that fails becomes the
+		// status hint text, so the user always knows the *next* thing to
+		// fix instead of being told nothing.
+		var checks = [
+			{ id: 'obf-first-name',     label: 'First Name' },
+			{ id: 'obf-last-name',      label: 'Last Name' },
+			{ id: 'obf-address',        label: 'Address' },
+			{ id: 'obf-birth-date',     label: 'Birth Date' }
+		];
 
 		if (customerType === 'local') {
-			['obf-gov-id-type', 'obf-gov-id-type-2'].forEach(function (id) {
-				var el = document.getElementById(id);
-				if (el && !el.value) valid = false;
-			});
+			checks.push({ id: 'obf-phone', label: 'Mobile Number' });
 		}
 
-		var requiredDocs = ['license'];
-		if (customerType === 'local') requiredDocs.push('gov_id_front', 'gov_id_back');
-		if (customerType === 'international') requiredDocs.push('passport', 'proof_of_arrival');
+		checks.push(
+			{ id: 'obf-license-number', label: "Driver's License Number" },
+			{ doc: 'license',           label: "Driver's License upload" }
+		);
 
-		requiredDocs.forEach(function (key) {
-			if (!uploadedDocs[key]) valid = false;
-		});
+		if (customerType === 'international') {
+			checks.push(
+				{ id: 'obf-passport-number', label: 'Passport Number' },
+				{ doc: 'passport',           label: 'Passport upload' },
+				{ doc: 'proof_of_arrival',   label: 'Proof of Arrival upload' }
+			);
+		}
 
+		if (customerType === 'local') {
+			checks.push(
+				{ id: 'obf-gov-id-type',   label: 'Government ID #1 type' },
+				{ id: 'obf-gov-id-type-2', label: 'Government ID #2 type' },
+				{ doc: 'gov_id_1',         label: 'Government ID #1 photo' },
+				{ doc: 'gov_id_2',         label: 'Government ID #2 photo' }
+			);
+		}
+
+		var firstMissing = null;
+		for (var i = 0; i < checks.length; i++) {
+			var c = checks[i];
+			if (c.doc) {
+				if (!uploadedDocs[c.doc]) { firstMissing = c.label; break; }
+			} else {
+				var el = document.getElementById(c.id);
+				if (!el) continue;
+				var v = (el.value || '').trim();
+				if (!v) { firstMissing = c.label; break; }
+			}
+		}
+
+		var valid = (firstMissing === null);
 		if (nextBtn) nextBtn.disabled = !valid;
+		updateRenterStatus(firstMissing);
 		return valid;
+	}
+
+	function updateRenterStatus(missing) {
+		var box  = document.getElementById('obf-renter-status');
+		var text = document.getElementById('obf-renter-status-text');
+		if (!box || !text) return;
+
+		box.hidden = false;
+		box.classList.remove('is-info', 'is-warn', 'is-success');
+
+		if (missing) {
+			box.classList.add('is-warn');
+			text.textContent = 'Missing: ' + missing;
+		} else {
+			box.classList.add('is-success');
+			text.textContent = 'Looks good — click Next to continue.';
+		}
 	}
 
 	/* ── Delivery Validation ── */
 
+	var deliveryValidationInitialized = false;
 	function initDeliveryValidation() {
+		if (deliveryValidationInitialized) {
+			validateDelivery();
+			return;
+		}
+		deliveryValidationInitialized = true;
+
 		var inputs = deliveryStep.querySelectorAll('input, select, textarea');
 		inputs.forEach(function (input) {
 			input.addEventListener('change', validateDelivery);
 			input.addEventListener('input', validateDelivery);
 		});
+		// Run once on entry so the status hint shows the first missing
+		// field immediately instead of staying hidden until the user
+		// touches something.
+		validateDelivery();
 	}
 
 	function validateDelivery() {
-		var valid = true;
-
-		// Return date/time are no longer user inputs — they're auto-set
-		// from the booking end date and the chosen delivery time, so they're
-		// not in the required-fields list.
-		var requiredFields = [
-			'obf-pickup-location', // Phase 11.14: branch must be chosen.
-			'obf-delivery-contact',
-			'obf-delivery-dropoff',
-			'obf-delivery-date',
-			'obf-delivery-time',
-			'obf-return-address'
+		// Same approach as validateRenter — ordered checklist that surfaces
+		// the *first* missing item to the status hint.
+		// Return date/time are auto-set from the end date + delivery time,
+		// so they're intentionally not in this list.
+		var checks = [
+			{ id: 'obf-pickup-location',  label: 'Pickup Location' },
+			{ id: 'obf-delivery-contact', label: 'Contact Number' },
+			{ id: 'obf-delivery-dropoff', label: 'Delivery Type' },
+			{ id: 'obf-delivery-date',    label: 'Delivery Date' },
+			{ id: 'obf-delivery-time',    label: 'Delivery Time' },
+			{ id: 'obf-return-address',   label: 'Return Pickup Address' }
 		];
 
-		requiredFields.forEach(function (id) {
-			var el = document.getElementById(id);
-			if (el && !el.value.trim()) valid = false;
-		});
+		var firstMissing = null;
+		for (var i = 0; i < checks.length; i++) {
+			var c  = checks[i];
+			var el = document.getElementById(c.id);
+			if (!el) continue;
+			if (!(el.value || '').trim()) { firstMissing = c.label; break; }
+		}
 
-		// Checkboxes
-		var checkboxes = deliveryStep.querySelectorAll('input[type="checkbox"][required]');
-		checkboxes.forEach(function (cb) {
-			if (!cb.checked) valid = false;
-		});
+		// Agreements come last in the form so we check them after fields.
+		if (!firstMissing) {
+			var checkboxes = deliveryStep.querySelectorAll('input[type="checkbox"][required]');
+			for (var j = 0; j < checkboxes.length; j++) {
+				if (!checkboxes[j].checked) {
+					firstMissing = (j === 0) ? 'Terms and Conditions agreement' : 'Privacy Policy agreement';
+					break;
+				}
+			}
+		}
 
+		var valid = (firstMissing === null);
 		if (submitBtn) submitBtn.disabled = !valid;
+		updateDeliveryStatus(firstMissing);
 		return valid;
+	}
+
+	function updateDeliveryStatus(missing) {
+		var box  = document.getElementById('obf-delivery-status');
+		var text = document.getElementById('obf-delivery-status-text');
+		if (!box || !text) return;
+
+		box.hidden = false;
+		box.classList.remove('is-info', 'is-warn', 'is-success');
+
+		if (missing) {
+			box.classList.add('is-warn');
+			text.textContent = 'Missing: ' + missing;
+		} else {
+			box.classList.add('is-success');
+			text.textContent = 'All set — click Submit for Review to send your booking.';
+		}
 	}
 
 	/* ── Form Submission (from delivery step) ── */

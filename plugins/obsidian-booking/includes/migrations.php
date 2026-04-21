@@ -234,3 +234,104 @@ function obsidian_migration_v2_migrate_bookings( $branch_id ) {
 		update_post_meta( $booking_id, '_booking_location_id', $branch_id );
 	}
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Migration v3 — Per-Branch Status + Per-Branch Color Stocking
+   ══════════════════════════════════════════════════════════════
+   Wraps every legacy `_car_inventory` entry from the v2 shape:
+
+       { "12": { "blue": {"units":2}, "black": {"units":1} } }
+
+   into the v3 shape, which separates the branch's operational
+   status from the colors stocked there:
+
+       { "12": { "status": "available",
+                 "colors": { "blue": {"units":2}, "black": {"units":1} } } }
+
+   Existing v3-shaped entries are passed through untouched.
+   Each car gets a `_inventory_v3` flag so this is idempotent.
+   ══════════════════════════════════════════════════════════════ */
+
+const OBSIDIAN_MIGRATION_V3_OPTION = 'obsidian_migration_v3_done';
+
+/**
+ * Entry point — runs on every admin page load and bails fast if already done.
+ */
+function obsidian_run_migration_v3() {
+
+	if ( get_option( OBSIDIAN_MIGRATION_V3_OPTION ) === 'yes' ) {
+		return;
+	}
+
+	if ( wp_doing_ajax() || ( defined( 'DOING_CRON' ) && DOING_CRON ) ) {
+		return;
+	}
+
+	$cars = get_posts( array(
+		'post_type'      => 'car',
+		'post_status'    => 'any',
+		'posts_per_page' => -1,
+		'fields'         => 'ids',
+		'meta_query'     => array(
+			array(
+				'key'     => '_inventory_v3',
+				'compare' => 'NOT EXISTS',
+			),
+		),
+	) );
+
+	foreach ( $cars as $car_id ) {
+
+		$json = get_post_meta( $car_id, '_car_inventory', true );
+
+		if ( ! empty( $json ) ) {
+			$decoded = json_decode( $json, true );
+			if ( is_array( $decoded ) ) {
+
+				$out = array();
+				foreach ( $decoded as $branch_id => $branch_data ) {
+					$id_int = (int) $branch_id;
+					if ( $id_int <= 0 || ! is_array( $branch_data ) ) {
+						continue;
+					}
+
+					// Already v3 — keep as-is.
+					if ( isset( $branch_data['colors'] ) && is_array( $branch_data['colors'] ) ) {
+						$out[ (string) $id_int ] = array(
+							'status' => isset( $branch_data['status'] )
+								? sanitize_key( $branch_data['status'] )
+								: 'available',
+							'colors' => $branch_data['colors'],
+						);
+						continue;
+					}
+
+					// v2 — wrap the color map under `colors`, default status.
+					$colors = array();
+					foreach ( $branch_data as $color => $data ) {
+						if ( ! is_array( $data ) ) {
+							continue;
+						}
+						$colors[ strtolower( (string) $color ) ] = array(
+							'units' => (int) ( $data['units'] ?? 0 ),
+						);
+					}
+
+					$out[ (string) $id_int ] = array(
+						'status' => 'available',
+						'colors' => $colors,
+					);
+				}
+
+				if ( ! empty( $out ) ) {
+					update_post_meta( $car_id, '_car_inventory', wp_json_encode( $out ) );
+				}
+			}
+		}
+
+		update_post_meta( $car_id, '_inventory_v3', 1 );
+	}
+
+	update_option( OBSIDIAN_MIGRATION_V3_OPTION, 'yes', true );
+}
+add_action( 'admin_init', 'obsidian_run_migration_v3' );

@@ -5,10 +5,18 @@
  * Two distinct meta boxes are rendered on the Car edit screen:
  *
  *   1. INVENTORY  — A tabbed UI, one tab per branch the car is stocked at.
- *                   Inside each tab the admin sets per-color unit counts.
- *                   Saved as JSON into `_car_inventory`:
- *                     { "12": { "orange": {"units":3}, "black": {"units":2} },
- *                       "15": { "orange": {"units":2} } }
+ *                   Inside each tab the admin chooses:
+ *                     - the branch's per-car status (available/maintenance/retired)
+ *                     - which subset of the master colors this branch stocks,
+ *                       and how many units of each.
+ *                   Saved as JSON into `_car_inventory` (v3 shape):
+ *                     { "12": { "status": "available",
+ *                               "colors": { "orange": {"units":3},
+ *                                           "black":  {"units":2} } },
+ *                       "15": { "status": "maintenance",
+ *                               "colors": { "orange": {"units":2} } } }
+ *                   Branches and colors that aren't stocked at a given branch
+ *                   are simply absent from that branch's `colors` map.
  *
  *   2. GALLERIES  — Shared per-color image arrays (6 per color). These are
  *                   identical across all branches because galleries describe
@@ -33,16 +41,13 @@ if ( ! defined( 'OBSIDIAN_IMAGES_PER_COLOR' ) ) {
 }
 
 /**
- * Hide the deprecated `car_total_units` ACF field from the Car edit screen.
+ * Belt-and-braces: also hide the deprecated `car_total_units` field if it
+ * happens to be re-introduced by a leftover legacy DB-defined field group.
  *
- * The field group was originally created in the ACF admin UI (not in code), so
- * we can't delete it programmatically without touching the database. Returning
- * `false` from `acf/prepare_field` suppresses the field from rendering on every
- * screen — admin, REST, and any other ACF context — without altering the field
- * group definition itself.
- *
- * If you want to remove it permanently: Custom Fields → Field Groups →
- * "Car Details" → delete the "Total Units" field, then drop this filter.
+ * The primary defense is `obsidian_suppress_legacy_car_field_groups()` in
+ * includes/car-fields.php, which removes any non-code "Car Details" group
+ * entirely. This filter is a second layer for the rare case where a legacy
+ * group lives under a different title and slips through.
  */
 add_filter( 'acf/prepare_field/name=car_total_units', '__return_false' );
 
@@ -87,7 +92,7 @@ function obsidian_render_inventory_meta_box( $post ) {
 	$colors = get_field( 'car_colors', $post->ID );
 	if ( empty( $colors ) || ! is_array( $colors ) ) {
 		echo '<p class="obsidian-meta-notice">';
-		esc_html_e( 'Select colors in the "Car Details" field group above first, then save the post. Inventory will appear here.', 'obsidian-booking' );
+		esc_html_e( 'Pick at least one color under "Available Colors" in the Car Details box above, then save the post. Per-branch inventory will appear here.', 'obsidian-booking' );
 		echo '</p>';
 		return;
 	}
@@ -130,7 +135,7 @@ function obsidian_render_inventory_meta_box( $post ) {
 
 	?>
 	<p class="obsidian-meta-description">
-		<?php esc_html_e( 'Add this vehicle to one or more branches. Set how many units of each color are stocked at each branch (0 = not available there). Galleries are managed once for the whole vehicle in the box below.', 'obsidian-booking' ); ?>
+		<?php esc_html_e( 'Add this vehicle to one or more branches. For each branch, set the operational status and tick which colors it actually stocks (the master color list above is the universe of options — each branch can carry any subset). Galleries are managed once for the whole vehicle in the box below.', 'obsidian-booking' ); ?>
 	</p>
 
 	<div class="obsidian-inventory"
@@ -194,14 +199,14 @@ function obsidian_render_inventory_meta_box( $post ) {
 		<?php
 		$is_first = true;
 		foreach ( $active_tab_ids as $branch_id ) :
-			$branch_inventory = isset( $inventory[ (string) $branch_id ] ) && is_array( $inventory[ (string) $branch_id ] )
+			$branch_entry = isset( $inventory[ (string) $branch_id ] ) && is_array( $inventory[ (string) $branch_id ] )
 				? $inventory[ (string) $branch_id ]
-				: array();
+				: array( 'status' => 'available', 'colors' => array() );
 			?>
 			<div class="obsidian-tab-panel<?php echo $is_first ? ' is-active' : ''; ?>"
 				 role="tabpanel"
 				 data-branch-id="<?php echo esc_attr( $branch_id ); ?>">
-				<?php obsidian_render_branch_inventory_table( $branch_id, $colors, $branch_inventory ); ?>
+				<?php obsidian_render_branch_inventory_table( $branch_id, $colors, $branch_entry ); ?>
 			</div>
 			<?php
 			$is_first = false;
@@ -211,15 +216,16 @@ function obsidian_render_inventory_meta_box( $post ) {
 
 		<?php
 		// Hidden template used by JS when adding a new branch tab — keeps
-		// markup in PHP rather than a giant string in JavaScript.
-		$template_inventory = array();
-		foreach ( $colors as $c ) {
-			$template_inventory[ strtolower( $c ) ] = array( 'units' => 0 );
-		}
+		// markup in PHP rather than a giant string in JavaScript. New
+		// branches start with no colors stocked (admin ticks them in).
+		$template_entry = array(
+			'status' => 'available',
+			'colors' => array(),
+		);
 		?>
 		<template id="obsidian-branch-panel-template">
 			<div class="obsidian-tab-panel" role="tabpanel" data-branch-id="__BRANCH_ID__">
-				<?php obsidian_render_branch_inventory_table( 0, $colors, $template_inventory, true ); ?>
+				<?php obsidian_render_branch_inventory_table( 0, $colors, $template_entry, true ); ?>
 			</div>
 		</template>
 	</div>
@@ -227,51 +233,102 @@ function obsidian_render_inventory_meta_box( $post ) {
 }
 
 /**
- * Render the per-branch units table that goes inside one tab panel.
+ * Render the per-branch inventory panel (status + per-color stocking).
  *
- * @param int   $branch_id The branch this table belongs to (0 = template).
- * @param array $colors    The master ACF car_colors list.
- * @param array $units_for Existing units keyed by color (lowercased).
- * @param bool  $is_template When true, name attributes use __BRANCH_ID__
+ * Markup contract for the save handler:
+ *   obsidian_branch_inventory[<branch_id>][status]                     → string
+ *   obsidian_branch_inventory[<branch_id>][colors][<color>][stocked]   → "1" if checked
+ *   obsidian_branch_inventory[<branch_id>][colors][<color>][units]     → integer
+ *
+ * Only colors whose [stocked] checkbox is ticked are persisted; everything
+ * else is dropped (so unchecking Blue at Cebu removes Blue from Cebu's
+ * `colors` map without touching Makati).
+ *
+ * @param int   $branch_id    The branch this panel belongs to (0 = template).
+ * @param array $master_colors The master ACF car_colors list (full universe).
+ * @param array $entry        Existing branch entry: ['status' => str, 'colors' => map]
+ * @param bool  $is_template  When true, name attributes use __BRANCH_ID__
  *                            placeholders for the JS clone path.
  */
-function obsidian_render_branch_inventory_table( $branch_id, $colors, $units_for, $is_template = false ) {
+function obsidian_render_branch_inventory_table( $branch_id, $master_colors, $entry, $is_template = false ) {
 
-	$branch_attr = $is_template ? '__BRANCH_ID__' : (int) $branch_id;
-	$total       = 0;
+	$branch_attr   = $is_template ? '__BRANCH_ID__' : (int) $branch_id;
+	$current_stat  = isset( $entry['status'] ) ? (string) $entry['status'] : 'available';
+	$stocked_map   = isset( $entry['colors'] ) && is_array( $entry['colors'] ) ? $entry['colors'] : array();
+	$total         = 0;
+
+	$status_choices = array(
+		'available'   => __( 'Available', 'obsidian-booking' ),
+		'maintenance' => __( 'Maintenance', 'obsidian-booking' ),
+		'retired'     => __( 'Retired', 'obsidian-booking' ),
+	);
 	?>
+	<div class="obsidian-branch-status-row">
+		<label class="branch-status-label" for="obsidian-branch-status-<?php echo esc_attr( $branch_attr ); ?>">
+			<?php esc_html_e( 'Status at this branch', 'obsidian-booking' ); ?>
+		</label>
+		<select id="obsidian-branch-status-<?php echo esc_attr( $branch_attr ); ?>"
+				class="branch-status-select"
+				name="obsidian_branch_inventory[<?php echo esc_attr( $branch_attr ); ?>][status]">
+			<?php foreach ( $status_choices as $val => $label ) : ?>
+				<option value="<?php echo esc_attr( $val ); ?>"<?php selected( $current_stat, $val ); ?>>
+					<?php echo esc_html( $label ); ?>
+				</option>
+			<?php endforeach; ?>
+		</select>
+		<span class="branch-status-help">
+			<?php esc_html_e( 'Maintenance / retired hides the car at this branch only.', 'obsidian-booking' ); ?>
+		</span>
+	</div>
+
 	<table class="widefat obsidian-branch-units-table">
 		<thead>
 			<tr>
+				<th class="col-stocked"><?php esc_html_e( 'Stocked here?', 'obsidian-booking' ); ?></th>
 				<th class="col-color"><?php esc_html_e( 'Color', 'obsidian-booking' ); ?></th>
-				<th class="col-units"><?php esc_html_e( 'Units at this branch', 'obsidian-booking' ); ?></th>
+				<th class="col-units"><?php esc_html_e( 'Units', 'obsidian-booking' ); ?></th>
 			</tr>
 		</thead>
 		<tbody>
-			<?php foreach ( $colors as $color ) :
-				$key   = strtolower( $color );
-				$hex   = obsidian_get_color_hex( $key );
-				$units = (int) ( $units_for[ $key ]['units'] ?? 0 );
-				$total += $units;
+			<?php foreach ( $master_colors as $color ) :
+				$key       = strtolower( $color );
+				$hex       = obsidian_get_color_hex( $key );
+				$is_stocked = array_key_exists( $key, $stocked_map );
+				$units      = $is_stocked ? (int) ( $stocked_map[ $key ]['units'] ?? 0 ) : 0;
+				if ( $is_stocked ) {
+					$total += $units;
+				}
 				?>
-				<tr>
+				<tr class="branch-color-row<?php echo $is_stocked ? ' is-stocked' : ''; ?>">
+					<td class="col-stocked">
+						<input type="checkbox"
+							   class="branch-stocked-toggle"
+							   id="obsidian-stocked-<?php echo esc_attr( $branch_attr . '-' . $key ); ?>"
+							   name="obsidian_branch_inventory[<?php echo esc_attr( $branch_attr ); ?>][colors][<?php echo esc_attr( $key ); ?>][stocked]"
+							   value="1"
+							   <?php checked( $is_stocked ); ?> />
+					</td>
 					<td class="col-color">
-						<span class="branch-swatch" style="background-color: <?php echo esc_attr( $hex ); ?>;"></span>
-						<span class="branch-color-name"><?php echo esc_html( ucfirst( $color ) ); ?></span>
+						<label for="obsidian-stocked-<?php echo esc_attr( $branch_attr . '-' . $key ); ?>" class="branch-color-label">
+							<span class="branch-swatch" style="background-color: <?php echo esc_attr( $hex ); ?>;"></span>
+							<span class="branch-color-name"><?php echo esc_html( ucfirst( $color ) ); ?></span>
+						</label>
 					</td>
 					<td class="col-units">
 						<input type="number"
-							   name="obsidian_branch_inventory[<?php echo esc_attr( $branch_attr ); ?>][<?php echo esc_attr( $key ); ?>][units]"
+							   name="obsidian_branch_inventory[<?php echo esc_attr( $branch_attr ); ?>][colors][<?php echo esc_attr( $key ); ?>][units]"
 							   value="<?php echo esc_attr( $units ); ?>"
 							   min="0"
 							   step="1"
-							   class="small-text branch-units-input" />
+							   class="small-text branch-units-input"
+							   <?php disabled( ! $is_stocked ); ?> />
 					</td>
 				</tr>
 			<?php endforeach; ?>
 		</tbody>
 		<tfoot>
 			<tr>
+				<th class="col-stocked"></th>
 				<th class="col-color"><?php esc_html_e( 'Total at this branch', 'obsidian-booking' ); ?></th>
 				<th class="col-units">
 					<span class="branch-units-total"><?php echo esc_html( $total ); ?></span>
@@ -296,7 +353,7 @@ function obsidian_render_galleries_meta_box( $post ) {
 	$colors = get_field( 'car_colors', $post->ID );
 	if ( empty( $colors ) || ! is_array( $colors ) ) {
 		echo '<p class="obsidian-meta-notice">';
-		esc_html_e( 'Select colors in the "Car Details" field group above first, then save the post. Galleries will appear here.', 'obsidian-booking' );
+		esc_html_e( 'Pick at least one color under "Available Colors" in the Car Details box above, then save the post. Per-color galleries will appear here.', 'obsidian-booking' );
 		echo '</p>';
 		return;
 	}
@@ -386,14 +443,15 @@ function obsidian_save_car_inventory_and_galleries( $post_id ) {
 	if ( isset( $_POST['obsidian_car_inventory_nonce'] )
 		&& wp_verify_nonce( $_POST['obsidian_car_inventory_nonce'], 'obsidian_save_car_inventory' )
 	) {
-		$inventory = array();
+		$inventory       = array();
+		$valid_statuses  = array( 'available', 'maintenance', 'retired' );
 
 		if ( isset( $_POST['obsidian_branch_inventory'] ) && is_array( $_POST['obsidian_branch_inventory'] ) ) {
 
-			foreach ( $_POST['obsidian_branch_inventory'] as $raw_branch_id => $colors_data ) {
+			foreach ( $_POST['obsidian_branch_inventory'] as $raw_branch_id => $branch_data ) {
 
 				$branch_id = (int) $raw_branch_id;
-				if ( $branch_id <= 0 || ! is_array( $colors_data ) ) {
+				if ( $branch_id <= 0 || ! is_array( $branch_data ) ) {
 					continue;
 				}
 
@@ -404,16 +462,39 @@ function obsidian_save_car_inventory_and_galleries( $post_id ) {
 					continue;
 				}
 
-				$branch_payload = array();
-				foreach ( $colors_data as $color => $data ) {
-					$color_key = sanitize_text_field( strtolower( $color ) );
-					$units     = absint( $data['units'] ?? 0 );
-					$branch_payload[ $color_key ] = array( 'units' => $units );
+				// Status — fall back to "available" on any unexpected value.
+				$status = isset( $branch_data['status'] ) ? sanitize_key( $branch_data['status'] ) : 'available';
+				if ( ! in_array( $status, $valid_statuses, true ) ) {
+					$status = 'available';
 				}
 
-				if ( ! empty( $branch_payload ) ) {
-					$inventory[ (string) $branch_id ] = $branch_payload;
+				// Colors — only persist entries whose [stocked] checkbox was
+				// ticked, so unticking a color removes it from this branch
+				// without affecting any other branch.
+				$colors_payload  = array();
+				$raw_colors      = isset( $branch_data['colors'] ) && is_array( $branch_data['colors'] ) ? $branch_data['colors'] : array();
+
+				foreach ( $raw_colors as $color => $data ) {
+					if ( ! is_array( $data ) ) {
+						continue;
+					}
+					$is_stocked = ! empty( $data['stocked'] );
+					if ( ! $is_stocked ) {
+						continue;
+					}
+					$color_key                    = sanitize_text_field( strtolower( $color ) );
+					$units                        = absint( $data['units'] ?? 0 );
+					$colors_payload[ $color_key ] = array( 'units' => $units );
 				}
+
+				// Persist the branch entry as long as it has a status set —
+				// even if no colors are stocked yet, so the admin can revisit
+				// this tab later. Branches with neither status nor colors are
+				// dropped (effectively the same as removing the tab).
+				$inventory[ (string) $branch_id ] = array(
+					'status' => $status,
+					'colors' => $colors_payload,
+				);
 			}
 		}
 
@@ -424,8 +505,9 @@ function obsidian_save_car_inventory_and_galleries( $post_id ) {
 			delete_post_meta( $post_id, '_car_inventory' );
 		}
 
-		// Make sure this car is flagged as v2 so the migration won't re-touch it.
+		// Flag this car as v3 so the upgrade migration won't re-touch it.
 		update_post_meta( $post_id, '_migrated_v2', 1 );
+		update_post_meta( $post_id, '_inventory_v3', 1 );
 	}
 
 	/* ── Galleries ── */

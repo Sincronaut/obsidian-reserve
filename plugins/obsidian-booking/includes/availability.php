@@ -49,10 +49,71 @@ function obsidian_get_color_hex( $color_name ) {
    ══════════════════════════════════════════════════════════════ */
 
 /**
- * Decode the per-branch inventory JSON for a car.
+ * Branch statuses considered "operational" — the car can be listed and
+ * booked from this branch when its per-branch status is in this list.
+ *
+ * Anything else (`maintenance`, `retired`) hides the car at that branch
+ * without touching its presence at sister branches.
+ *
+ * @return string[]
+ */
+function obsidian_get_active_branch_statuses() {
+	return array( 'available' );
+}
+
+/**
+ * Normalise one branch entry from `_car_inventory` into the v3 shape.
+ *
+ * v2 (legacy) shape:  [ "blue" => ["units"=>2], "black" => ["units"=>1] ]
+ * v3 (current) shape: [ "status" => "available",
+ *                       "colors" => [ "blue" => ["units"=>2], ... ] ]
+ *
+ * Detection: the v3 shape always has an explicit `colors` key.
+ * If we see one, we trust it; otherwise we treat every key as a color
+ * and synthesize a default status of "available".
+ *
+ * @param mixed $branch_data Raw branch entry from JSON.
+ * @return array{status:string,colors:array<string,array{units:int}>}
+ */
+function obsidian_normalize_branch_entry( $branch_data ) {
+
+	if ( ! is_array( $branch_data ) ) {
+		return array( 'status' => 'available', 'colors' => array() );
+	}
+
+	if ( isset( $branch_data['colors'] ) && is_array( $branch_data['colors'] ) ) {
+		$status = isset( $branch_data['status'] ) ? sanitize_key( $branch_data['status'] ) : 'available';
+		$colors = array();
+		foreach ( $branch_data['colors'] as $color => $data ) {
+			$colors[ strtolower( (string) $color ) ] = array(
+				'units' => (int) ( is_array( $data ) ? ( $data['units'] ?? 0 ) : 0 ),
+			);
+		}
+		return array( 'status' => $status ?: 'available', 'colors' => $colors );
+	}
+
+	// Legacy shape — top-level keys are colors directly.
+	$colors = array();
+	foreach ( $branch_data as $color => $data ) {
+		if ( ! is_array( $data ) ) {
+			continue;
+		}
+		$colors[ strtolower( (string) $color ) ] = array(
+			'units' => (int) ( $data['units'] ?? 0 ),
+		);
+	}
+	return array( 'status' => 'available', 'colors' => $colors );
+}
+
+/**
+ * Decode the per-branch inventory JSON for a car, normalised to v3 shape.
+ *
+ * Always returns the new shape (status + colors) regardless of whether the
+ * stored JSON is v2 (legacy) or v3, so consumers don't need to branch.
  *
  * @param int $car_id The Car post ID.
- * @return array Nested map: [ branch_id => [ color => [ 'units' => int ] ] ]
+ * @return array<string,array{status:string,colors:array<string,array{units:int}>}>
+ *   Nested map keyed by branch_id (as string).
  */
 function obsidian_get_car_inventory( $car_id ) {
 	$json = get_post_meta( $car_id, '_car_inventory', true );
@@ -62,7 +123,49 @@ function obsidian_get_car_inventory( $car_id ) {
 	}
 
 	$decoded = json_decode( $json, true );
-	return is_array( $decoded ) ? $decoded : array();
+	if ( ! is_array( $decoded ) ) {
+		return array();
+	}
+
+	$out = array();
+	foreach ( $decoded as $branch_id => $branch_data ) {
+		$id_int = (int) $branch_id;
+		if ( $id_int <= 0 ) {
+			continue;
+		}
+		$out[ (string) $id_int ] = obsidian_normalize_branch_entry( $branch_data );
+	}
+
+	return $out;
+}
+
+/**
+ * Per-branch status for a car (default 'available').
+ *
+ * @param int $car_id    The Car post ID.
+ * @param int $branch_id The Location post ID.
+ * @return string One of: available | maintenance | retired
+ */
+function obsidian_get_branch_status( $car_id, $branch_id ) {
+	$inv = obsidian_get_car_inventory( $car_id );
+	$key = (string) (int) $branch_id;
+	return $inv[ $key ]['status'] ?? 'available';
+}
+
+/**
+ * Per-branch color list for a car (only colors actually stocked at the branch).
+ *
+ * @param int $car_id    The Car post ID.
+ * @param int $branch_id The Location post ID.
+ * @return string[] Lowercase color slugs.
+ */
+function obsidian_get_branch_colors( $car_id, $branch_id ) {
+	$inv = obsidian_get_car_inventory( $car_id );
+	$key = (string) (int) $branch_id;
+	if ( ! isset( $inv[ $key ]['colors'] ) || ! is_array( $inv[ $key ]['colors'] ) ) {
+		return array();
+	}
+	return array_keys( $inv[ $key ]['colors'] );
 }
 
 /**
@@ -115,9 +218,16 @@ function obsidian_resolve_color_gallery( $car_id, $color ) {
 /**
  * IDs of all active branches the car is stocked at.
  *
- * Filters out branches whose `location_status` is not `active`, so a car
- * stocked only at "coming_soon" branches reports an empty array (and
- * therefore won't appear on the public fleet).
+ * A branch is included only when ALL of these are true:
+ *   - The Location post exists and is published.
+ *   - The Location's own `location_status` is `active`
+ *     (i.e. the branch itself is open for business).
+ *   - The car's per-branch status at this branch is `available`
+ *     (i.e. the car is not in maintenance/retired here).
+ *   - At least one color has units > 0 at this branch.
+ *
+ * Used by the fleet listing, the modal's branch picker, and anywhere else
+ * the public site asks "where can I rent this car?".
  *
  * @param int $car_id The Car post ID.
  * @return int[]
@@ -129,8 +239,10 @@ function obsidian_get_car_branches( $car_id ) {
 		return array();
 	}
 
+	$active_branch_statuses = obsidian_get_active_branch_statuses();
+
 	$branch_ids = array();
-	foreach ( array_keys( $inventory ) as $branch_id ) {
+	foreach ( $inventory as $branch_id => $entry ) {
 		$branch_id = (int) $branch_id;
 		if ( $branch_id <= 0 ) {
 			continue;
@@ -138,10 +250,31 @@ function obsidian_get_car_branches( $car_id ) {
 		if ( get_post_status( $branch_id ) !== 'publish' ) {
 			continue;
 		}
-		$status = get_post_meta( $branch_id, 'location_status', true );
-		if ( $status && $status !== 'active' ) {
+
+		$loc_status = get_post_meta( $branch_id, 'location_status', true );
+		if ( $loc_status && $loc_status !== 'active' ) {
 			continue;
 		}
+
+		// Per-branch car status — hides the car only at branches where
+		// it's currently flagged maintenance/retired.
+		$car_branch_status = $entry['status'] ?? 'available';
+		if ( ! in_array( $car_branch_status, $active_branch_statuses, true ) ) {
+			continue;
+		}
+
+		// At least one color must actually be stocked with units > 0.
+		$has_units = false;
+		foreach ( $entry['colors'] as $data ) {
+			if ( (int) ( $data['units'] ?? 0 ) > 0 ) {
+				$has_units = true;
+				break;
+			}
+		}
+		if ( ! $has_units ) {
+			continue;
+		}
+
 		$branch_ids[] = $branch_id;
 	}
 
@@ -171,7 +304,11 @@ function obsidian_get_car_regions( $car_id ) {
 }
 
 /**
- * Quick boolean: is this car stocked at this branch?
+ * Quick boolean: is this car bookable at this branch right now?
+ *
+ * Returns true only when the car has stock (>=1 unit of any color) at the
+ * branch AND the per-branch status is `available`. Used as a final guard
+ * inside `POST /bookings` and the modal's branch picker.
  *
  * @param int $car_id    The Car post ID.
  * @param int $branch_id The Location post ID.
@@ -181,11 +318,16 @@ function obsidian_branch_has_car( $car_id, $branch_id ) {
 	$inventory = obsidian_get_car_inventory( $car_id );
 	$key       = (string) (int) $branch_id;
 
-	if ( ! isset( $inventory[ $key ] ) || ! is_array( $inventory[ $key ] ) ) {
+	if ( ! isset( $inventory[ $key ] ) || empty( $inventory[ $key ]['colors'] ) ) {
 		return false;
 	}
 
-	foreach ( $inventory[ $key ] as $color_data ) {
+	$status = $inventory[ $key ]['status'] ?? 'available';
+	if ( ! in_array( $status, obsidian_get_active_branch_statuses(), true ) ) {
+		return false;
+	}
+
+	foreach ( $inventory[ $key ]['colors'] as $color_data ) {
 		if ( (int) ( $color_data['units'] ?? 0 ) > 0 ) {
 			return true;
 		}
@@ -249,10 +391,10 @@ function obsidian_get_color_variants( $car_id, $location_id = 0 ) {
 
 		if ( $location_id > 0 ) {
 			$key = (string) $location_id;
-			if ( isset( $inventory[ $key ] ) && is_array( $inventory[ $key ] ) ) {
-				foreach ( $inventory[ $key ] as $color => $data ) {
-					$color_key             = strtolower( $color );
-					$result[ $color_key ]  = array(
+			if ( isset( $inventory[ $key ]['colors'] ) && is_array( $inventory[ $key ]['colors'] ) ) {
+				foreach ( $inventory[ $key ]['colors'] as $color => $data ) {
+					$color_key            = strtolower( $color );
+					$result[ $color_key ] = array(
 						'units'  => (int) ( $data['units'] ?? 0 ),
 						'images' => $galleries[ $color_key ] ?? array(),
 					);
@@ -261,15 +403,16 @@ function obsidian_get_color_variants( $car_id, $location_id = 0 ) {
 			return $result;
 		}
 
-		// Aggregate across active branches.
+		// Aggregate across operational branches (skips maintenance/retired
+		// per-branch entries via obsidian_get_car_branches).
 		$active_branches = obsidian_get_car_branches( $car_id );
 
 		foreach ( $active_branches as $branch_id ) {
 			$key = (string) $branch_id;
-			if ( ! isset( $inventory[ $key ] ) || ! is_array( $inventory[ $key ] ) ) {
+			if ( ! isset( $inventory[ $key ]['colors'] ) || ! is_array( $inventory[ $key ]['colors'] ) ) {
 				continue;
 			}
-			foreach ( $inventory[ $key ] as $color => $data ) {
+			foreach ( $inventory[ $key ]['colors'] as $color => $data ) {
 				$color_key = strtolower( $color );
 				if ( ! isset( $result[ $color_key ] ) ) {
 					$result[ $color_key ] = array(

@@ -636,3 +636,79 @@
     font-size: 14px;
     color: #1d2327;
 }
+
+/* ---- Per-Branch Status Row (Phase 11.x) ---- */
+
+.obsidian-branch-status-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+}
+
+.obsidian-branch-status-row .branch-status-label {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.obsidian-branch-status-row .branch-status-select {
+    min-width: 160px;
+}
+
+.obsidian-branch-status-row .branch-status-help {
+    font-size: 12px;
+    color: #646970;
+    flex-basis: 100%;
+}
+
+/* ---- Per-Branch Color Stocking (Phase 11.x) ---- */
+
+.obsidian-branch-units-table .col-stocked {
+    width: 90px;
+    text-align: center;
+}
+.obsidian-branch-units-table thead .col-stocked {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #50575e;
+}
+
+.obsidian-branch-units-table .col-color {
+    width: auto;
+}
+
+.obsidian-branch-units-table .col-units {
+    width: 110px;
+}
+
+.obsidian-branch-units-table .branch-color-row .branch-color-label {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Greyed-out look when a color isn't stocked at this branch. */
+.obsidian-branch-units-table .branch-color-row:not(.is-stocked) .branch-color-name,
+.obsidian-branch-units-table .branch-color-row:not(.is-stocked) .branch-swatch {
+    opacity: 0.4;
+}
+
+.obsidian-branch-units-table .branch-color-row:not(.is-stocked) .branch-units-input {
+    background: #f0f0f1;
+    color: #a7aaad;
+    cursor: not-allowed;
+}
+
+.obsidian-branch-units-table .branch-stocked-toggle {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    vertical-align: middle;
+}

@@ -55,12 +55,22 @@ A WordPress block theme (FSE). Uses `templates/`, `parts/`, and custom `blocks/`
 ### Data Model
 
 **Cars** — Custom Post Type, public, uses ACF + custom meta:
-- ACF fields: `car_make`, `car_model`, `car_year`, `car_daily_rate` (`car_total_units` was removed in Phase 11; total is now derived live from `_car_inventory`)
-- ACF: `car_colors` (checkbox — source of truth for which colors exist), `car_status` (select: available/maintenance/retired)
-- ACF: `car_img_exterior`, `car_img_interior`, `car_img_engine`, `car_img_detail` (gallery images for the modal)
-- Custom meta: `_car_color_variants` (JSON) — per-color units + image ID, e.g. `{"orange":{"units":3,"image_id":456},"black":{"units":2,"image_id":789}}`
-- Custom admin meta box on Car edit screen renders per-color inputs (reads ACF checkbox, saves to `_car_color_variants`)
+- **All ACF fields are now code-defined in `includes/car-fields.php`** (no longer manually configured via Custom Fields → Field Groups). Field group key: `group_obsidian_car_details`.
+- **Shared across every branch** (vehicle-level): `car_make`, `car_model`, `car_year`, `car_daily_rate`, `car_specs`, `car_colors` (master color list), `car_status` (vehicle-wide listing status: available / maintenance / retired)
+- **Per-branch** (managed in custom meta boxes, NOT ACF):
+  - `_car_inventory` (JSON, **v3 shape**) — per-branch operational status PLUS the per-branch subset of stocked colors with units. Example:
+    ```json
+    {
+      "12": { "status": "available",   "colors": { "blue": {"units": 2}, "black": {"units": 1} } },
+      "15": { "status": "maintenance", "colors": { "black": {"units": 3} } }
+    }
+    ```
+    Each branch independently chooses (a) its `status` (`available` / `maintenance` / `retired`) and (b) which subset of the master `car_colors` it actually stocks. Removing a color from one branch does NOT touch any other branch. Admin UI: `admin/car-meta-box.php` "Inventory — by Branch" tabs.
+  - Legacy v2 shape `{"12":{"blue":{"units":2}}}` is auto-upgraded to v3 on read by `obsidian_normalize_branch_entry()`, and persistently rewritten by the v3 migration in `includes/migrations.php` (gated by `OBSIDIAN_MIGRATION_V3_OPTION`).
+  - `_car_galleries` (JSON) — shared per-color image galleries (6 images per color), e.g. `{"orange":[101,102,...]}` → admin UI: `admin/car-meta-box.php` "Color Galleries" box (galleries are identical at every branch).
+- Legacy: `_car_color_variants` (deprecated, kept only so the migration in `includes/migrations.php` can read it). `car_total_units` was removed in Phase 11 — total is derived live from `_car_inventory`.
 - Taxonomy: `car_class` (Exotic, Executive, SUV, Sport)
+- A duplicate "Car Details" group created via the ACF UI before the code migration is auto-suppressed by `obsidian_suppress_legacy_car_field_groups()` so the admin only sees one copy.
 
 **Bookings** — Custom Post Type, NOT public, uses `register_post_meta()`:
 - Core: `_booking_car_id`, `_booking_user_id`, `_booking_start_date`, `_booking_end_date`

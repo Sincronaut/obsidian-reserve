@@ -373,13 +373,18 @@ $change_location_url = add_query_arg(
 					</select>
 				</div>
 
+				<!-- Two distinct gov IDs (NOT front/back of one ID). The
+				     `data-mirror-from` attribute tells the JS which gov-id
+				     <select> drives the upload zone's label text — when the
+				     user picks "SSS ID" in the dropdown, the upload zone's
+				     "Upload ID" caption becomes "Upload SSS ID". -->
 				<div class="obsidian-bf-upload-row">
 					<div class="obsidian-bf-upload-group">
-						<div class="obsidian-bf-upload-zone" data-doc-key="gov_id_front">
+						<div class="obsidian-bf-upload-zone" data-doc-key="gov_id_1" data-mirror-from="obf-gov-id-type">
 							<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="obf-file-input" />
 							<div class="obf-upload-placeholder">
 								<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-								<span>Upload ID</span>
+								<span class="obf-upload-label">Upload ID</span>
 							</div>
 							<div class="obf-upload-preview" style="display:none;">
 								<img src="" alt="Preview" />
@@ -388,11 +393,11 @@ $change_location_url = add_query_arg(
 						</div>
 					</div>
 					<div class="obsidian-bf-upload-group">
-						<div class="obsidian-bf-upload-zone" data-doc-key="gov_id_back">
+						<div class="obsidian-bf-upload-zone" data-doc-key="gov_id_2" data-mirror-from="obf-gov-id-type-2">
 							<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="obf-file-input" />
 							<div class="obf-upload-placeholder">
 								<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-								<span>Upload ID</span>
+								<span class="obf-upload-label">Upload ID</span>
 							</div>
 							<div class="obf-upload-preview" style="display:none;">
 								<img src="" alt="Preview" />
@@ -404,6 +409,13 @@ $change_location_url = add_query_arg(
 				<?php endif; ?>
 
 			</div><!-- .obsidian-bf-fields-group -->
+
+			<!-- UX status hint — explains *why* the Next button is disabled
+			     (e.g. "Missing: Last Name"). Filled in by validateRenter(). -->
+			<div class="obsidian-bf-status" id="obf-renter-status" hidden>
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+				<span class="obf-status-text" id="obf-renter-status-text"></span>
+			</div>
 
 			<!-- Renter step "Next" button -->
 			<div class="obsidian-bf-actions">
@@ -535,6 +547,12 @@ $change_location_url = add_query_arg(
 					<span class="obf-check-box"></span>
 					<span>I have read and agree to the <strong>Obsidian Reserve Privacy Policy</strong> and consent to the processing of my personal data accordingly.</span>
 				</label>
+			</div>
+
+			<!-- UX status hint — explains *why* the Submit button is disabled. -->
+			<div class="obsidian-bf-status" id="obf-delivery-status" hidden>
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+				<span class="obf-status-text" id="obf-delivery-status-text"></span>
 			</div>
 
 			<!-- Delivery step actions -->

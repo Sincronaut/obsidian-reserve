@@ -229,11 +229,11 @@ function obsidian_get_branch_total_units( $branch_id ) {
 			? obsidian_get_car_inventory( $car_id )
 			: array();
 
-		if ( ! isset( $inventory[ $key ] ) || ! is_array( $inventory[ $key ] ) ) {
+		if ( ! isset( $inventory[ $key ]['colors'] ) || ! is_array( $inventory[ $key ]['colors'] ) ) {
 			continue;
 		}
 
-		foreach ( $inventory[ $key ] as $color_data ) {
+		foreach ( $inventory[ $key ]['colors'] as $color_data ) {
 			$total += (int) ( $color_data['units'] ?? 0 );
 		}
 	}
