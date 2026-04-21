@@ -59,6 +59,16 @@ $regions = get_terms( array(
 	'order'      => 'ASC',
 ) );
 
+// Manual Sort: Luzon -> Visayas -> Mindanao.
+if ( ! is_wp_error( $regions ) && ! empty( $regions ) ) {
+	usort( $regions, function( $a, $b ) {
+		$order = array( 'Luzon' => 1, 'Visayas' => 2, 'Mindanao' => 3 );
+		$val_a = $order[ $a->name ] ?? 999;
+		$val_b = $order[ $b->name ] ?? 999;
+		return $val_a <=> $val_b;
+	} );
+}
+
 $grouped = array();
 if ( ! is_wp_error( $regions ) ) {
 	foreach ( $regions as $region ) {

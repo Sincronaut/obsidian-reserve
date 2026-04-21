@@ -187,6 +187,12 @@
     box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.4);
 }
 
+/* Per-branch color filtering (Phase 11.x): when a branch/region scope hides
+   a color that isn't stocked there, the JS sets [hidden] on the swatch. */
+.color-swatch[hidden] {
+    display: none !important;
+}
+
 .car-card-meta {
     display: flex;
     align-items: center;

@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-const OBSIDIAN_LOCATIONS_MENU_CACHE_KEY = 'obsidian_locations_menu_html_v1';
+const OBSIDIAN_LOCATIONS_MENU_CACHE_KEY = 'obsidian_locations_menu_html_v2';
 const OBSIDIAN_LOCATIONS_MENU_CACHE_TTL = HOUR_IN_SECONDS;
 
 /**
@@ -61,6 +61,16 @@ function obsidian_render_locations_menu_html() {
 		'orderby'    => 'name',
 		'order'      => 'ASC',
 	) );
+
+	// Manual Sort: Luzon -> Visayas -> Mindanao.
+	if ( ! is_wp_error( $regions ) && ! empty( $regions ) ) {
+		usort( $regions, function( $a, $b ) {
+			$order = array( 'Luzon' => 1, 'Visayas' => 2, 'Mindanao' => 3 );
+			$val_a = $order[ $a->name ] ?? 999;
+			$val_b = $order[ $b->name ] ?? 999;
+			return $val_a <=> $val_b;
+		} );
+	}
 
 	if ( is_wp_error( $regions ) || empty( $regions ) ) {
 		// Fallback: no regions configured yet — just a plain "Locations"

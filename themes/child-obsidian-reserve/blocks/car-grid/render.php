@@ -378,31 +378,74 @@ $build_scope_data = function ( $car_id ) {
 			return true;
 		}
 
-		/* ── Update each swatch's displayed units based on the current scope. ── */
+		/* ── Update each swatch for the current scope.
+		     - Hides swatches whose color isn't stocked at the selected
+		       branch / region (missing key in `data-units-by-scope`).
+		     - Updates the displayed unit count for visible swatches.
+		     - If the previously active swatch is now hidden, promotes the
+		       first remaining visible swatch (and swaps the card image
+		       and units text to match). ── */
 		function updateScopedUnits(card) {
 			var swatches = card.querySelectorAll('.color-swatch');
+			var firstVisible = null;
+			var activeStillVisible = false;
+
 			swatches.forEach(function(swatch) {
 				var raw = swatch.getAttribute('data-units-by-scope');
 				if (!raw) { return; }
 				var map;
 				try { map = JSON.parse(raw); } catch (e) { return; }
 
-				var u = (typeof map[state.scope] !== 'undefined')
-					? map[state.scope]
-					: (typeof map['all'] !== 'undefined' ? map['all'] : 0);
+				// For branch_/region_ scopes, a MISSING key means "this color
+				// isn't stocked here" — not "fall back to the aggregated count".
+				// Only the special "all" scope falls back to the `all` value.
+				var isScopedFilter = (state.scope.indexOf('branch_') === 0
+				                   || state.scope.indexOf('region_') === 0);
+				var hasScopeKey    = (typeof map[state.scope] !== 'undefined');
 
+				if (isScopedFilter && !hasScopeKey) {
+					swatch.hidden = true;
+					swatch.classList.remove('active');
+					return;
+				}
+
+				var u = isScopedFilter
+					? Number(map[state.scope] || 0)
+					: Number((typeof map['all'] !== 'undefined') ? map['all'] : 0);
+
+				swatch.hidden = false;
 				swatch.setAttribute('data-units', String(u));
+
 				var color = swatch.getAttribute('data-color') || '';
 				swatch.setAttribute('title',
 					color.charAt(0).toUpperCase() + color.slice(1) + ' — ' + u + ' available');
 
-				if (swatch.classList.contains('active')) {
-					var unitsEl = card.querySelector('.units-text');
-					if (unitsEl) {
-						unitsEl.textContent = u + ' available';
+				if (!firstVisible) { firstVisible = swatch; }
+				if (swatch.classList.contains('active')) { activeStillVisible = true; }
+			});
+
+			// If the active swatch is now hidden, promote the first visible
+			// one and sync the card image + unit count to it.
+			if (!activeStillVisible && firstVisible) {
+				swatches.forEach(function(s) { s.classList.remove('active'); });
+				firstVisible.classList.add('active');
+
+				var img     = card.querySelector('.car-card-img');
+				var unitsEl = card.querySelector('.units-text');
+				var newImg  = firstVisible.getAttribute('data-image');
+				var newU    = firstVisible.getAttribute('data-units');
+				if (img && newImg) { img.src = newImg; }
+				if (unitsEl)       { unitsEl.textContent = newU + ' available'; }
+			} else {
+				// Active swatch is still visible — just refresh its units in the footer.
+				var activeSwatch = card.querySelector('.color-swatch.active');
+				if (activeSwatch) {
+					var unitsEl2 = card.querySelector('.units-text');
+					if (unitsEl2) {
+						unitsEl2.textContent = activeSwatch.getAttribute('data-units') + ' available';
 					}
 				}
-			});
+			}
 		}
 
 		/* ── Apply filters: hide non-matching cards, recompute units. ── */
