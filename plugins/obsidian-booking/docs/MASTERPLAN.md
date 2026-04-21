@@ -243,26 +243,27 @@ Create `includes/post-types.php`:
 
 ### Step 2.2 — Configure ACF fields for Cars
 
-Install ACF (free) from Plugins → Add New.
+> **MIGRATED TO CODE (Phase 11.x):** This field group was originally created by hand via **ACF → Field Groups → Add New**. It is now registered programmatically in `includes/car-fields.php` (mirroring the pattern used for the Location CPT in `includes/location-fields.php`), so the schema is version-controlled and applies on every install. A duplicate-suppression filter in the same file (`obsidian_suppress_legacy_car_field_groups()`) hides any leftover DB-defined "Car Details" group on the admin Car edit screen, so admins only ever see one copy. To clean up permanently, trash the legacy group via Custom Fields → Field Groups, then drop the filter.
 
-Go to **ACF → Field Groups → Add New**:
+**Field Group key:** `group_obsidian_car_details`  
+**Field Group title:** "Car Details — shared across branches"  
+**Assigned to:** `post_type == car`
 
-**Field Group: "Car Details"**  
-Assign to: Post Type = Car
+All fields here describe the **vehicle itself** and are **shared across every branch** that stocks it:
 
 | Field Label | Field Name | Type | Notes |
 |---|---|---|---|
-| Make | `car_make` | Text | e.g. "Nissan" |
-| Model | `car_model` | Text | e.g. "GTR" |
-| Year | `car_year` | Number | e.g. 2024 |
-| Daily Rate | `car_daily_rate` | Number | In PHP peso, e.g. 850.00 |
-| ~~Total Units~~ | ~~`car_total_units`~~ | ~~Number~~ | **REMOVED in Phase 11.** Hidden from the admin UI via `acf/prepare_field/name=car_total_units` → `__return_false`. The total is now computed live from `_car_inventory`. Delete the field from Custom Fields → Field Groups → "Car Details" if you want to clean up the database. |
-| Colors | `car_colors` | Checkbox | Orange, Red, Black, Blue (expandable) — source of truth for which colors exist |
-| Car Status | `car_status` | Select | Choices: available, maintenance, retired |
-| Image - Exterior | `car_img_exterior` | Image | Return: Image URL (modal gallery) |
-| Image - Interior | `car_img_interior` | Image | Return: Image URL (modal gallery) |
-| Image - Engine | `car_img_engine` | Image | Return: Image URL (modal gallery) |
-| Image - Detail | `car_img_detail` | Image | Return: Image URL (modal gallery) |
+| Make | `car_make` | Text | Required. e.g. "Nissan". |
+| Model | `car_model` | Text | Required. e.g. "GTR". |
+| Year | `car_year` | Number | Required. Min 1980, max current year + 2. |
+| Daily Rate (PHP) | `car_daily_rate` | Number | Required. Same rate at every branch. |
+| Specifications | `car_specs` | Textarea | One bullet per line — rendered as a list in the booking modal. |
+| Available Colors | `car_colors` | Checkbox | Required. Master list of colors. Choices come from `obsidian_get_car_color_choices()` and must stay in sync with `obsidian_get_color_hex()`. |
+| Vehicle Status | `car_status` | Select | Required. `available` / `maintenance` / `retired`. Vehicle-wide listing toggle — to pull a car from a single branch only, set its units to 0 in the Inventory section instead. |
+| ~~Total Units~~ | ~~`car_total_units`~~ | ~~Number~~ | **REMOVED in Phase 11.** Total is computed live from `_car_inventory`. Not present in the code-defined group; the `acf/prepare_field/name=car_total_units` filter still hides it as a safety net for legacy DB groups. |
+| ~~Image — Exterior/Interior/Engine/Detail~~ | ~~`car_img_*`~~ | ~~Image~~ | **REPLACED in Phase 5.x by `_car_galleries`** — six images per color, managed in the "Color Galleries" custom meta box. Galleries are shared across branches because they describe the *vehicle*, not the *branch*. |
+
+**Per-branch data** (units per color) lives in the `_car_inventory` custom meta and is managed in the "Inventory — by Branch" custom meta box, NOT in this ACF group.
 
 ### Step 2.2b — Color Variant Data (added post-Phase 4)
 
@@ -1335,14 +1336,18 @@ Assign to: Post Type = `location`.
 
 Split the existing single meta field into **two** separate meta fields:
 
-**`_car_inventory`** (per-branch, per-color units):
+**`_car_inventory`** (per-branch operational status + per-color units, **v3 shape**):
 ```json
 {
-  "12": { "orange": { "units": 3 }, "black": { "units": 2 } },
-  "15": { "orange": { "units": 2 } }
+  "12": { "status": "available",   "colors": { "orange": { "units": 3 }, "black": { "units": 2 } } },
+  "15": { "status": "maintenance", "colors": { "orange": { "units": 2 } } }
 }
 ```
-Keys are branch (location) post IDs. Inner keys are color slugs.
+- Top-level keys are branch (location) post IDs.
+- `status` is the per-branch operational status for this vehicle: `available` / `maintenance` / `retired`. Anything other than `available` hides the car at that branch only — sister branches are unaffected.
+- `colors` is the **subset** of master colors actually stocked at this branch. Removing a color from one branch does NOT remove it from any other branch (this is what fixes the Cebu/Makati cross-contamination bug). The master `car_colors` ACF checkbox stays as the universe of options the admin can pick from.
+
+> **Legacy v2 shape** `{ "12": { "orange": {"units": 3} } }` (no `status`, colors as top-level keys) is auto-upgraded to v3 in `obsidian_normalize_branch_entry()`, and persistently rewritten to disk by the v3 migration in `includes/migrations.php` (gated by the `obsidian_migration_v3_done` option).
 
 **`_car_galleries`** (color → image array, shared across branches):
 ```json
@@ -1414,13 +1419,20 @@ Redesign `admin/car-meta-box.php`:
 ```
 ┌─ Inventory ─────────────────────────────────────────────┐
 │  Branches: [+ Add Branch ▾]                            │
-│  ┌── Makati [✕] ── BGC ── Cebu City ── Davao City ──┐  │
+│  ┌── Makati [✕] ── Cebu City ── Davao City ─────────┐  │
 │  │                                                   │  │
-│  │  Available colors: ✓ Orange  ✓ Black              │  │
-│  │  (driven by car_colors ACF checkbox)              │  │
+│  │  Status at this branch: [Available ▾]             │  │
+│  │  (Maintenance / retired hides the car here only.) │  │
 │  │                                                   │  │
-│  │  Orange — Units [3]                               │  │
-│  │  Black  — Units [2]                               │  │
+│  │  ┌────────────┬───────────┬────────┐              │  │
+│  │  │ Stocked?   │ Color     │ Units  │              │  │
+│  │  ├────────────┼───────────┼────────┤              │  │
+│  │  │   ☑        │ ● Blue    │  [2]   │              │  │
+│  │  │   ☑        │ ● Black   │  [1]   │              │  │
+│  │  │   ☐        │ ● Red     │  [0]   │ ← greyed out │  │
+│  │  └────────────┴───────────┴────────┘              │  │
+│  │                                                   │  │
+│  │  Total at this branch:  3                         │  │
 │  │                                                   │  │
 │  └───────────────────────────────────────────────────┘  │
 │                                                         │
@@ -1430,11 +1442,13 @@ Redesign `admin/car-meta-box.php`:
 └─────────────────────────────────────────────────────────┘
 ```
 
-- Tabs across the top, one per branch the car is stocked at. Each tab shows a per-color units table; the per-branch total is summed live in the table footer.
-- "+ Add Branch" dropdown lists active branches not yet added. A hidden `<template id="obsidian-branch-panel-template">` is cloned into a new tab when selected.
+- **Per-branch operational status** at the top of every tab (`available` / `maintenance` / `retired`) maps to `_car_inventory[<branch>].status`. Setting it to anything other than `available` hides the car at that branch only — sister branches are unaffected.
+- **Per-branch color stocking** — instead of forcing every branch to share the master color list, every color row has a "Stocked here?" checkbox. Only ticked colors are persisted into `_car_inventory[<branch>].colors[<color>] = {"units": N}`. Unticking Blue at Cebu removes Blue from Cebu's `colors` map without touching Makati. Pre-fill is `1` so admins don't ship a 0-unit row by accident; admin JS greys out the units input until the checkbox is on.
+- Tabs across the top, one per branch the car is set up at. Each tab shows the status select plus the stock table; the per-branch total is summed live in the table footer (only checked rows count).
+- "+ Add Branch" dropdown lists active branches not yet added. A hidden `<template id="obsidian-branch-panel-template">` is cloned into a new tab when selected — new branches start with no colors ticked, so the admin must explicitly choose what's stocked.
 - The last remaining tab cannot be removed (a car must always belong to at least one branch); removing any other tab pops up a confirm and returns the branch to the dropdown.
 - Galleries are managed once in a **separate** "Color Galleries — shared across branches" meta box below the inventory box.
-- The existing `assets/js/admin-booking.js` was extended with the tab-switching, add/remove-branch, and per-branch-total handlers (the WP Media uploader logic is reused unchanged for gallery slots). On save, two save handlers in `admin/car-meta-box.php` write `_car_inventory` (nested by branch) and `_car_galleries` (flat by color) — each gated by its own nonce so partial form submits can't wipe the other field.
+- `assets/js/admin-booking.js` provides: tab switching, add/remove-branch, per-row `syncStockedRow()` that toggles the `.is-stocked` class + disabled state of the units input, and per-branch totals (checked rows only). The WP Media uploader logic is reused unchanged for gallery slots. On save, two handlers in `admin/car-meta-box.php` write `_car_inventory` (v3 shape, nested by branch) and `_car_galleries` (flat by color) — each gated by its own nonce so partial form submits can't wipe the other field. Saving also stamps `_inventory_v3 = 1` so the v3 migration won't re-touch the car.
 
 ### Step 11.8 — Admin: Bookings list "Location" column
 

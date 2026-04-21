@@ -14,20 +14,45 @@
 		var $inventory = $('.obsidian-inventory');
 
 		// Recalculate the per-branch units total in a tab's footer row.
+		// Only colors whose "stocked here?" checkbox is ticked count toward
+		// the total — an unticked row is a color this branch doesn't carry.
 		function recalcBranchTotal($panel) {
 			var sum = 0;
-			$panel.find('.branch-units-input').each(function() {
+			$panel.find('.branch-color-row.is-stocked .branch-units-input').each(function() {
 				sum += parseInt($(this).val(), 10) || 0;
 			});
 			$panel.find('.branch-units-total').text(sum);
 		}
 
-		// Initialise totals on first render.
+		// Sync a single row's UI to its checkbox state — toggles the
+		// .is-stocked class and the disabled attribute on the units input.
+		function syncStockedRow($row) {
+			var checked = $row.find('.branch-stocked-toggle').is(':checked');
+			$row.toggleClass('is-stocked', checked);
+			var $units = $row.find('.branch-units-input');
+			$units.prop('disabled', !checked);
+			if (!checked) {
+				$units.val(0);
+			} else if ((parseInt($units.val(), 10) || 0) === 0) {
+				// First-time check: pre-fill 1 so admins don't ship 0-unit colors by accident.
+				$units.val(1);
+			}
+		}
+
+		// Initialise totals + row states on first render.
 		$('.obsidian-tab-panel').each(function() {
+			$(this).find('.branch-color-row').each(function() { syncStockedRow($(this)); });
 			recalcBranchTotal($(this));
 		});
 
-		// Live-update the total as the admin types.
+		// "Stocked here?" checkbox toggle.
+		$(document).on('change', '.branch-stocked-toggle', function() {
+			var $row = $(this).closest('.branch-color-row');
+			syncStockedRow($row);
+			recalcBranchTotal($row.closest('.obsidian-tab-panel'));
+		});
+
+		// Live-update the total as the admin types into a units input.
 		$(document).on('input change', '.branch-units-input', function() {
 			var $input = $(this);
 			if ((parseInt($input.val(), 10) || 0) < 0) {

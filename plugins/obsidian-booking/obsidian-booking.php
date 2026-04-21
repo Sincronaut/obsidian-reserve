@@ -34,6 +34,9 @@ require_once OBSIDIAN_BOOKING_DIR . 'includes/post-types.php';
 require_once OBSIDIAN_BOOKING_DIR . 'includes/meta-fields.php';
 require_once OBSIDIAN_BOOKING_DIR . 'includes/taxonomies.php';
 
+// Car ACF schema (migrated from ACF UI to code)
+require_once OBSIDIAN_BOOKING_DIR . 'includes/car-fields.php';
+
 // Location/Branch ACF schema (Phase 11)
 require_once OBSIDIAN_BOOKING_DIR . 'includes/location-fields.php';
 
