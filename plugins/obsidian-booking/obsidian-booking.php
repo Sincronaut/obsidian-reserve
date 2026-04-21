@@ -230,12 +230,29 @@ function obsidian_booking_render_modal()
 
          <div class="obsidian-modal-content" id="obsidian-modal-content">
 
-            <!-- LEFT COLUMN — Gallery + Color + Price -->
+            <!-- LEFT COLUMN — Gallery + Branch + Color + Price -->
             <div class="obsidian-modal-left">
                <div class="obsidian-modal-main-img">
                   <img id="obsidian-modal-hero" src="" alt="" />
                </div>
                <div class="obsidian-modal-thumbs" id="obsidian-modal-thumbs"></div>
+
+               <!-- Pickup branch picker (Phase 11.13).
+                    Lives above the color swatches because color stock is
+                    branch-scoped — picking a branch is the gate that unlocks
+                    everything downstream. The JS swaps between `.is-locked`
+                    (URL had ?location/?region) and `.is-pickable`. -->
+               <div class="obsidian-modal-branch" id="obsidian-modal-branch" hidden>
+                  <span class="branch-label">Pick up at:</span>
+                  <span class="branch-name" id="obsidian-modal-branch-name"></span>
+                  <button type="button"
+                          class="branch-change"
+                          id="obsidian-modal-branch-change"
+                          aria-label="Change pickup location">✏️</button>
+                  <select class="branch-select" id="obsidian-modal-branch-select" aria-label="Select pickup branch" hidden>
+                     <option value="">Select branch…</option>
+                  </select>
+               </div>
 
                <div id="obsidian-modal-colors" class="obsidian-modal-colors"></div>
 
@@ -253,23 +270,6 @@ function obsidian_booking_render_modal()
                <h3 id="obsidian-modal-name"></h3>
 
                <div id="obsidian-modal-specs" class="obsidian-modal-specs"></div>
-
-               <!-- Phase 11.13: Pickup branch picker.
-                    The JS swaps between `.is-locked` (URL had ?location/?region —
-                    branch is fixed, just shown as a label with an Edit link)
-                    and `.is-pickable` (no URL filter — user picks before
-                    anything else can be interacted with). -->
-               <div class="obsidian-modal-branch" id="obsidian-modal-branch" hidden>
-                  <span class="branch-label">Pick up at:</span>
-                  <span class="branch-name" id="obsidian-modal-branch-name"></span>
-                  <button type="button"
-                          class="branch-change"
-                          id="obsidian-modal-branch-change"
-                          aria-label="Change pickup location">✏️</button>
-                  <select class="branch-select" id="obsidian-modal-branch-select" aria-label="Select pickup branch" hidden>
-                     <option value="">Select branch…</option>
-                  </select>
-               </div>
 
                <div class="obsidian-modal-customer-section">
                   <h4 class="obsidian-modal-section-heading">Tell us who you are. We handle the rest.</h4>
@@ -289,11 +289,11 @@ function obsidian_booking_render_modal()
 
                <div class="obsidian-modal-dates">
                   <div class="obsidian-modal-field">
-                     <label for="obsidian-pickup-date">Pick-up Date</label>
+                     <label for="obsidian-pickup-date">Delivery Date</label>
                      <input type="text" id="obsidian-pickup-date" placeholder="Select date" readonly />
                   </div>
                   <div class="obsidian-modal-field">
-                     <label for="obsidian-dropoff-date">Drop-off Date</label>
+                     <label for="obsidian-dropoff-date">Return Date</label>
                      <input type="text" id="obsidian-dropoff-date" placeholder="Select date" readonly />
                   </div>
                </div>
@@ -304,13 +304,17 @@ function obsidian_booking_render_modal()
                   <span id="obsidian-modal-total-breakdown" class="obsidian-modal-breakdown"></span>
                </div>
 
+               <!-- UX status hint — explains *why* an action is blocked.
+                    Filled in dynamically by validateForm() in modal.js based
+                    on which prerequisite is missing (branch / color / dates). -->
+               <div class="obsidian-modal-status" id="obsidian-modal-status" hidden>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <span id="obsidian-modal-status-text"></span>
+               </div>
+
                <div class="obsidian-modal-actions">
                   <button id="obsidian-modal-proceed" class="obsidian-modal-cta" disabled>
                      <span id="obsidian-modal-cta-text">Reserve Vehicle</span>
-                  </button>
-                  <button id="obsidian-modal-check-avail" class="obsidian-modal-cta-outline" type="button">
-                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                     Check Vehicle Availability
                   </button>
                </div>
             </div>

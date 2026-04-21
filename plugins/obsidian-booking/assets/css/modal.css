@@ -528,34 +528,6 @@ body.obsidian-modal-open {
    cursor: not-allowed;
 }
 
-.obsidian-modal-cta-outline {
-   flex: 1;
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   gap: 8px;
-   padding: 14px 16px;
-   background: transparent;
-   border: 1px solid rgba(255, 255, 255, 0.2);
-   border-radius: 10px;
-   color: rgba(255, 255, 255, 0.7);
-   font-family: var(--wp--preset--font-family--montserrat, 'Montserrat', sans-serif);
-   font-size: 12px;
-   font-weight: 600;
-   letter-spacing: 0.3px;
-   cursor: pointer;
-   transition: border-color 0.3s ease, color 0.3s ease;
-}
-
-.obsidian-modal-cta-outline svg {
-   flex-shrink: 0;
-}
-
-.obsidian-modal-cta-outline:hover {
-   border-color: rgba(255, 255, 255, 0.4);
-   color: #FFFFFF;
-}
-
 /* ============================================================
    Flatpickr Dark Theme Override
    ============================================================ */
@@ -697,7 +669,8 @@ span.flatpickr-weekday {
 
 /* ============================================================
    Phase 11.13 — Pickup-branch picker
-   Lives at the top of the right column, above customer-type.
+   Lives in the LEFT column, above the color swatches — branch
+   gates color stock, so it has to come first visually.
    Two visual modes:
      .is-locked    — branch came from URL ?location=…  → show name + ✏️
      .is-pickable  — user must choose                  → show <select>
@@ -780,4 +753,82 @@ span.flatpickr-weekday {
    .obsidian-modal-branch .branch-change {
       margin-left: 0;
    }
+}
+
+/* ============================================================
+   UX feedback additions
+   - Greyed-out color swatches when a branch hasn't been picked.
+   - Inline note that explains why they're greyed out.
+   - Status hint banner above the Reserve CTA that always tells
+     the user *what* is missing (or that they're good to go).
+   ============================================================ */
+
+.obsidian-modal-colors.is-disabled {
+   opacity: 0.55;
+   pointer-events: none;
+   filter: grayscale(0.4);
+   position: relative;
+}
+
+.obsidian-modal-colors-note {
+   width: 100%;
+   margin: 0 0 10px;
+   padding: 10px 12px;
+   background: rgba(255, 255, 255, 0.05);
+   border: 1px dashed rgba(255, 255, 255, 0.18);
+   border-radius: 6px;
+   color: rgba(255, 255, 255, 0.78);
+   font-size: 12px;
+   font-style: italic;
+   font-family: 'Montserrat', sans-serif;
+   pointer-events: auto; /* still readable when parent is .is-disabled */
+   opacity: 1;
+   filter: none;
+}
+
+.obsidian-modal-status {
+   display: flex;
+   align-items: flex-start;
+   gap: 8px;
+   margin: 12px 0 14px;
+   padding: 10px 12px;
+   border-radius: 6px;
+   font-family: 'Montserrat', sans-serif;
+   font-size: 13px;
+   line-height: 1.45;
+}
+
+.obsidian-modal-status svg {
+   flex-shrink: 0;
+   margin-top: 1px;
+}
+
+.obsidian-modal-status.is-info {
+   background: rgba(197, 160, 89, 0.08);
+   border: 1px solid rgba(197, 160, 89, 0.3);
+   color: rgba(255, 255, 255, 0.85);
+}
+
+.obsidian-modal-status.is-info svg {
+   color: #C5A059;
+}
+
+.obsidian-modal-status.is-warn {
+   background: rgba(255, 160, 60, 0.08);
+   border: 1px solid rgba(255, 160, 60, 0.4);
+   color: #FFD8A8;
+}
+
+.obsidian-modal-status.is-warn svg {
+   color: #FFB04A;
+}
+
+.obsidian-modal-status.is-success {
+   background: rgba(80, 200, 120, 0.08);
+   border: 1px solid rgba(80, 200, 120, 0.35);
+   color: #B7F0CA;
+}
+
+.obsidian-modal-status.is-success svg {
+   color: #50C878;
 }
