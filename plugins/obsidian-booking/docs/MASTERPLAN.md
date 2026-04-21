@@ -814,12 +814,12 @@ The "Back" button returns to the renter form (no data lost).
 
 New meta fields saved:
 - `_booking_delivery_contact` — contact number for delivery
-- `_booking_delivery_dropoff` — self_pickup, hotel_delivery, airport_delivery, address_delivery
-- `_booking_delivery_date` — Y-m-d
-- `_booking_delivery_time` — time string
-- `_booking_return_address` — return address text
-- `_booking_return_date` — Y-m-d
-- `_booking_return_time` — time string
+- `_booking_delivery_dropoff` — `home_delivery` or `airport_delivery` (we deliver only — no self-pickup)
+- `_booking_delivery_date` — Y-m-d (user-picked)
+- `_booking_delivery_time` — time string (user-picked)
+- `_booking_return_address` — where we collect the car at the end of the booking
+- `_booking_return_date` — Y-m-d, **auto-set to the booking end date** (not a user input)
+- `_booking_return_time` — time string, **auto-mirrored from `delivery_time`** so the return cycle aligns
 - `_booking_special_requests` — free text
 
 On submit (after delivery form):

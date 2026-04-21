@@ -131,7 +131,6 @@
 		deliveryPickersInitialized = true;
 
 		var deliveryDateInput = document.getElementById('obf-delivery-date');
-		var returnDateInput   = document.getElementById('obf-return-date');
 
 		if (deliveryDateInput) {
 			flatpickr(deliveryDateInput, {
@@ -143,14 +142,25 @@
 			});
 		}
 
-		if (returnDateInput) {
-			flatpickr(returnDateInput, {
-				dateFormat: 'Y-m-d',
-				altInput: true,
-				altFormat: 'M j, Y',
-				minDate: 'today',
-				onChange: function () { validateDelivery(); }
-			});
+		// Return date is no longer a user input — it's auto-set to the
+		// booking end date (rendered server-side into the hidden input).
+		// We just mirror the user's delivery time into the hidden return
+		// time and update the read-only display so they can see what
+		// we'll be using.
+		var deliveryTimeInput = document.getElementById('obf-delivery-time');
+		var returnTimeHidden  = document.getElementById('obf-return-time');
+		var returnTimeDisplay = document.getElementById('obf-return-time-display');
+
+		if (deliveryTimeInput && returnTimeHidden) {
+			var syncReturnTime = function () {
+				var t = (deliveryTimeInput.value || '').trim();
+				returnTimeHidden.value = t;
+				if (returnTimeDisplay) {
+					returnTimeDisplay.textContent = t || '—';
+				}
+			};
+			deliveryTimeInput.addEventListener('input', syncReturnTime);
+			deliveryTimeInput.addEventListener('change', syncReturnTime);
 		}
 	}
 
@@ -301,15 +311,16 @@
 	function validateDelivery() {
 		var valid = true;
 
+		// Return date/time are no longer user inputs — they're auto-set
+		// from the booking end date and the chosen delivery time, so they're
+		// not in the required-fields list.
 		var requiredFields = [
 			'obf-pickup-location', // Phase 11.14: branch must be chosen.
 			'obf-delivery-contact',
 			'obf-delivery-dropoff',
 			'obf-delivery-date',
 			'obf-delivery-time',
-			'obf-return-address',
-			'obf-return-date',
-			'obf-return-time'
+			'obf-return-address'
 		];
 
 		requiredFields.forEach(function (id) {

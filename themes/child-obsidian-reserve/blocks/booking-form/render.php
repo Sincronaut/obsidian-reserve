@@ -460,15 +460,13 @@ $change_location_url = add_query_arg(
 					<input type="tel" id="obf-delivery-contact" name="delivery_contact" placeholder="ex : +639234-2312-4345" required />
 				</div>
 
-				<!-- ── Delivery Drop Off ── -->
+				<!-- ── Delivery Type (we deliver only — no self-pickup) ── -->
 				<div class="obsidian-bf-field">
-					<label for="obf-delivery-dropoff">Delivery Drop Off</label>
+					<label for="obf-delivery-dropoff">Delivery Type</label>
 					<select id="obf-delivery-dropoff" name="delivery_dropoff" required>
-						<option value="">Delivery Drop Off</option>
-						<option value="self_pickup">Self Pickup</option>
-						<option value="hotel_delivery">Hotel Delivery</option>
+						<option value="">Select delivery type&hellip;</option>
+						<option value="home_delivery">Home Delivery</option>
 						<option value="airport_delivery">Airport Delivery</option>
-						<option value="address_delivery">Address Delivery</option>
 					</select>
 				</div>
 
@@ -487,25 +485,34 @@ $change_location_url = add_query_arg(
 					</div>
 				</div>
 
-				<!-- ── Return Address ── -->
+				<!-- ── Return Address (where we'll pick the car up at the end of the booking) ── -->
 				<div class="obsidian-bf-field">
-					<label for="obf-return-address"><svg class="obf-label-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Return Address</label>
+					<label for="obf-return-address"><svg class="obf-label-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Return Pickup Address</label>
 					<input type="text" id="obf-return-address" name="return_address" placeholder="ex : 123 Street, City of Manila" required />
+					<p class="obsidian-bf-field-helper">Where we'll collect the vehicle once your booking ends.</p>
 				</div>
 
-				<!-- ── Return Date and Time ── -->
-				<div class="obsidian-bf-field">
-					<label>Return Date and Time</label>
-					<div class="obf-datetime-row">
-						<div class="obf-datetime-field">
-							<svg class="obf-datetime-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-							<input type="text" id="obf-return-date" name="return_date" placeholder="MM / DD / YR" required readonly />
+				<!-- ── Return Date and Time (auto-set) ──
+				     Return date = booking end date, return time mirrors the
+				     delivery time the user just picked. Displayed read-only;
+				     hidden inputs carry the values to the API. -->
+				<div class="obsidian-bf-field obsidian-bf-return-schedule">
+					<label>Return Schedule</label>
+					<div class="obsidian-bf-return-card">
+						<div class="obsidian-bf-return-row">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+							<span>We'll pick up the car on:</span>
+							<strong id="obf-return-date-display"><?php echo esc_html( $end_display ); ?></strong>
 						</div>
-						<div class="obf-datetime-field">
-							<svg class="obf-datetime-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-							<input type="text" id="obf-return-time" name="return_time" placeholder="00 : 00 : 00 AM / PM" required />
+						<div class="obsidian-bf-return-row">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+							<span>at:</span>
+							<strong id="obf-return-time-display">—</strong>
+							<span class="obsidian-bf-return-hint">(matches your delivery time)</span>
 						</div>
 					</div>
+					<input type="hidden" id="obf-return-date" name="return_date" value="<?php echo esc_attr( $end_date ); ?>" />
+					<input type="hidden" id="obf-return-time" name="return_time" value="" />
 				</div>
 
 				<!-- ── Special Requests ── -->
