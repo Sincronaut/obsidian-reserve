@@ -50,6 +50,7 @@ $start_date    = isset( $_GET['start'] ) ? sanitize_text_field( $_GET['start'] )
 $end_date      = isset( $_GET['end'] ) ? sanitize_text_field( $_GET['end'] ) : '';
 $color         = isset( $_GET['color'] ) ? sanitize_text_field( $_GET['color'] ) : '';
 $customer_type = isset( $_GET['customer_type'] ) ? sanitize_text_field( $_GET['customer_type'] ) : 'local';
+$location_id   = isset( $_GET['location_id'] ) ? (int) $_GET['location_id'] : 0;
 
 $is_international = ( $customer_type === 'international' );
 
@@ -105,12 +106,74 @@ $gov_id_options = array(
 	'national_id'            => 'Philippine National ID (PhilSys)',
 );
 
-// Obsidian locations
-$locations = array(
-	''              => 'Select Location',
-	'main_office'   => 'Main Office',
-	'airport'       => 'Airport Pickup',
-	'hotel'         => 'Hotel Delivery',
+/* ───────────────────────────────────────────────────────────
+   Phase 11.14 — Pickup branches (dynamic, grouped by region)
+   The legacy hard-coded $locations array (Main Office / Airport /
+   Hotel) is gone. Branches now come from the `location` CPT, only
+   `active` ones, grouped by their `region` taxonomy term so the
+   <select> can render <optgroup>s.
+
+   When a `location_id` was passed in the URL (from the modal) we
+   render the field as read-only with a "Change location" link that
+   goes back to the modal so the user can re-pick.
+   ─────────────────────────────────────────────────────────── */
+
+$branches_by_region = array();
+$branch_lookup      = array();
+
+$branch_query = new WP_Query( array(
+	'post_type'      => 'location',
+	'post_status'    => 'publish',
+	'posts_per_page' => -1,
+	'orderby'        => 'title',
+	'order'          => 'ASC',
+	'meta_query'     => array(
+		array(
+			'key'     => 'location_status',
+			'value'   => 'active',
+			'compare' => '=',
+		),
+	),
+) );
+
+if ( $branch_query->have_posts() ) {
+	foreach ( $branch_query->posts as $b ) {
+		$regions = wp_get_post_terms( $b->ID, 'region', array( 'number' => 1 ) );
+		$region  = ( ! is_wp_error( $regions ) && ! empty( $regions ) ) ? $regions[0] : null;
+		$rkey    = $region ? $region->term_id : 0;
+		$rlabel  = $region ? $region->name : __( 'Other', 'obsidian-booking' );
+
+		if ( ! isset( $branches_by_region[ $rkey ] ) ) {
+			$branches_by_region[ $rkey ] = array(
+				'label'    => $rlabel,
+				'branches' => array(),
+			);
+		}
+		$branches_by_region[ $rkey ]['branches'][] = $b;
+		$branch_lookup[ $b->ID ] = array(
+			'name'   => $b->post_title,
+			'region' => $rlabel,
+		);
+	}
+}
+
+// Validate the URL-provided branch (must exist and be active).
+$preselected_branch = ( $location_id && isset( $branch_lookup[ $location_id ] ) )
+	? $branch_lookup[ $location_id ]
+	: null;
+$location_locked    = ( $preselected_branch !== null );
+
+// Build a "Change location" link that re-opens the modal with the
+// car & dates intact but without `location_id`, so the modal's branch
+// picker comes back up.
+$change_location_url = add_query_arg(
+	array(
+		'car_id' => $car_id,
+		'start'  => $start_date,
+		'end'    => $end_date,
+		'color'  => $color,
+	),
+	home_url( '/fleet/' )
 );
 ?>
 
@@ -122,6 +185,7 @@ $locations = array(
 	<input type="hidden" id="obf-end-date" value="<?php echo esc_attr( $end_date ); ?>" />
 	<input type="hidden" id="obf-color" value="<?php echo esc_attr( $color ); ?>" />
 	<input type="hidden" id="obf-customer-type" value="<?php echo esc_attr( $customer_type ); ?>" />
+	<input type="hidden" id="obf-location-id" value="<?php echo esc_attr( $location_id ); ?>" />
 
 	<!-- Header -->
 	<div class="obsidian-bf-header" id="obf-header">
@@ -356,6 +420,39 @@ $locations = array(
 		<div id="obf-step-delivery" style="display:none;">
 
 			<div class="obsidian-bf-fields-group">
+
+				<!-- ── Phase 11.14: Pickup Branch ──
+				     If location_id was passed via URL we render this as
+				     read-only with a "Change location" link back to the
+				     fleet/modal. Otherwise, full dropdown grouped by region. -->
+				<?php if ( $location_locked ) : ?>
+				<div class="obsidian-bf-field obsidian-bf-location-field obsidian-bf-location-locked">
+					<label>Pickup Location</label>
+					<div class="obsidian-bf-location-display">
+						<div class="obsidian-bf-location-name">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+							<strong><?php echo esc_html( $preselected_branch['name'] ); ?></strong>
+							<span class="obsidian-bf-location-region">— <?php echo esc_html( $preselected_branch['region'] ); ?></span>
+						</div>
+						<a href="<?php echo esc_url( $change_location_url ); ?>" class="obsidian-bf-location-change">Change location</a>
+					</div>
+					<input type="hidden" id="obf-pickup-location" name="pickup_location" value="<?php echo esc_attr( $location_id ); ?>" required />
+				</div>
+				<?php else : ?>
+				<div class="obsidian-bf-field obsidian-bf-location-field">
+					<label for="obf-pickup-location">Pickup Location</label>
+					<select id="obf-pickup-location" name="pickup_location" required>
+						<option value="">Select a branch&hellip;</option>
+						<?php foreach ( $branches_by_region as $group ) : ?>
+							<optgroup label="<?php echo esc_attr( $group['label'] ); ?>">
+								<?php foreach ( $group['branches'] as $b ) : ?>
+									<option value="<?php echo esc_attr( $b->ID ); ?>"><?php echo esc_html( $b->post_title ); ?></option>
+								<?php endforeach; ?>
+							</optgroup>
+						<?php endforeach; ?>
+					</select>
+				</div>
+				<?php endif; ?>
 
 				<!-- ── Contact Number (pre-filled from renter form for local) ── -->
 				<div class="obsidian-bf-field">

@@ -302,6 +302,7 @@
 		var valid = true;
 
 		var requiredFields = [
+			'obf-pickup-location', // Phase 11.14: branch must be chosen.
 			'obf-delivery-contact',
 			'obf-delivery-dropoff',
 			'obf-delivery-date',
@@ -339,8 +340,14 @@
 		setLoading(true);
 		hideMessage();
 
+		// Phase 11.14: Pull branch ID from the dropdown OR the locked
+		// hidden input. The PHP renders one or the other under the same
+		// `id="obf-pickup-location"` so this single lookup handles both.
+		var locationId = parseInt(val('obf-pickup-location') || '0', 10);
+
 		var payload = {
 			car_id:         parseInt((document.getElementById('obf-car-id') || {}).value || '0', 10),
+			location_id:    locationId,
 			start_date:     (document.getElementById('obf-start-date') || {}).value || '',
 			end_date:       (document.getElementById('obf-end-date') || {}).value || '',
 			color:          (document.getElementById('obf-color') || {}).value || '',
@@ -352,7 +359,6 @@
 			address:        val('obf-address'),
 			birth_date:     val('obf-birth-date'),
 			license_number: val('obf-license-number'),
-			location:       'main_office',
 			documents:      uploadedDocs,
 
 			// Delivery fields

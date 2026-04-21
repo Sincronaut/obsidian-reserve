@@ -254,6 +254,23 @@ function obsidian_booking_render_modal()
 
                <div id="obsidian-modal-specs" class="obsidian-modal-specs"></div>
 
+               <!-- Phase 11.13: Pickup branch picker.
+                    The JS swaps between `.is-locked` (URL had ?location/?region —
+                    branch is fixed, just shown as a label with an Edit link)
+                    and `.is-pickable` (no URL filter — user picks before
+                    anything else can be interacted with). -->
+               <div class="obsidian-modal-branch" id="obsidian-modal-branch" hidden>
+                  <span class="branch-label">Pick up at:</span>
+                  <span class="branch-name" id="obsidian-modal-branch-name"></span>
+                  <button type="button"
+                          class="branch-change"
+                          id="obsidian-modal-branch-change"
+                          aria-label="Change pickup location">✏️</button>
+                  <select class="branch-select" id="obsidian-modal-branch-select" aria-label="Select pickup branch" hidden>
+                     <option value="">Select branch…</option>
+                  </select>
+               </div>
+
                <div class="obsidian-modal-customer-section">
                   <h4 class="obsidian-modal-section-heading">Tell us who you are. We handle the rest.</h4>
                   <div class="obsidian-modal-customer-type">

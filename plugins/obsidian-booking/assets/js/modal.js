@@ -16,6 +16,12 @@
    var currentCar = null;
    var selectedColor = null;
 
+   /* ── Phase 11.13: pickup-branch picker ── */
+   var branchEl, branchNameEl, branchChangeBtn, branchSelectEl;
+   var selectedLocationId = 0;          // current scope (0 = "All Locations" — picker mode)
+   var branchLocked = false;            // true when ?location/?region pre-scoped the modal
+   var branchesCache = null;            // [{id,name,region_name,status,...}, ...]
+
    function init() {
       modal = document.getElementById('obsidian-booking-modal');
       if (!modal) return;
@@ -39,6 +45,11 @@
       totalValue      = document.getElementById('obsidian-modal-total-value');
       totalBreakdown  = document.getElementById('obsidian-modal-total-breakdown');
 
+      branchEl         = document.getElementById('obsidian-modal-branch');
+      branchNameEl     = document.getElementById('obsidian-modal-branch-name');
+      branchChangeBtn  = document.getElementById('obsidian-modal-branch-change');
+      branchSelectEl   = document.getElementById('obsidian-modal-branch-select');
+
       modal.querySelector('.obsidian-modal-close').addEventListener('click', closeModal);
       overlay.addEventListener('click', closeModal);
       document.addEventListener('keydown', function (e) {
@@ -58,6 +69,22 @@
       proceedBtn.addEventListener('click', handleProceed);
       checkAvailBtn.addEventListener('click', function () {
          if (pickupFP) pickupFP.open();
+      });
+
+      /* Branch picker events (Phase 11.13). */
+      branchChangeBtn.addEventListener('click', function () {
+         // "Edit" toggle when branch was pre-locked from the fleet URL.
+         branchLocked = false;
+         enterBranchPickMode();
+      });
+      branchSelectEl.addEventListener('change', function () {
+         var id = parseInt(branchSelectEl.value, 10) || 0;
+         if (!id) {
+            selectedLocationId = 0;
+            disableFormUntilBranchPicked();
+            return;
+         }
+         applySelectedBranch(id);
       });
    }
 
@@ -79,13 +106,101 @@
       loader.style.display = '';
       content.style.display = 'none';
 
-      Promise.all([
-         fetch(cfg.restUrl + 'cars/' + carId, {
-            headers: { 'X-WP-Nonce': cfg.nonce }
-         }).then(handleResponse),
-         fetch(cfg.restUrl + 'availability/' + carId, {
-            headers: { 'X-WP-Nonce': cfg.nonce }
-         }).then(handleResponse)
+      // Phase 11.13: read URL filters set by the fleet sidebar/header dropdown.
+      // We support `?location=<slug>` (specific branch — locks the modal),
+      // `?region=<slug>`  (group — falls through to picker scoped to that region),
+      // and nothing       (full picker, no preselect).
+      var urlParams = new URLSearchParams(window.location.search);
+      var urlLocationSlug = urlParams.get('location') || '';
+      var urlRegionSlug   = urlParams.get('region') || '';
+
+      // Reset state from any prior open.
+      currentCar           = null;
+      selectedColor        = null;
+      selectedLocationId   = 0;
+      branchLocked         = false;
+
+      // We need the branch list before deciding pickup-at vs. picker. Fetching
+      // it once and caching keeps subsequent opens fast.
+      ensureBranchesLoaded(carId).then(function (branches) {
+
+         // 1. Resolve URL filter → numeric branch ID (the rest of the system
+         //    works in IDs because slugs aren't unique to a single endpoint).
+         var preSelectedId = 0;
+         if (urlLocationSlug) {
+            var match = branches.filter(function (b) { return b.slug === urlLocationSlug; })[0];
+            if (match) {
+               preSelectedId = match.id;
+               branchLocked = true; // user picked one specific branch — lock it.
+            }
+         }
+
+         // 2. Filter the picker options by region if `?region=` is present.
+         //    If the filter wipes the list (no stocked branch in that region),
+         //    fall back to the full list so the user can still book.
+         var pickerBranches = branches;
+         if (!preSelectedId && urlRegionSlug) {
+            var regionFiltered = branches.filter(function (b) { return b.region_slug === urlRegionSlug; });
+            if (regionFiltered.length > 0) {
+               pickerBranches = regionFiltered;
+            }
+         }
+
+         buildBranchSelect(pickerBranches);
+
+         // 3. Either lock to the chosen branch OR enter pick mode.
+         if (preSelectedId) {
+            applySelectedBranch(preSelectedId);
+         } else {
+            // No specific branch yet — fetch the car (aggregated, no scope)
+            // and show the picker. Form stays disabled until a branch is chosen.
+            return loadCar(carId, 0).then(disableFormUntilBranchPicked);
+         }
+      }).catch(function (err) {
+         console.error('Obsidian Modal Error:', err);
+         loader.innerHTML = '<p style="color:#ff6b6b;text-align:center;padding:40px 24px;font-size:14px;">'
+            + 'Failed to load vehicle data.<br><small style="opacity:.6">' + err.message + '</small></p>';
+      });
+   }
+
+   /**
+    * Fetch (and cache) every branch the car is stocked at, regardless of URL.
+    * The endpoint /cars/{id} (no scope) returns a `branches` array thanks to
+    * `obsidian_format_car_data()` in the REST layer.
+    */
+   function ensureBranchesLoaded(carId) {
+      if (branchesCache && branchesCache._car === carId) {
+         return Promise.resolve(branchesCache);
+      }
+      return fetch(cfg.restUrl + 'cars/' + carId, { headers: { 'X-WP-Nonce': cfg.nonce } })
+         .then(handleResponse)
+         .then(function (car) {
+            if (car.code) {
+               throw new Error('Car API error: ' + (car.message || car.code));
+            }
+            // Stash the bare car too so loadCar() with location_id=0 later can
+            // reuse this response (and we don't blink the spinner twice).
+            currentCar = car;
+            currentCar._unavailable         = [];
+            currentCar._unavailableByColor  = {};
+            branchesCache = (car.branches || []).slice();
+            branchesCache._car = carId;
+            return branchesCache;
+         });
+   }
+
+   /**
+    * Re-fetch /cars/{id}?location_id=X and /availability/{car_id}?location_id=X
+    * so color_variants, unit counts, and disabled dates all reflect the chosen
+    * branch's stock — not aggregated across branches.
+    */
+   function loadCar(carId, locationId) {
+      var carUrl    = cfg.restUrl + 'cars/'         + carId + (locationId ? '?location_id=' + locationId : '');
+      var availUrl  = cfg.restUrl + 'availability/' + carId + (locationId ? '?location_id=' + locationId : '');
+
+      return Promise.all([
+         fetch(carUrl,   { headers: { 'X-WP-Nonce': cfg.nonce } }).then(handleResponse),
+         fetch(availUrl, { headers: { 'X-WP-Nonce': cfg.nonce } }).then(handleResponse)
       ]).then(function (results) {
          var car   = results[0];
          var avail = results[1];
@@ -100,16 +215,95 @@
          selectedColor = null;
 
          populateModal(currentCar);
-         initFlatpickr(getDisableDatesForCurrentColor());
+
+         // Re-init Flatpickr on first load; on subsequent (branch swap) loads,
+         // just push the new disabled dates into the existing instances.
+         if (!pickupFP || !dropoffFP) {
+            initFlatpickr(getDisableDatesForCurrentColor());
+         }
          applyColorDisableDates();
 
          loader.style.display = 'none';
          content.style.display = '';
-      }).catch(function (err) {
-         console.error('Obsidian Modal Error:', err);
-         loader.innerHTML = '<p style="color:#ff6b6b;text-align:center;padding:40px 24px;font-size:14px;">'
-            + 'Failed to load vehicle data.<br><small style="opacity:.6">' + err.message + '</small></p>';
       });
+   }
+
+   /* ── Phase 11.13 helpers ── */
+
+   function buildBranchSelect(branches) {
+      branchSelectEl.innerHTML = '<option value="">Select branch…</option>';
+      branches.forEach(function (b) {
+         if (b.status && b.status !== 'active') { return; } // hide coming_soon/closed
+         var opt = document.createElement('option');
+         opt.value = b.id;
+         opt.textContent = b.region_name ? (b.name + ' — ' + b.region_name) : b.name;
+         branchSelectEl.appendChild(opt);
+      });
+   }
+
+   function applySelectedBranch(branchId) {
+      selectedLocationId = branchId;
+      var branch = (branchesCache || []).filter(function (b) { return b.id === branchId; })[0];
+
+      // Render the locked state: name + ✏️ edit button, hide the <select>.
+      branchEl.hidden = false;
+      branchEl.classList.remove('is-pickable');
+      branchEl.classList.add('is-locked');
+      branchSelectEl.hidden = true;
+      branchChangeBtn.hidden = false;
+      branchNameEl.textContent = branch ? branch.name : '';
+
+      // Re-fetch car/availability scoped to the chosen branch so swatches,
+      // unit counts, and Flatpickr reflect the branch's actual stock.
+      if (!currentCar) { return; }
+      loader.style.display = '';
+      content.style.display = 'none';
+      loadCar(currentCar.id, branchId).then(enableForm);
+   }
+
+   function enterBranchPickMode() {
+      branchEl.hidden = false;
+      branchEl.classList.add('is-pickable');
+      branchEl.classList.remove('is-locked');
+      branchSelectEl.hidden = false;
+      branchChangeBtn.hidden = true;
+      branchSelectEl.value = ''; // force a fresh choice
+      disableFormUntilBranchPicked();
+   }
+
+   /**
+    * When the modal is open but no branch is chosen yet, lock down everything
+    * downstream — radios, dates, CTAs — so nothing can be filled in against
+    * stale "all branches" stock numbers.
+    */
+   function disableFormUntilBranchPicked() {
+      branchEl.hidden = false;
+      branchEl.classList.add('is-pickable');
+      branchEl.classList.remove('is-locked');
+      branchSelectEl.hidden = false;
+      branchChangeBtn.hidden = true;
+
+      var inputs = modal.querySelectorAll(
+         'input[name="obsidian_customer_type"], #obsidian-pickup-date, #obsidian-dropoff-date, ' +
+         '.obsidian-modal-color-radio'
+      );
+      inputs.forEach(function (i) { i.disabled = true; });
+
+      proceedBtn.disabled = true;
+      checkAvailBtn.disabled = true;
+
+      loader.style.display = 'none';
+      content.style.display = '';
+   }
+
+   function enableForm() {
+      var inputs = modal.querySelectorAll(
+         'input[name="obsidian_customer_type"], #obsidian-pickup-date, #obsidian-dropoff-date, ' +
+         '.obsidian-modal-color-radio'
+      );
+      inputs.forEach(function (i) { i.disabled = false; });
+      checkAvailBtn.disabled = false;
+      validateForm();
    }
 
    function closeModal() {
@@ -121,8 +315,17 @@
 
       currentCar = null;
       selectedColor = null;
+      selectedLocationId = 0;
+      branchLocked = false;
+      branchesCache = null;
       proceedBtn.disabled = true;
       totalWrap.style.display = 'none';
+
+      // Reset branch picker UI for next open.
+      branchEl.hidden = true;
+      branchEl.classList.remove('is-locked', 'is-pickable');
+      branchNameEl.textContent = '';
+      branchSelectEl.innerHTML = '<option value="">Select branch…</option>';
 
       var localRadio = modal.querySelector('input[name="obsidian_customer_type"][value="local"]');
       if (localRadio) localRadio.checked = true;
@@ -387,7 +590,10 @@
          }
       }
 
-      proceedBtn.disabled = !(hasPickup && hasDropoff && hasColor && colorAvailable);
+      // Phase 11.13: also require a chosen branch.
+      var hasBranch = selectedLocationId > 0;
+
+      proceedBtn.disabled = !(hasBranch && hasPickup && hasDropoff && hasColor && colorAvailable);
    }
 
    /* ── Proceed → redirect to booking page ── */
@@ -401,6 +607,7 @@
 
       var params = new URLSearchParams({
          car_id:        currentCar.id,
+         location_id:   selectedLocationId || '',
          start:         formatDate(start),
          end:           formatDate(end),
          color:         selectedColor || '',
