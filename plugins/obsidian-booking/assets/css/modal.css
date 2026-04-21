@@ -694,3 +694,90 @@ span.flatpickr-weekday {
       flex-direction: column;
    }
 }
+
+/* ============================================================
+   Phase 11.13 — Pickup-branch picker
+   Lives at the top of the right column, above customer-type.
+   Two visual modes:
+     .is-locked    — branch came from URL ?location=…  → show name + ✏️
+     .is-pickable  — user must choose                  → show <select>
+   ============================================================ */
+
+.obsidian-modal-branch {
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   flex-wrap: wrap;
+   padding: 12px 14px;
+   margin: 0 0 18px;
+   background: rgba(197, 160, 89, 0.08);
+   border: 1px solid rgba(197, 160, 89, 0.35);
+   border-radius: 8px;
+   font-family: 'Montserrat', sans-serif;
+   font-size: 14px;
+   color: #fff;
+}
+
+.obsidian-modal-branch .branch-label {
+   color: rgba(255, 255, 255, 0.7);
+   text-transform: uppercase;
+   font-size: 11px;
+   letter-spacing: 0.08em;
+   font-weight: 600;
+}
+
+.obsidian-modal-branch .branch-name {
+   color: #C5A059;
+   font-weight: 600;
+}
+
+.obsidian-modal-branch .branch-change {
+   margin-left: auto;
+   background: transparent;
+   border: 0;
+   color: #C5A059;
+   font-size: 16px;
+   cursor: pointer;
+   padding: 4px 6px;
+   border-radius: 4px;
+   line-height: 1;
+   transition: background 0.15s ease;
+}
+
+.obsidian-modal-branch .branch-change:hover {
+   background: rgba(197, 160, 89, 0.18);
+}
+
+.obsidian-modal-branch .branch-select {
+   flex: 1 1 auto;
+   min-width: 200px;
+   padding: 8px 10px;
+   background: #1a1a1a;
+   color: #fff;
+   border: 1px solid rgba(255, 255, 255, 0.18);
+   border-radius: 6px;
+   font-family: inherit;
+   font-size: 14px;
+   cursor: pointer;
+}
+
+.obsidian-modal-branch .branch-select:focus {
+   outline: none;
+   border-color: #C5A059;
+   box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.25);
+}
+
+/* In pickable mode the static name slot is hidden so the select takes over.
+   In locked mode the select is hidden via the `hidden` attribute. */
+.obsidian-modal-branch.is-pickable .branch-name {
+   display: none;
+}
+
+@media (max-width: 720px) {
+   .obsidian-modal-branch {
+      font-size: 13px;
+   }
+   .obsidian-modal-branch .branch-change {
+      margin-left: 0;
+   }
+}

@@ -814,12 +814,12 @@ The "Back" button returns to the renter form (no data lost).
 
 New meta fields saved:
 - `_booking_delivery_contact` — contact number for delivery
-- `_booking_delivery_dropoff` — self_pickup, hotel_delivery, airport_delivery, address_delivery
-- `_booking_delivery_date` — Y-m-d
-- `_booking_delivery_time` — time string
-- `_booking_return_address` — return address text
-- `_booking_return_date` — Y-m-d
-- `_booking_return_time` — time string
+- `_booking_delivery_dropoff` — `home_delivery` or `airport_delivery` (we deliver only — no self-pickup)
+- `_booking_delivery_date` — Y-m-d (user-picked)
+- `_booking_delivery_time` — time string (user-picked)
+- `_booking_return_address` — where we collect the car at the end of the booking
+- `_booking_return_date` — Y-m-d, **auto-set to the booking end date** (not a user input)
+- `_booking_return_time` — time string, **auto-mirrored from `delivery_time`** so the return cycle aligns
 - `_booking_special_requests` — free text
 
 On submit (after delivery form):
@@ -1581,25 +1581,33 @@ Renders as a multi-column dropdown when "Locations" is clicked in the header:
 
 **Header markup** (`parts/header.html`) was simplified — the previous hardcoded `Location` dropdown with its three static items was replaced by a single line: `[obsidian_locations_menu]`.
 
-### Step 11.13 — Modal: location picker
+### Step 11.13 — Modal: location picker — DONE
 
-In the booking modal:
+In the booking modal (`obsidian-booking.php` + `assets/js/modal.js` + `assets/css/modal.css`):
 
-- **If a location filter is already active on the fleet page** → modal opens pre-scoped to that branch. Color swatches show only colors stocked at that branch with their per-branch unit counts. A "Pick up at: Makati ✏️" badge is shown at the top of the right column.
-- **If "All Locations" is active** (no filter selected on fleet) → modal shows a **branch dropdown at the top of the right column**: "Pick up at: [Select branch ▾]". Required before any other interaction.
-- Changing the branch → re-fetches `/cars/{id}?location_id=X` + `/availability/{car_id}?location_id=X` → re-renders color swatches, unit counts, and Flatpickr disabled dates.
-- 0-unit colors at the chosen branch stay disabled (existing logic).
-- The "Reserve" button URL becomes: `/booking/?car_id=X&location_id=Y&start=YYYY-MM-DD&end=YYYY-MM-DD&color=orange&customer_type=local`
+- A new "branch row" sits at the top of the right column, above customer-type. It has two visual modes the JS swaps between:
+  - **`.is-locked`** — branch came in via `?location=<slug>` on the fleet page → shows `Pick up at: <Branch Name> ✏️`. The pencil button drops the lock and re-enters pick mode.
+  - **`.is-pickable`** — no specific branch chosen yet (either "All Locations" or `?region=<slug>` only) → shows a `<select>` populated with the branches the car is stocked at. The form (radios, dates, color swatches, CTAs) stays disabled until a branch is picked.
+- On open, the modal first calls `/cars/{id}` (no scope) to get the **`branches`** array (every branch this car lives in). It then resolves `?location=<slug>` to a branch ID (locks if a match), or falls back to picker mode (region-filtered if `?region=<slug>` was set; full list otherwise).
+- Whenever the chosen branch changes, the modal re-fetches `/cars/{id}?location_id=X` + `/availability/{car_id}?location_id=X` and re-renders color swatches, unit counts, and Flatpickr disabled dates. The first re-fetch initializes Flatpickr; subsequent swaps just push new disabled dates.
+- 0-unit colors at the chosen branch stay disabled (existing color-units logic).
+- `validateForm()` now also requires `selectedLocationId > 0`, so even the Reserve CTA can't be enabled until a branch is locked in.
+- The "Reserve" CTA appends `location_id` to the redirect: `/booking/?car_id=X&location_id=Y&start=YYYY-MM-DD&end=YYYY-MM-DD&color=orange&customer_type=local`.
+- CSS variant `.obsidian-modal-branch` (with `.is-locked` / `.is-pickable` states) appended to `assets/css/modal.css`. Gold accent matches the rest of the modal.
 
-### Step 11.14 — Booking form: dynamic location dropdown
+### Step 11.14 — Booking form: dynamic location dropdown — DONE
 
-In `themes/child-obsidian-reserve/blocks/booking-form/render.php`:
+In `themes/child-obsidian-reserve/blocks/booking-form/render.php` + `style.css` and `plugins/obsidian-booking/assets/js/booking-form.js`:
 
-- Remove the hard-coded `$locations` array (currently `Main Office`, `Airport Pickup`, `Hotel Delivery`).
-- Replace with a dynamic dropdown sourced from `WP_Query` of `location` posts with `location_status = active`, grouped by region (`<optgroup>`).
-- Pre-select the dropdown from the URL `location_id` param (passed by the modal).
-- If the URL param is present and valid → render the dropdown as **read-only** (showing the branch name + a "Change location" link that goes back to the modal).
-- On submit, save to `_booking_location_id`.
+- The hard-coded `$locations` array (`Main Office`, `Airport Pickup`, `Hotel Delivery`) is gone. A `WP_Query` of `location` posts (`location_status = active`) builds `$branches_by_region`, grouped by their `region` taxonomy term. The dropdown emits an `<optgroup label="Luzon">…</optgroup>` per region.
+- The new field lives at the top of the **delivery sub-step** (`#obf-step-delivery`), just above the contact-number field — same logical group as the rest of the pickup/return data.
+- The form reads `$_GET['location_id']` and validates it against the active branches:
+  - **Match found** → renders the field in **locked / read-only mode**: a gold-bordered card showing `📍 <Branch Name> — <Region>` with a "Change location" link (built via `add_query_arg()` back to `/fleet/?car_id=…&start=…&end=…&color=…`, so the modal re-opens with state intact and the picker comes back up). A `<input type="hidden" name="pickup_location" value="<id>">` carries the value through.
+  - **No / invalid `location_id`** → renders the full grouped `<select id="obf-pickup-location" required>`.
+- `validateDelivery()` in `booking-form.js` now also requires `obf-pickup-location` to have a value before enabling Submit.
+- The submission payload now sends `location_id: parseInt(val('obf-pickup-location'))` instead of the legacy `location: 'main_office'` string. `POST /bookings` already accepts and validates `location_id` (Step 11.6) and saves it to `_booking_location_id`.
+- `<input type="hidden" id="obf-location-id">` mirrors the URL param for any future JS that needs the original modal-passed ID without going through the form field.
+- CSS additions in `blocks/booking-form/style.css`: dark-themed `<select>` with gold accent caret + `optgroup` styling, plus the `.obsidian-bf-location-locked` card variant.
 
 ### Step 11.15 — Confirmation page + emails
 
@@ -1627,8 +1635,8 @@ In the "My Reservations" cards (Phase 9), display the pickup branch under the da
 - [ ] Car cards show "Available at:" branch badges
 - [ ] Interactive Leaflet map shows active branches with gold pins
 - [ ] Header "Locations" mega-menu dropdown works (deep-links to filtered fleet)
-- [ ] Modal location picker refreshes inventory + calendar when branch changes
-- [ ] Booking form dropdown is dynamic and pre-selected from URL
+- [x] Modal location picker refreshes inventory + calendar when branch changes
+- [x] Booking form dropdown is dynamic and pre-selected from URL
 - [ ] `_booking_location_id` saved on every new booking; bookings only consume inventory at their own branch
 - [ ] Confirmation page + all email templates show pickup branch info
 - [ ] Bookings admin list shows Location column
