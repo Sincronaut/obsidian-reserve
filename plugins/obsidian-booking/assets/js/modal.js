@@ -10,8 +10,9 @@
    var modal, overlay, loader, content;
    var heroImg, thumbsContainer, colorsContainer;
    var nameEl, classEl, rateEl, specsEl, ctaTextEl;
-   var pickupInput, dropoffInput, proceedBtn, checkAvailBtn;
+   var pickupInput, dropoffInput, proceedBtn;
    var totalWrap, totalValue, totalBreakdown;
+   var statusEl, statusTextEl;
    var pickupFP, dropoffFP;
    var currentCar = null;
    var selectedColor = null;
@@ -40,10 +41,11 @@
       pickupInput     = document.getElementById('obsidian-pickup-date');
       dropoffInput    = document.getElementById('obsidian-dropoff-date');
       proceedBtn      = document.getElementById('obsidian-modal-proceed');
-      checkAvailBtn   = document.getElementById('obsidian-modal-check-avail');
       totalWrap       = document.getElementById('obsidian-modal-total');
       totalValue      = document.getElementById('obsidian-modal-total-value');
       totalBreakdown  = document.getElementById('obsidian-modal-total-breakdown');
+      statusEl        = document.getElementById('obsidian-modal-status');
+      statusTextEl    = document.getElementById('obsidian-modal-status-text');
 
       branchEl         = document.getElementById('obsidian-modal-branch');
       branchNameEl     = document.getElementById('obsidian-modal-branch-name');
@@ -67,8 +69,11 @@
       });
 
       proceedBtn.addEventListener('click', handleProceed);
-      checkAvailBtn.addEventListener('click', function () {
-         if (pickupFP) pickupFP.open();
+
+      // Re-validate (and refresh the status hint) whenever the customer-type
+      // radios change, so the user sees the same UX feedback for them too.
+      modal.querySelectorAll('input[name="obsidian_customer_type"]').forEach(function (r) {
+         r.addEventListener('change', validateForm);
       });
 
       /* Branch picker events (Phase 11.13). */
@@ -290,10 +295,16 @@
       inputs.forEach(function (i) { i.disabled = true; });
 
       proceedBtn.disabled = true;
-      checkAvailBtn.disabled = true;
 
       loader.style.display = 'none';
       content.style.display = '';
+
+      // Visually grey out the color swatch area + add a small "why" line.
+      colorsContainer.classList.add('is-disabled');
+      setColorsNote('Choose a branch above to see colors and stock at that branch.');
+
+      // Make sure the user knows *why* the form is locked.
+      validateForm();
    }
 
    function enableForm() {
@@ -302,8 +313,29 @@
          '.obsidian-modal-color-radio'
       );
       inputs.forEach(function (i) { i.disabled = false; });
-      checkAvailBtn.disabled = false;
+
+      colorsContainer.classList.remove('is-disabled');
+      setColorsNote('');
+
       validateForm();
+   }
+
+   /**
+    * Inject (or clear) a small inline note above the color swatches.
+    * Used to explain why the swatches look unclickable.
+    */
+   function setColorsNote(text) {
+      var note = colorsContainer.querySelector('.obsidian-modal-colors-note');
+      if (!text) {
+         if (note) note.remove();
+         return;
+      }
+      if (!note) {
+         note = document.createElement('p');
+         note.className = 'obsidian-modal-colors-note';
+         colorsContainer.insertBefore(note, colorsContainer.firstChild);
+      }
+      note.textContent = text;
    }
 
    function closeModal() {
@@ -326,6 +358,15 @@
       branchEl.classList.remove('is-locked', 'is-pickable');
       branchNameEl.textContent = '';
       branchSelectEl.innerHTML = '<option value="">Select branch…</option>';
+
+      // Reset status hint + colors-locked state.
+      if (statusEl) {
+         statusEl.hidden = true;
+         statusEl.classList.remove('is-info', 'is-warn', 'is-success');
+      }
+      if (colorsContainer) {
+         colorsContainer.classList.remove('is-disabled');
+      }
 
       var localRadio = modal.querySelector('input[name="obsidian_customer_type"][value="local"]');
       if (localRadio) localRadio.checked = true;
@@ -594,6 +635,55 @@
       var hasBranch = selectedLocationId > 0;
 
       proceedBtn.disabled = !(hasBranch && hasPickup && hasDropoff && hasColor && colorAvailable);
+
+      // ── UX status hint ──
+      // Surface *why* the form / Reserve button is locked. Shown above the
+      // CTA so the user doesn't have to guess. Order matters here — start
+      // with the earliest gate (branch) and walk down to the latest (dates).
+      updateStatusHint({
+         hasBranch:      hasBranch,
+         hasColor:       hasColor,
+         colorAvailable: colorAvailable,
+         hasPickup:      hasPickup,
+         hasDropoff:     hasDropoff
+      });
+   }
+
+   /**
+    * Decide which contextual hint to show under the Reserve button.
+    * Falls back to a quiet success message when everything is good so the
+    * user knows the action is intentional.
+    */
+   function updateStatusHint(state) {
+      if (!statusEl || !statusTextEl) return;
+
+      var msg  = '';
+      var kind = 'info'; // 'info' | 'warn' | 'success'
+
+      if (!state.hasBranch) {
+         msg  = 'Select a pickup branch first to see colors and dates that are actually available.';
+         kind = 'warn';
+      } else if (!state.hasColor) {
+         msg  = 'Choose a color to continue.';
+         kind = 'info';
+      } else if (!state.colorAvailable) {
+         msg  = 'This color is sold out at the chosen branch — pick another color or another branch.';
+         kind = 'warn';
+      } else if (!state.hasPickup) {
+         msg  = 'Pick your delivery date.';
+         kind = 'info';
+      } else if (!state.hasDropoff) {
+         msg  = 'Pick your return date.';
+         kind = 'info';
+      } else {
+         msg  = 'Looks good — ready to reserve.';
+         kind = 'success';
+      }
+
+      statusEl.hidden = false;
+      statusEl.classList.remove('is-info', 'is-warn', 'is-success');
+      statusEl.classList.add('is-' + kind);
+      statusTextEl.textContent = msg;
    }
 
    /* ── Proceed → redirect to booking page ── */
