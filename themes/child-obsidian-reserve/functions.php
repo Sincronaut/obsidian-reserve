@@ -337,3 +337,11 @@ function obsidian_reserve_html_block_shortcodes( $block_content, $block ) {
 	return $block_content;
 }
 add_filter( 'render_block', 'obsidian_reserve_html_block_shortcodes', 10, 2 );
+
+/**
+ * --------------------------------------------------------------------------
+ * 8. MODULAR INCLUDES
+ * --------------------------------------------------------------------------
+ * Load specialized logic from the inc/ directory.
+ */
+require get_stylesheet_directory() . '/inc/blog-engine.php';
