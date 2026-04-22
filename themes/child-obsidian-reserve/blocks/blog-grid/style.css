@@ -1,0 +1,308 @@
+/* ============================================================
+   BLOG GRID BLOCK STYLES
+   ============================================================ */
+
+.obsidian-blog-grid-block {
+	padding: var(--wp--preset--spacing--section-padding-v) var(--wp--preset--spacing--section-padding-h);
+	max-width: var(--wp--style--global--wide-size);
+	margin: 0 auto;
+}
+
+.blog-grid-section-title {
+	color: #FFFFFF;
+	margin: 0;
+	/* Inherits global h2 typography */
+}
+
+/* ============================================================
+   HEADER, FILTERS & SORTERS
+   ============================================================ */
+.blog-grid-header {
+	display: flex;
+	flex-direction: column;
+	gap: 30px;
+	margin-bottom: 50px;
+}
+
+.blog-grid-controls {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: center;
+	gap: 20px;
+}
+
+.blog-grid-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	flex: 1;
+}
+
+/* --- Sorter --- */
+.blog-grid-sorter {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	background: rgba(255, 255, 255, 0.03);
+	padding: 6px 16px;
+	border-radius: 30px;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sorter-label {
+	color: #8A8A8A;
+	font-size: 13px;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+}
+
+.blog-sort-btn {
+	color: #AAAAAA;
+	font-size: 14px;
+	font-weight: 600;
+	text-decoration: none;
+	transition: color 0.3s ease;
+}
+
+.blog-sort-btn:hover {
+	color: #FFFFFF;
+}
+
+.blog-sort-btn.active {
+	color: #C5A059;
+}
+
+.blog-filter-btn {
+	display: inline-block;
+	color: #AAAAAA;
+	font-size: 14px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	text-decoration: none;
+	padding: 8px 20px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 30px;
+	background: transparent;
+	transition: all 0.3s ease;
+}
+
+.blog-filter-btn:hover {
+	color: #FFFFFF;
+	border-color: rgba(197, 160, 89, 0.5);
+	background: rgba(197, 160, 89, 0.05);
+}
+
+.blog-filter-btn.active {
+	color: #0B0B0B;
+	border-color: #C5A059;
+	background: #C5A059;
+}
+
+.blog-grid-no-posts {
+	color: #AAAAAA;
+	font-size: 18px;
+	text-align: center;
+	padding: 60px 0;
+	border: 1px solid rgba(255, 255, 255, 0.05);
+	border-radius: 6px;
+}
+
+/* ============================================================
+   GRID LAYOUT
+   ============================================================ */
+.blog-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 35px;
+	align-items: stretch;
+}
+
+/* ============================================================
+   CARD STYLES
+   ============================================================ */
+.blog-grid-card {
+	display: flex;
+	flex-direction: column;
+	text-decoration: none;
+	border: 1px solid rgba(197, 160, 89, 0.2);
+	border-radius: 6px;
+	overflow: hidden;
+	background: rgba(255, 255, 255, 0.02);
+	transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.blog-grid-card:hover {
+	border-color: #C5A059;
+	box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+	transform: translateY(-4px);
+}
+
+/* --- Card Image --- */
+.blog-grid-img-wrap {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	overflow: hidden;
+	border-bottom: 2px solid #C5A059;
+}
+
+.blog-grid-img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	display: block;
+}
+
+.blog-grid-card:hover .blog-grid-img {
+	transform: scale(1.05);
+}
+
+/* --- Category Pill (overlaid on image) --- */
+.blog-grid-category-pill {
+	position: absolute;
+	top: 14px;
+	left: 14px;
+	background: rgba(0, 0, 0, 0.7);
+	border: 1px solid rgba(197, 160, 89, 0.7);
+	border-radius: 20px;
+	padding: 4px 14px;
+	font-size: 12px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	color: #C5A059;
+	backdrop-filter: blur(4px);
+	-webkit-backdrop-filter: blur(4px);
+}
+
+/* --- Card Content --- */
+.blog-grid-content {
+	display: flex;
+	flex-direction: column;
+	flex: 1; /* Pushes meta to the bottom */
+	padding: 25px;
+}
+
+.blog-grid-title {
+	color: #FFFFFF;
+	margin-bottom: 12px;
+	transition: color 0.3s ease;
+	/* Inherits global h3 typography */
+}
+
+.blog-grid-card:hover .blog-grid-title {
+	color: #C5A059;
+}
+
+.blog-grid-excerpt {
+	color: #AAAAAA;
+	margin-bottom: 25px;
+	/* Inherits global p typography */
+}
+
+/* --- Meta Row (Author + Date) --- */
+.blog-grid-meta {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: auto;
+	padding-top: 18px;
+	border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.blog-grid-author {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: #C5A059;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.blog-grid-date {
+	color: #666666;
+	font-size: 13px;
+}
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+.blog-grid-pagination {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+	margin-top: 70px;
+}
+
+.blog-grid-pagination .page-numbers {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 42px;
+	height: 42px;
+	border-radius: 4px;
+	font-size: 14px;
+	font-weight: 600;
+	text-decoration: none;
+	color: #AAAAAA;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	background: transparent;
+	transition: all 0.3s ease;
+}
+
+.blog-grid-pagination .page-numbers:hover {
+	color: #FFFFFF;
+	border-color: rgba(197, 160, 89, 0.5);
+	background: rgba(197, 160, 89, 0.08);
+}
+
+.blog-grid-pagination .page-numbers.current {
+	color: #0B0B0B;
+	background: #C5A059;
+	border-color: #C5A059;
+	font-weight: 700;
+}
+
+.blog-grid-pagination .page-numbers.dots {
+	border-color: transparent;
+	background: transparent;
+	cursor: default;
+}
+
+.blog-grid-pagination .page-numbers.prev,
+.blog-grid-pagination .page-numbers.next {
+	font-size: 18px;
+	color: #C5A059;
+	border-color: rgba(197, 160, 89, 0.4);
+}
+
+.blog-grid-pagination .page-numbers.prev:hover,
+.blog-grid-pagination .page-numbers.next:hover {
+	background: rgba(197, 160, 89, 0.15);
+	border-color: #C5A059;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1024px) {
+	.blog-grid {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 25px;
+	}
+}
+
+@media (max-width: 640px) {
+	.blog-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.blog-grid-pagination {
+		flex-wrap: wrap;
+		margin-top: 40px;
+	}
+}

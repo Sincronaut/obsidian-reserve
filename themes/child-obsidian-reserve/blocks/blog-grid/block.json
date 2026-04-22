@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/blog-grid",
+	"title": "Blog Grid",
+	"category": "obsidian-reserve",
+	"icon": "grid-view",
+	"description": "Displays all blog posts in a 3-column paginated grid.",
+	"keywords": [ "blog", "grid", "all", "posts", "list" ],
+	"textdomain": "child-obsidian-reserve",
+	"viewScript": "file://./view.js",
+	"style": "file://./style.css",
+	"render": "file://./render.php",
+	"attributes": {
+		"sectionTitle": {
+			"type": "string",
+			"default": "The Obsidian Journal."
+		},
+		"postsPerPage": {
+			"type": "number",
+			"default": 12
+		}
+	}
+}
