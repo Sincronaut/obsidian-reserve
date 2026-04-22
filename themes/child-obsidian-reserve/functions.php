@@ -223,6 +223,7 @@ function obsidian_reserve_register_blocks() {
 	register_block_type( get_stylesheet_directory() . '/blocks/featured-fleet' );
 	register_block_type( get_stylesheet_directory() . '/blocks/fleet-filters' );
 	register_block_type( get_stylesheet_directory() . '/blocks/locations-map' );
+	register_block_type( get_stylesheet_directory() . '/blocks/trending-blogs' );
 }
 add_action( 'init', 'obsidian_reserve_register_blocks' );
 

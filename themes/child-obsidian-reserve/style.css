@@ -57,9 +57,25 @@ textarea:focus,
 	-webkit-tap-highlight-color: transparent;
 }
 
-/* Remove default Gutenberg block gap between root full-bleed sections */
-main.wp-site-blocks > * + * {
+/* Remove default Gutenberg block gap between root sections to ensure Hero sits flush with Header */
+.wp-site-blocks,
+.wp-block-group.wp-site-blocks {
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+}
+
+.wp-site-blocks > *,
+.wp-site-blocks > main,
+.wp-site-blocks > .wp-block-template-part + *,
+header + *,
+.obsidian-site-header + * {
 	margin-top: 0 !important;
+}
+
+/* Ensure the first Hero block on any page doesn't have extra internal padding-top */
+main > .obsidian-text-img-bg:first-child,
+.wp-site-blocks > .obsidian-text-img-bg:first-child {
+	padding-top: 0 !important;
 }
 
 /* ----------------------------------------------------

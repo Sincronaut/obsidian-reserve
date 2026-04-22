@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/trending-blogs",
+	"title": "Trending Blogs",
+	"category": "obsidian-reserve",
+	"icon": "chart-line",
+	"description": "Displays the top read blogs in a premium two-column layout.",
+	"keywords": [ "blog", "trending", "top", "obsidian" ],
+	"textdomain": "child-obsidian-reserve",
+	"editorScript": "file://./index.js",
+	"style": "file://./style.css",
+	"render": "file://./render.php",
+	"attributes": {
+		"sectionTitle": {
+			"type": "string",
+			"default": "The Season. The Top Reads."
+		},
+		"rightPanelSubtitle": {
+			"type": "string",
+			"default": "What <span class=\"text-gold\">Obsidian Clients</span> Are Reading This Season Right Now."
+		}
+	}
+}
