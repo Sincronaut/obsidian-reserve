@@ -1,0 +1,50 @@
+<!-- wp:template-part {"slug":"header","area":"header","tagName":"header"} /-->
+
+<main class="wp-block-group obsidian-single-post">
+
+	<!-- wp:group {"className":"obsidian-post-hero-wrap","layout":{"type":"default"}} -->
+	<div class="wp-block-group obsidian-post-hero-wrap">
+		<!-- wp:post-featured-image {"isLink":false,"align":"full","className":"obsidian-post-hero-img"} /-->
+		<div class="obsidian-post-hero-overlay"></div>
+	</div>
+	<!-- /wp:group -->
+
+	<!-- wp:group {"className":"obsidian-post-container","layout":{"type":"constrained","contentSize":"800px"}} -->
+	<div class="wp-block-group obsidian-post-container">
+		
+		<!-- wp:group {"className":"obsidian-post-header","layout":{"type":"default"}} -->
+		<div class="wp-block-group obsidian-post-header">
+			<!-- wp:post-terms {"term":"category","className":"obsidian-post-category"} /-->
+			<!-- wp:post-title {"level":1,"className":"obsidian-post-title"} /-->
+			
+			<!-- wp:group {"className":"obsidian-post-meta","layout":{"type":"flex","flexWrap":"nowrap","justifyContent":"center"}} -->
+			<div class="wp-block-group obsidian-post-meta">
+				<!-- wp:post-author-name {"className":"obsidian-post-author"} /-->
+				<span class="obsidian-meta-separator">•</span>
+				<!-- wp:post-date {"className":"obsidian-post-date"} /-->
+			</div>
+			<!-- /wp:group -->
+		</div>
+		<!-- /wp:group -->
+
+		<!-- wp:group {"className":"obsidian-post-content","layout":{"type":"default"}} -->
+		<div class="wp-block-group obsidian-post-content">
+			<!-- wp:post-content {"layout":{"type":"default"}} /-->
+		</div>
+		<!-- /wp:group -->
+
+	</div>
+	<!-- /wp:group -->
+
+	<!-- wp:group {"className":"obsidian-related-posts-wrap","layout":{"type":"constrained"}} -->
+	<div class="wp-block-group obsidian-related-posts-wrap">
+		<!-- wp:heading {"level":3,"className":"obsidian-related-title","textAlign":"center"} -->
+		<h3 class="wp-block-heading obsidian-related-title has-text-align-center">Continue Reading</h3>
+		<!-- /wp:heading -->
+		<!-- wp:child-obsidian-reserve/top-reads-journal {"sectionTitle":""} /-->
+	</div>
+	<!-- /wp:group -->
+
+</main>
+
+<!-- wp:template-part {"slug":"footer","area":"footer","tagName":"footer"} /-->

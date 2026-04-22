@@ -1,0 +1,27 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/top-reads-journal",
+	"title": "Top Reads Journal",
+	"category": "obsidian-reserve",
+	"icon": "media-document",
+	"description": "Displays the top 6-8 read blogs in a 3-column grid.",
+	"keywords": [ "blog", "top", "journal", "grid" ],
+	"textdomain": "child-obsidian-reserve",
+	"style": "file://./style.css",
+	"render": "file://./render.php",
+	"attributes": {
+		"sectionTitle": {
+			"type": "string",
+			"default": "Top Reads from the Journal."
+		},
+		"readMoreText": {
+			"type": "string",
+			"default": "Read More"
+		},
+		"readMoreUrl": {
+			"type": "string",
+			"default": "#"
+		}
+	}
+}

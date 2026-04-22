@@ -1,0 +1,152 @@
+/* ============================================================
+   TOP READS JOURNAL BLOCK STYLES
+   ============================================================ */
+
+.obsidian-top-reads-block {
+    padding: var(--wp--preset--spacing--section-padding-v) var(--wp--preset--spacing--section-padding-h);
+    max-width: var(--wp--style--global--wide-size);
+    margin: 0 auto;
+}
+
+/* --- Header Row --- */
+.top-reads-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 50px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 20px;
+}
+
+.top-reads-section-title {
+    color: #FFFFFF;
+    margin: 0;
+    /* Inherits typography from global h2 */
+}
+
+
+
+/* --- Grid Layout --- */
+.top-reads-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    align-items: stretch;
+}
+
+/* --- Card Styles --- */
+.top-reads-card {
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* Enforces equal height in stretch environment */
+    text-decoration: none;
+    group: item; /* logical grouping for hover states if supported */
+}
+
+.top-reads-img-wrap {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    border: 2px solid #C5A059; /* Solid gold border */
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 25px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.top-reads-card:hover .top-reads-img-wrap {
+    border-color: #C5A059;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.top-reads-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.top-reads-card:hover .top-reads-img {
+    transform: scale(1.05);
+}
+
+/* --- Content & Typography --- */
+.top-reads-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* Pushes meta footer to the bottom */
+}
+
+.top-reads-title {
+    color: #FFFFFF;
+    margin-bottom: 15px;
+    transition: color 0.3s ease;
+    /* Inherits typography from global h3 */
+}
+
+.top-reads-card:hover .top-reads-title {
+    color: #C5A059;
+}
+
+.top-reads-excerpt {
+    color: #CCCCCC;
+    margin-bottom: 30px;
+    /* Inherits typography from global p */
+}
+
+/* --- Meta Footer --- */
+.top-reads-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto; /* Always sits at the bottom of the flex column */
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 20px;
+}
+
+.meta-author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.meta-author svg {
+    transition: transform 0.3s ease;
+}
+
+.top-reads-card:hover .meta-author svg {
+    transform: scale(1.1);
+}
+
+.author-name {
+    color: #C5A059;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.meta-date {
+    color: #8A8A8A;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN
+   ============================================================ */
+@media (max-width: 1024px) {
+    .top-reads-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .top-reads-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .top-reads-grid {
+        grid-template-columns: 1fr;
+    }
+}
