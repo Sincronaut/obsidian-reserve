@@ -59,6 +59,16 @@ function obsidian_reserve_enqueue_styles() {
 			wp_get_theme()->get( 'Version' )
 		);
 	}
+
+	// Single Blog Post styles
+	if ( is_single() && 'post' === get_post_type() ) {
+		wp_enqueue_style(
+			'obsidian-reserve-single',
+			get_stylesheet_directory_uri() . '/assets/css/single.css',
+			array( 'child-obsidian-reserve-style' ),
+			wp_get_theme()->get( 'Version' )
+		);
+	}
 }
 add_action( 'wp_enqueue_scripts', 'obsidian_reserve_enqueue_styles' );
 
