@@ -340,11 +340,12 @@
          return;
       }
       if (!note) {
-         note = document.createElement('p');
+         note = document.createElement('div');
          note.className = 'obsidian-modal-colors-note';
+         note.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFB04A" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span></span>';
          colorsContainer.insertBefore(note, colorsContainer.firstChild);
       }
-      note.textContent = text;
+      note.querySelector('span').textContent = text;
    }
 
    function closeModal() {
@@ -392,7 +393,9 @@
       if (car.specifications) {
          var lines = car.specifications.split(/\r?\n/).filter(function (l) { return l.trim() !== ''; });
          specsEl.innerHTML = '<ul>' + lines.map(function (line) {
-            return '<li>' + line.trim() + '</li>';
+            // Highlight everything up to the first colon in gold
+            var formattedLine = line.trim().replace(/^([^:]+:)/, '<span style="color: #C5A059;">$1</span>');
+            return '<li>' + formattedLine + '</li>';
          }).join('') + '</ul>';
          specsEl.style.display = '';
       } else {
