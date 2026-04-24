@@ -194,6 +194,17 @@ $build_scope_data = function ( $car_id ) {
 					 data-branches="<?php echo esc_attr( $branches_csv ); ?>"
 					 data-regions="<?php echo esc_attr( $regions_csv ); ?>">
 
+				<div class="car-card-top-bar">
+					<?php if ( $class_name ) : ?>
+						<span class="car-class-badge"><?php echo esc_html( $class_name ); ?></span>
+					<?php endif; ?>
+
+					<div class="car-card-pricing">
+						<span class="car-rate"><?php echo esc_html( '₱' . number_format( $daily_rate, 0 ) ); ?></span>
+						<span class="car-rate-label">/ day</span>
+					</div>
+				</div>
+
 				<div class="car-card-image">
 					<?php if ( $default_img ) : ?>
 						<img src="<?php echo esc_url( $default_img ); ?>"
@@ -203,70 +214,39 @@ $build_scope_data = function ( $car_id ) {
 					<?php else : ?>
 						<div class="car-card-placeholder"></div>
 					<?php endif; ?>
-
-					<?php if ( $class_name ) : ?>
-						<span class="car-class-badge"><?php echo esc_html( $class_name ); ?></span>
-					<?php endif; ?>
 				</div>
 
 				<div class="car-card-body">
 					<h3 class="car-card-name"><?php echo esc_html( get_the_title( $car_id ) ); ?></h3>
 
-					<?php if ( ! empty( $scope_data['branch_names'] ) ) :
-						// Sort branch names alphabetically for stable display.
-						$branch_labels = array_values( $scope_data['branch_names'] );
-						sort( $branch_labels );
+					<div class="car-colors-units-wrap">
+						<?php if ( ! empty( $variants ) ) : ?>
+						<div class="car-color-swatches">
+						<?php foreach ( $variants as $color_name => $data ) :
+							$hex        = obsidian_get_color_hex( $color_name );
+							$units      = (int) ( $data['units'] ?? 0 );
+							$color_imgs = isset( $data['images'] ) && is_array( $data['images'] ) ? $data['images'] : array();
+							$card_img_id = (int) ( $color_imgs[0] ?? 0 );
+							$img_url    = $card_img_id > 0 ? wp_get_attachment_image_url( $card_img_id, 'large' ) : $thumb;
+							$is_first   = $first_color;
+							$first_color = false;
+
+							$scope_units = isset( $scope_data['colors'][ $color_name ] )
+								? $scope_data['colors'][ $color_name ]
+								: array( 'all' => $units );
 						?>
-						<div class="car-card-branches"
-							 data-branch-names='<?php echo esc_attr( wp_json_encode( $scope_data['branch_names'] ) ); ?>'>
-							<span class="branches-label">Available at:</span>
-							<span class="branches-list"><?php echo esc_html( implode( ', ', $branch_labels ) ); ?></span>
+								<button class="color-swatch<?php echo $is_first ? ' active' : ''; ?>"
+										data-color="<?php echo esc_attr( $color_name ); ?>"
+										data-image="<?php echo esc_url( $img_url ?: $thumb ); ?>"
+										data-units="<?php echo esc_attr( $units ); ?>"
+										data-units-by-scope='<?php echo esc_attr( wp_json_encode( $scope_units ) ); ?>'
+										style="background-color: <?php echo esc_attr( $hex ); ?>;"
+										aria-label="<?php echo esc_attr( ucfirst( $color_name ) ); ?>"
+										title="<?php echo esc_attr( ucfirst( $color_name ) . ' — ' . $units . ' available' ); ?>">
+								</button>
+							<?php endforeach; ?>
 						</div>
-					<?php endif; ?>
-
-					<?php if ( ! empty( $variants ) ) : ?>
-					<div class="car-color-swatches">
-					<?php foreach ( $variants as $color_name => $data ) :
-						$hex        = obsidian_get_color_hex( $color_name );
-						$units      = (int) ( $data['units'] ?? 0 );
-						$color_imgs = isset( $data['images'] ) && is_array( $data['images'] ) ? $data['images'] : array();
-						$card_img_id = (int) ( $color_imgs[0] ?? 0 );
-						$img_url    = $card_img_id > 0 ? wp_get_attachment_image_url( $card_img_id, 'large' ) : $thumb;
-						$is_first   = $first_color;
-						$first_color = false;
-
-						$scope_units = isset( $scope_data['colors'][ $color_name ] )
-							? $scope_data['colors'][ $color_name ]
-							: array( 'all' => $units );
-					?>
-							<button class="color-swatch<?php echo $is_first ? ' active' : ''; ?>"
-									data-color="<?php echo esc_attr( $color_name ); ?>"
-									data-image="<?php echo esc_url( $img_url ?: $thumb ); ?>"
-									data-units="<?php echo esc_attr( $units ); ?>"
-									data-units-by-scope='<?php echo esc_attr( wp_json_encode( $scope_units ) ); ?>'
-									style="background-color: <?php echo esc_attr( $hex ); ?>;"
-									aria-label="<?php echo esc_attr( ucfirst( $color_name ) ); ?>"
-									title="<?php echo esc_attr( ucfirst( $color_name ) . ' — ' . $units . ' available' ); ?>">
-							</button>
-						<?php endforeach; ?>
-					</div>
-					<?php endif; ?>
-
-					<div class="car-card-meta">
-						<?php if ( $year ) : ?>
-							<span class="car-meta-item"><?php echo esc_html( $year ); ?></span>
 						<?php endif; ?>
-						<?php if ( $make ) : ?>
-							<span class="car-meta-divider">&middot;</span>
-							<span class="car-meta-item"><?php echo esc_html( $make ); ?></span>
-						<?php endif; ?>
-					</div>
-
-					<div class="car-card-footer">
-						<div class="car-card-pricing">
-							<span class="car-rate"><?php echo esc_html( '₱' . number_format( $daily_rate, 0 ) ); ?></span>
-							<span class="car-rate-label">/ day</span>
-						</div>
 
 						<div class="car-card-units">
 							<span class="units-dot"></span>
@@ -283,15 +263,17 @@ $build_scope_data = function ( $car_id ) {
 						</div>
 					</div>
 
-					<?php if ( $logged_in ) : ?>
-						<button class="car-book-btn" data-car-id="<?php echo esc_attr( $car_id ); ?>">
-							Book Now
-						</button>
-					<?php else : ?>
-						<a class="car-book-btn car-book-btn--login" href="<?php echo esc_url( $login_url ); ?>">
-							Sign In to Book
-						</a>
-					<?php endif; ?>
+					<div class="car-card-actions">
+						<?php if ( $logged_in ) : ?>
+							<button class="car-book-btn" data-car-id="<?php echo esc_attr( $car_id ); ?>">
+								Book <?php $make_word = strtok(get_the_title( $car_id ), ' '); echo esc_html( $make_word ); ?>
+							</button>
+						<?php else : ?>
+							<a class="car-book-btn car-book-btn--login" href="<?php echo esc_url( $login_url ); ?>">
+								Sign In to Book
+							</a>
+						<?php endif; ?>
+					</div>
 				</div>
 
 			</article>
@@ -378,6 +360,23 @@ $build_scope_data = function ( $car_id ) {
 			return true;
 		}
 
+		/* ── Image Swiping Animation ── */
+		function swipeImage(img, newSrc) {
+			if (!img || !newSrc || img.src.indexOf(newSrc) !== -1) return;
+			
+			img.classList.add('is-swiping-out');
+			setTimeout(function() {
+				img.src = newSrc;
+				img.classList.remove('is-swiping-out');
+				img.classList.add('is-swiping-in');
+				
+				// Force reflow so browser registers the starting position
+				void img.offsetWidth;
+				
+				img.classList.remove('is-swiping-in');
+			}, 200);
+		}
+
 		/* ── Update each swatch for the current scope.
 		     - Hides swatches whose color isn't stocked at the selected
 		       branch / region (missing key in `data-units-by-scope`).
@@ -434,7 +433,7 @@ $build_scope_data = function ( $car_id ) {
 				var unitsEl = card.querySelector('.units-text');
 				var newImg  = firstVisible.getAttribute('data-image');
 				var newU    = firstVisible.getAttribute('data-units');
-				if (img && newImg) { img.src = newImg; }
+				if (img && newImg) { swipeImage(img, newImg); }
 				if (unitsEl)       { unitsEl.textContent = newU + ' available'; }
 			} else {
 				// Active swatch is still visible — just refresh its units in the footer.
@@ -480,7 +479,7 @@ $build_scope_data = function ( $car_id ) {
 			});
 			swatch.classList.add('active');
 
-			if (img && newImage) { img.src = newImage; }
+			if (img && newImage) { swipeImage(img, newImage); }
 			if (unitsEl)         { unitsEl.textContent = newUnits + ' available'; }
 		});
 
