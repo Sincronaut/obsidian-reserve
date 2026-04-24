@@ -21,6 +21,7 @@
 	color: #ccc;
 	padding: 40px 0;
 }
+
 .obsidian-bf-error a {
 	color: #C5A059;
 	text-decoration: underline;
@@ -30,6 +31,7 @@
 .obsidian-bf-header {
 	margin-bottom: 28px;
 }
+
 .obsidian-bf-title {
 	font-size: 32px;
 	font-weight: 700;
@@ -37,9 +39,11 @@
 	line-height: 1.2;
 	color: #fff;
 }
+
 .obsidian-bf-title .text-gold {
 	color: #C5A059;
 }
+
 .obsidian-bf-subtitle {
 	font-size: 16px;
 	color: rgba(255, 255, 255, 0.7);
@@ -54,6 +58,7 @@
 	margin-bottom: 32px;
 	gap: 0;
 }
+
 .obsidian-bf-step {
 	width: 40px;
 	height: 40px;
@@ -65,18 +70,22 @@
 	flex-shrink: 0;
 	transition: all 0.3s ease;
 }
+
 .obsidian-bf-step.active {
 	background: #C5A059;
 	border-color: #C5A059;
 }
+
 .obsidian-bf-step-number {
 	font-size: 15px;
 	font-weight: 600;
 	color: rgba(255, 255, 255, 0.5);
 }
+
 .obsidian-bf-step.active .obsidian-bf-step-number {
 	color: #0B0B0B;
 }
+
 .obsidian-bf-step-line {
 	flex: 1;
 	height: 2px;
@@ -94,6 +103,7 @@
 	border-radius: 8px;
 	margin-bottom: 24px;
 }
+
 .obsidian-bf-summary-img {
 	width: 80px;
 	height: 56px;
@@ -101,6 +111,7 @@
 	border-radius: 6px;
 	flex-shrink: 0;
 }
+
 .obsidian-bf-summary-info {
 	display: flex;
 	flex-direction: column;
@@ -108,10 +119,12 @@
 	font-size: 13px;
 	color: rgba(255, 255, 255, 0.65);
 }
+
 .obsidian-bf-summary-info strong {
 	font-size: 15px;
 	color: #fff;
 }
+
 .obsidian-bf-summary-total {
 	font-size: 16px;
 	font-weight: 700;
@@ -132,9 +145,11 @@
 	text-decoration: underline;
 	text-underline-offset: 3px;
 }
+
 .obsidian-bf-docs-toggle:hover {
 	color: #C5A059;
 }
+
 .obsidian-bf-docs-info {
 	margin-bottom: 24px;
 	padding: 16px;
@@ -142,11 +157,13 @@
 	border: 1px solid rgba(197, 160, 89, 0.15);
 	border-radius: 8px;
 }
+
 .obsidian-bf-docs-info ul {
 	margin: 0;
 	padding: 0 0 0 20px;
 	list-style: disc;
 }
+
 .obsidian-bf-docs-info li {
 	font-size: 13px;
 	color: rgba(255, 255, 255, 0.7);
@@ -159,18 +176,21 @@
 	flex-direction: column;
 	gap: 20px;
 }
+
 .obsidian-bf-field {
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
 }
+
 .obsidian-bf-field label,
-.obsidian-bf-upload-group > label,
+.obsidian-bf-upload-group>label,
 .obsidian-bf-section-label {
 	font-size: 13px;
 	font-weight: 500;
 	color: rgba(255, 255, 255, 0.85);
 }
+
 .obsidian-bf-section-label {
 	font-weight: 600;
 	font-size: 14px;
@@ -194,13 +214,16 @@
 	-webkit-appearance: none;
 	appearance: none;
 }
+
 .obsidian-bf-field input::placeholder {
 	color: rgba(197, 160, 89, 0.45);
 }
+
 .obsidian-bf-field input:focus,
 .obsidian-bf-field select:focus {
 	border-color: #C5A059;
 }
+
 .obsidian-bf-field input.obf-invalid,
 .obsidian-bf-field select.obf-invalid {
 	border-color: #ff4444;
@@ -215,6 +238,7 @@
 	background-position: right 16px center;
 	padding-right: 40px;
 }
+
 .obsidian-bf-field select option {
 	background: #1a1a1a;
 	color: #fff;
@@ -224,11 +248,13 @@
 .obsidian-bf-field-split {
 	position: relative;
 }
-.obsidian-bf-field-split > div {
+
+.obsidian-bf-field-split>div {
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
 }
+
 .obsidian-bf-field-note {
 	font-size: 12px;
 	color: #C5A059;
@@ -244,11 +270,13 @@
 	flex-direction: column;
 	gap: 8px;
 }
+
 .obsidian-bf-upload-row {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 16px;
 }
+
 .obsidian-bf-upload-zone {
 	position: relative;
 	border: 2px dashed rgba(197, 160, 89, 0.35);
@@ -259,10 +287,12 @@
 	transition: border-color 0.2s ease, background 0.2s ease;
 	overflow: hidden;
 }
+
 .obsidian-bf-upload-zone:hover {
 	border-color: #C5A059;
 	background: rgba(197, 160, 89, 0.04);
 }
+
 .obsidian-bf-upload-zone .obf-file-input {
 	position: absolute;
 	inset: 0;
@@ -270,6 +300,7 @@
 	cursor: pointer;
 	z-index: 2;
 }
+
 .obf-upload-placeholder {
 	display: flex;
 	flex-direction: column;
@@ -277,9 +308,11 @@
 	gap: 8px;
 	color: rgba(197, 160, 89, 0.55);
 }
+
 .obf-upload-placeholder svg {
 	opacity: 0.6;
 }
+
 .obf-upload-placeholder span {
 	font-size: 13px;
 	font-weight: 500;
@@ -289,12 +322,14 @@
 .obf-upload-preview {
 	position: relative;
 }
+
 .obf-upload-preview img {
 	max-width: 100%;
 	max-height: 140px;
 	border-radius: 6px;
 	object-fit: contain;
 }
+
 .obf-upload-remove {
 	position: absolute;
 	top: -8px;
@@ -332,6 +367,7 @@
 	border-left: 3px solid #C5A059;
 	border-radius: 4px;
 }
+
 .obsidian-bf-notice strong {
 	color: #C5A059;
 }
@@ -343,6 +379,7 @@
 	gap: 16px;
 	margin-top: 8px;
 }
+
 .obsidian-bf-checkbox {
 	display: flex;
 	align-items: flex-start;
@@ -352,12 +389,14 @@
 	color: rgba(255, 255, 255, 0.7);
 	line-height: 1.5;
 }
+
 .obsidian-bf-checkbox input[type="checkbox"] {
 	position: absolute;
 	opacity: 0;
 	width: 0;
 	height: 0;
 }
+
 .obf-check-box {
 	width: 18px;
 	height: 18px;
@@ -370,11 +409,13 @@
 	align-items: center;
 	justify-content: center;
 }
-.obsidian-bf-checkbox input:checked + .obf-check-box {
+
+.obsidian-bf-checkbox input:checked+.obf-check-box {
 	background: #C5A059;
 	border-color: #C5A059;
 }
-.obsidian-bf-checkbox input:checked + .obf-check-box::after {
+
+.obsidian-bf-checkbox input:checked+.obf-check-box::after {
 	content: '';
 	display: block;
 	width: 5px;
@@ -384,6 +425,7 @@
 	transform: rotate(45deg);
 	margin-top: -2px;
 }
+
 .obsidian-bf-checkbox strong {
 	color: #fff;
 	text-decoration: underline;
@@ -403,9 +445,11 @@
 	grid-template-columns: 1fr 1fr;
 	gap: 16px;
 }
+
 .obf-datetime-field {
 	position: relative;
 }
+
 .obf-datetime-icon {
 	position: absolute;
 	left: 14px;
@@ -415,6 +459,7 @@
 	pointer-events: none;
 	z-index: 1;
 }
+
 .obf-datetime-field input {
 	width: 100%;
 	padding: 14px 16px 14px 40px;
@@ -430,9 +475,11 @@
 	-webkit-appearance: none;
 	appearance: none;
 }
+
 .obf-datetime-field input::placeholder {
 	color: rgba(197, 160, 89, 0.45);
 }
+
 .obf-datetime-field input:focus {
 	border-color: #C5A059;
 }
@@ -460,9 +507,11 @@
 	min-height: 100px;
 	transition: border-color 0.2s ease;
 }
+
 .obsidian-bf-field textarea::placeholder {
 	color: rgba(197, 160, 89, 0.45);
 }
+
 .obsidian-bf-field textarea:focus {
 	border-color: #C5A059;
 }
@@ -483,6 +532,7 @@
 	cursor: pointer;
 	transition: border-color 0.2s ease, color 0.2s ease;
 }
+
 .obsidian-bf-back:hover {
 	border-color: rgba(255, 255, 255, 0.5);
 	color: #fff;
@@ -499,6 +549,7 @@
 .obsidian-bf-actions {
 	margin-top: 8px;
 }
+
 .obsidian-bf-submit {
 	display: inline-flex;
 	align-items: center;
@@ -515,13 +566,16 @@
 	cursor: pointer;
 	transition: opacity 0.2s ease, background 0.2s ease;
 }
+
 .obsidian-bf-submit:hover:not(:disabled) {
 	background: #d4af6a;
 }
+
 .obsidian-bf-submit:disabled {
 	opacity: 0.4;
 	cursor: not-allowed;
 }
+
 .obf-submit-spinner {
 	width: 18px;
 	height: 18px;
@@ -530,8 +584,11 @@
 	border-radius: 50%;
 	animation: obf-spin 0.6s linear infinite;
 }
+
 @keyframes obf-spin {
-	to { transform: rotate(360deg); }
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 /* ── Message (success/error) ── */
@@ -542,11 +599,13 @@
 	line-height: 1.5;
 	margin-top: 8px;
 }
+
 .obsidian-bf-message.obf-success {
 	background: rgba(46, 139, 87, 0.15);
 	border: 1px solid rgba(46, 139, 87, 0.4);
 	color: #6fcf97;
 }
+
 .obsidian-bf-message.obf-error {
 	background: rgba(255, 68, 68, 0.1);
 	border: 1px solid rgba(255, 68, 68, 0.3);
@@ -560,11 +619,13 @@
 	background: transparent;
 	border-color: #C5A059;
 }
+
 .obsidian-bf-step.completed .obsidian-bf-step-number {
 	color: #C5A059;
 	font-size: 18px;
 	font-weight: 700;
 }
+
 .obsidian-bf-step-line-done {
 	background: #C5A059 !important;
 }
@@ -589,6 +650,7 @@
 	flex-direction: column;
 	gap: 12px;
 }
+
 .obp-payment-option {
 	display: flex;
 	align-items: flex-start;
@@ -600,16 +662,19 @@
 	cursor: pointer;
 	transition: border-color 0.2s ease, background 0.2s ease;
 }
+
 .obp-payment-option:hover {
 	border-color: rgba(197, 160, 89, 0.5);
 	background: rgba(197, 160, 89, 0.04);
 }
+
 .obp-payment-option input[type="radio"] {
 	position: absolute;
 	opacity: 0;
 	width: 0;
 	height: 0;
 }
+
 .obp-option-radio {
 	width: 20px;
 	height: 20px;
@@ -622,25 +687,30 @@
 	margin-top: 2px;
 	transition: border-color 0.2s ease;
 }
-.obp-payment-option input:checked ~ .obp-option-radio {
+
+.obp-payment-option input:checked~.obp-option-radio {
 	border-color: #C5A059;
 }
-.obp-payment-option input:checked ~ .obp-option-radio::after {
+
+.obp-payment-option input:checked~.obp-option-radio::after {
 	content: '';
 	width: 10px;
 	height: 10px;
 	border-radius: 50%;
 	background: #C5A059;
 }
+
 .obp-option-content {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
 }
+
 .obp-option-content strong {
 	font-size: 14px;
 	color: #fff;
 }
+
 .obp-option-content span {
 	font-size: 12px;
 	color: rgba(255, 255, 255, 0.55);
@@ -652,9 +722,11 @@
 	color: rgba(255, 255, 255, 0.8);
 	margin: 0 0 4px;
 }
+
 .obp-deposit-info em {
 	color: #C5A059;
 }
+
 .obp-deposit-note {
 	font-size: 12px;
 	color: rgba(255, 255, 255, 0.45);
@@ -666,6 +738,7 @@
 	gap: 8px;
 	flex-wrap: wrap;
 }
+
 .obp-method-btn {
 	display: inline-flex;
 	align-items: center;
@@ -681,6 +754,7 @@
 	cursor: pointer;
 	transition: all 0.2s ease;
 }
+
 .obp-method-btn.active,
 .obp-method-btn:hover {
 	border-color: #C5A059;
@@ -701,11 +775,13 @@
 	color: rgba(255, 255, 255, 0.7);
 	line-height: 1.5;
 }
+
 .obp-bank-notice svg {
 	flex-shrink: 0;
 	margin-top: 1px;
 	color: #C5A059;
 }
+
 .obp-bank-notice strong {
 	color: #C5A059;
 }
@@ -725,6 +801,7 @@
 	border: 1px solid rgba(197, 160, 89, 0.15);
 	border-radius: 8px;
 }
+
 .obp-charge-line {
 	display: flex;
 	justify-content: space-between;
@@ -732,6 +809,7 @@
 	color: rgba(255, 255, 255, 0.65);
 	padding: 6px 0;
 }
+
 .obp-charge-total {
 	display: flex;
 	justify-content: space-between;
@@ -742,9 +820,11 @@
 	margin-top: 8px;
 	border-top: 1px solid rgba(197, 160, 89, 0.2);
 }
+
 .obp-charge-total span:last-child {
 	color: #C5A059;
 }
+
 .obp-charge-balance {
 	display: flex;
 	justify-content: space-between;
@@ -766,6 +846,7 @@
 .obc-header {
 	text-align: left;
 }
+
 .italic {
 	font-style: italic;
 }
@@ -779,6 +860,7 @@
 	margin-bottom: 24px;
 	text-align: center;
 }
+
 .obc-car-card-img {
 	max-width: 300px;
 	width: 100%;
@@ -787,6 +869,7 @@
 	margin: 0 auto 12px;
 	display: block;
 }
+
 .obc-car-card-name {
 	font-size: 18px;
 	font-weight: 600;
@@ -801,17 +884,20 @@
 	padding-top: 12px;
 	border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
+
 .obc-specs-label {
 	font-size: 14px;
 	color: #fff;
 	margin: 0 0 8px;
 }
+
 .obc-specs-line {
 	font-size: 13px;
 	color: rgba(255, 255, 255, 0.6);
 	margin: 0 0 4px;
 	line-height: 1.5;
 }
+
 .obc-specs-line strong {
 	color: rgba(255, 255, 255, 0.85);
 }
@@ -824,22 +910,26 @@
 	border-radius: 10px;
 	margin-bottom: 24px;
 }
+
 .obc-totals-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	margin-bottom: 20px;
 }
+
 .obc-totals-label {
 	font-size: 22px;
 	font-weight: 700;
 	color: #fff;
 }
+
 .obc-totals-value {
 	font-size: 22px;
 	font-weight: 700;
 	color: #fff;
 }
+
 .obc-totals-row {
 	display: flex;
 	justify-content: space-between;
@@ -856,11 +946,13 @@
 	border-radius: 10px;
 	margin-bottom: 24px;
 }
+
 .obc-info-heading {
 	font-size: 14px;
 	color: #C5A059;
 	margin: 0 0 20px;
 }
+
 .obc-info-subheading {
 	font-size: 14px;
 	color: rgba(255, 255, 255, 0.85);
@@ -868,6 +960,7 @@
 	padding-top: 16px;
 	border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
+
 .obc-info-row {
 	display: flex;
 	align-items: baseline;
@@ -875,12 +968,14 @@
 	padding: 6px 0;
 	font-size: 14px;
 }
+
 .obc-info-label {
 	color: rgba(255, 255, 255, 0.85);
 	font-weight: 600;
 	min-width: 140px;
 	flex-shrink: 0;
 }
+
 .obc-info-value {
 	color: rgba(255, 255, 255, 0.6);
 }
@@ -897,6 +992,7 @@
 	color: rgba(255, 255, 255, 0.7);
 	margin-bottom: 16px;
 }
+
 .obc-booking-id strong {
 	color: #C5A059;
 	font-size: 16px;
@@ -912,12 +1008,14 @@
 	color: rgba(255, 255, 255, 0.7);
 	margin-bottom: 24px;
 }
+
 .obc-status-dot {
 	width: 10px;
 	height: 10px;
 	border-radius: 50%;
 	background: #2ecc71;
 }
+
 .obc-status strong {
 	color: #2ecc71;
 }
@@ -926,11 +1024,13 @@
 .obc-actions {
 	text-align: right;
 }
+
 .obc-actions .obsidian-bf-submit,
 .obc-actions .obc-confirm-btn {
 	display: inline-flex;
 	text-decoration: none;
 }
+
 .obc-confirm-btn {
 	min-width: 220px;
 }
@@ -943,6 +1043,7 @@
 	text-align: center;
 	border: 1px solid rgba(197, 160, 89, 0.25);
 }
+
 .obr-title {
 	font-size: 48px;
 	font-weight: 900;
@@ -951,6 +1052,7 @@
 	margin: 0 0 32px;
 	text-transform: uppercase;
 }
+
 .obr-car-img {
 	max-width: 420px;
 	width: 100%;
@@ -959,35 +1061,42 @@
 	display: block;
 	margin: 0 auto 16px;
 }
+
 .obr-car-name {
 	font-size: 18px;
 	font-weight: 600;
 	color: #fff;
 	margin: 0 0 28px;
 }
+
 .obr-specs {
 	text-align: left;
 	margin: 0 0 32px;
 	padding-top: 16px;
 	border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
+
 .obr-specs-label {
 	font-size: 14px;
 	color: #fff;
 	margin: 0 0 8px;
 }
+
 .obr-specs-line {
 	font-size: 13px;
 	color: rgba(255, 255, 255, 0.6);
 	margin: 0 0 4px;
 	line-height: 1.6;
 }
+
 .obr-specs-line strong {
 	color: rgba(255, 255, 255, 0.85);
 }
+
 .obr-actions {
 	margin-top: 8px;
 }
+
 .obr-actions .obsidian-bf-submit {
 	display: inline-flex;
 	text-decoration: none;
@@ -1001,48 +1110,61 @@
 		padding: 32px 24px 40px;
 		margin: 0 16px;
 	}
+
 	.obsidian-bf-title {
 		font-size: 24px;
 	}
+
 	.obsidian-bf-upload-row {
 		grid-template-columns: 1fr;
 	}
+
 	.obsidian-bf-summary {
 		flex-direction: column;
 		text-align: center;
 	}
+
 	.obsidian-bf-summary-img {
 		width: 100%;
 		height: auto;
 		max-height: 160px;
 	}
+
 	.obsidian-bf-field-note {
 		position: static;
 		margin-top: 4px;
 	}
+
 	.obf-datetime-row {
 		grid-template-columns: 1fr;
 	}
+
 	.obf-delivery-actions {
 		flex-direction: column;
 	}
+
 	.obsidian-bf-back {
 		width: 100%;
 	}
+
 	.obp-card-row {
 		grid-template-columns: 1fr;
 	}
+
 	.obc-totals-header {
 		flex-direction: column;
 		gap: 4px;
 		text-align: center;
 	}
+
 	.obc-info-row {
 		flex-wrap: wrap;
 	}
+
 	.obc-info-label {
 		min-width: 120px;
 	}
+
 	.obc-actions {
 		text-align: center;
 	}
@@ -1054,10 +1176,12 @@
 		border-radius: 0;
 		margin: 0;
 	}
+
 	.obsidian-bf-step {
 		width: 34px;
 		height: 34px;
 	}
+
 	.obsidian-bf-step-number {
 		font-size: 13px;
 	}
@@ -1221,7 +1345,7 @@
 	align-items: flex-start;
 	gap: 10px;
 	padding: 12px 14px;
-	margin: 0 0 14px;
+	margin: 14px 0;
 	border-radius: 6px;
 	font-family: 'Montserrat', sans-serif;
 	font-size: 13px;
@@ -1238,18 +1362,27 @@
 	border: 1px solid rgba(255, 160, 60, 0.4);
 	color: #FFD8A8;
 }
-.obsidian-bf-status.is-warn svg { color: #FFB04A; }
+
+.obsidian-bf-status.is-warn svg {
+	color: #FFB04A;
+}
 
 .obsidian-bf-status.is-success {
 	background: rgba(80, 200, 120, 0.08);
 	border: 1px solid rgba(80, 200, 120, 0.35);
 	color: #B7F0CA;
 }
-.obsidian-bf-status.is-success svg { color: #50C878; }
+
+.obsidian-bf-status.is-success svg {
+	color: #50C878;
+}
 
 .obsidian-bf-status.is-info {
 	background: rgba(197, 160, 89, 0.08);
 	border: 1px solid rgba(197, 160, 89, 0.3);
 	color: rgba(255, 255, 255, 0.85);
 }
-.obsidian-bf-status.is-info svg { color: #C5A059; }
+
+.obsidian-bf-status.is-info svg {
+	color: #C5A059;
+}

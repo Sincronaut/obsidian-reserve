@@ -234,21 +234,11 @@ $change_location_url = add_query_arg(
 		<div id="obf-step-renter">
 
 			<!-- View Documents Requirements -->
-			<button type="button" class="obsidian-bf-docs-toggle" id="obf-docs-toggle">View Documents Requirements</button>
-			<div class="obsidian-bf-docs-info" id="obf-docs-info" style="display:none;">
-				<?php if ( $is_international ) : ?>
-					<ul>
-						<li>Valid Driver's License (held for at least 2 years)</li>
-						<li>Passport ID (photo page)</li>
-						<li>Proof of Arrival (e-ticket, airline booking, or arrival stamp)</li>
-					</ul>
-				<?php else : ?>
-					<ul>
-						<li>Valid Driver's License (held for at least 2 years)</li>
-						<li>Two (2) valid Government-issued IDs (front &amp; back)</li>
-					</ul>
-				<?php endif; ?>
-			</div>
+			<?php if ( $is_international ) : ?>
+				<a href="#" class="obsidian-bf-docs-toggle" data-modal="text" data-page-slug="international-requirements" style="display:inline-block; text-decoration:none;">View Documents Requirements</a>
+			<?php else : ?>
+				<a href="#" class="obsidian-bf-docs-toggle" data-modal="text" data-page-slug="local-requirements" style="display:inline-block; text-decoration:none;">View Documents Requirements</a>
+			<?php endif; ?>
 
 			<div class="obsidian-bf-fields-group">
 
@@ -540,12 +530,12 @@ $change_location_url = add_query_arg(
 				<label class="obsidian-bf-checkbox">
 					<input type="checkbox" name="agree_terms" required />
 					<span class="obf-check-box"></span>
-					<span>I confirm all details are accurate and I agree to the <strong>Obsidian Reserve Terms and Conditions</strong> prior to making my reservation.</span>
+					<span>I confirm all details are accurate and I agree to the <strong><a href="#" data-modal="text" data-page-slug="terms-and-conditions" style="color: inherit; text-decoration: underline;">Obsidian Reserve Terms and Conditions</a></strong> prior to making my reservation.</span>
 				</label>
 				<label class="obsidian-bf-checkbox">
 					<input type="checkbox" name="agree_privacy" required />
 					<span class="obf-check-box"></span>
-					<span>I have read and agree to the <strong>Obsidian Reserve Privacy Policy</strong> and consent to the processing of my personal data accordingly.</span>
+					<span>I have read and agree to the <strong><a href="#" data-modal="text" data-page-slug="privacy-policy" style="color: inherit; text-decoration: underline;">Obsidian Reserve Privacy Policy</a></strong> and consent to the processing of my personal data accordingly.</span>
 				</label>
 			</div>
 

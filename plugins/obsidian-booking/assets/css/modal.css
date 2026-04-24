@@ -835,3 +835,146 @@ span.flatpickr-weekday {
 .obsidian-modal-status.is-success svg {
    color: #50C878;
 }
+
+/* ============================================================
+   Text Modal (Reusable for Policies & Requirements)
+   ============================================================ */
+
+.obsidian-text-modal-wrapper {
+   position: fixed;
+   z-index: 100000;
+   inset: 0;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   opacity: 0;
+   pointer-events: none;
+   visibility: hidden;
+   transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.obsidian-text-modal-wrapper[aria-hidden="false"] {
+   opacity: 1;
+   pointer-events: auto;
+   visibility: visible;
+}
+
+.obsidian-text-modal-overlay {
+   position: absolute;
+   inset: 0;
+   background: rgba(0, 0, 0, 0.8);
+   backdrop-filter: blur(8px);
+   -webkit-backdrop-filter: blur(8px);
+}
+
+.obsidian-text-modal-panel {
+   position: relative;
+   z-index: 1;
+   width: 90vw;
+   max-width: 800px;
+   max-height: 85vh;
+   overflow-y: auto;
+   background: rgba(11, 11, 11, 0.91); /* #0B0B0B at 91% */
+   border: 2px solid #C5A059;
+   border-radius: 10px;
+   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7);
+   padding: 40px;
+   color: #FFFFFF;
+   transform: translateY(24px);
+   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.obsidian-text-modal-wrapper[aria-hidden="false"] .obsidian-text-modal-panel {
+   transform: translateY(0);
+}
+
+.obsidian-text-modal-panel::-webkit-scrollbar {
+   width: 6px;
+}
+.obsidian-text-modal-panel::-webkit-scrollbar-track {
+   background: transparent;
+}
+.obsidian-text-modal-panel::-webkit-scrollbar-thumb {
+   background: rgba(197, 160, 89, 0.25);
+   border-radius: 3px;
+}
+
+.obsidian-text-modal-close {
+   position: absolute;
+   top: 16px;
+   right: 16px;
+   z-index: 5;
+   width: 36px;
+   height: 36px;
+   background: rgba(11, 11, 11, 0.7);
+   border: 1px solid rgba(255, 255, 255, 0.1);
+   border-radius: 50%;
+   color: #FFFFFF;
+   font-size: 22px;
+   line-height: 1;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.obsidian-text-modal-close:hover {
+   background: rgba(197, 160, 89, 0.2);
+   border-color: rgba(197, 160, 89, 0.4);
+}
+
+.obsidian-text-modal-loader {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   padding: 100px 0;
+}
+
+.obsidian-text-modal-content {
+   font-family: 'Montserrat', sans-serif;
+}
+
+#obsidian-text-modal-title {
+   font-size: 28px;
+   font-weight: 700;
+   color: #C5A059;
+   margin: 0 0 24px;
+   line-height: 1.2;
+}
+
+#obsidian-text-modal-body {
+   font-size: 15px;
+   line-height: 1.7;
+   color: rgba(255, 255, 255, 0.85);
+}
+
+#obsidian-text-modal-body h2,
+#obsidian-text-modal-body h3,
+#obsidian-text-modal-body h4 {
+   color: #FFFFFF;
+   margin: 32px 0 16px;
+}
+
+#obsidian-text-modal-body p {
+   margin: 0 0 16px;
+}
+
+#obsidian-text-modal-body ul,
+#obsidian-text-modal-body ol {
+   margin: 0 0 16px;
+   padding-left: 20px;
+}
+
+#obsidian-text-modal-body li {
+   margin-bottom: 8px;
+}
+
+@media (max-width: 600px) {
+   .obsidian-text-modal-panel {
+      padding: 24px 20px;
+   }
+   #obsidian-text-modal-title {
+      font-size: 22px;
+   }
+}

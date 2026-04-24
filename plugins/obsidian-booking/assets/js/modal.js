@@ -742,3 +742,88 @@
       init();
    }
 })();
+
+/* ══════════════════════════════════════════════════════════════
+   Text Modal Logic (Phase 12)
+   ══════════════════════════════════════════════════════════════ */
+(function () {
+   'use strict';
+
+   var modal = document.getElementById('obsidian-text-modal');
+   if (!modal) return;
+
+   var overlay = modal.querySelector('.obsidian-text-modal-overlay');
+   var closeBtn = modal.querySelector('.obsidian-text-modal-close');
+   var loader = document.getElementById('obsidian-text-modal-loader');
+   var contentWrap = document.getElementById('obsidian-text-modal-content');
+   var titleEl = document.getElementById('obsidian-text-modal-title');
+   var bodyEl = document.getElementById('obsidian-text-modal-body');
+
+   function openModal() {
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+   }
+
+   function closeModal() {
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      // Reset content after transition
+      setTimeout(function() {
+         titleEl.textContent = '';
+         bodyEl.innerHTML = '';
+      }, 300);
+   }
+
+   // Global event listener for any link that wants to open the modal
+   document.addEventListener('click', function(e) {
+      var trigger = e.target.closest('a[data-modal="text"]');
+      if (!trigger) return;
+
+      e.preventDefault();
+      var slug = trigger.getAttribute('data-page-slug');
+      if (!slug) return;
+
+      openModal();
+      loader.style.display = 'flex';
+      contentWrap.style.display = 'none';
+
+      // Use the native WP REST API to fetch the page content
+      var endpoint = '/wp-json/wp/v2/pages?slug=' + encodeURIComponent(slug);
+      
+      fetch(endpoint)
+         .then(function(response) {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+         })
+         .then(function(pages) {
+            loader.style.display = 'none';
+            contentWrap.style.display = '';
+
+            if (pages && pages.length > 0) {
+               var page = pages[0];
+               titleEl.textContent = page.title.rendered || '';
+               bodyEl.innerHTML = page.content.rendered || '';
+            } else {
+               titleEl.textContent = 'Content Not Found';
+               bodyEl.innerHTML = '<p>The requested content could not be found. Please ensure a page with the slug "' + slug + '" exists.</p>';
+            }
+         })
+         .catch(function(error) {
+            console.error('Error fetching modal content:', error);
+            loader.style.display = 'none';
+            contentWrap.style.display = '';
+            titleEl.textContent = 'Error Loading Content';
+            bodyEl.innerHTML = '<p>There was a problem loading the content. Please try again later.</p>';
+         });
+   });
+
+   closeBtn.addEventListener('click', closeModal);
+   overlay.addEventListener('click', closeModal);
+
+   document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
+         closeModal();
+      }
+   });
+
+})();
