@@ -86,7 +86,8 @@
     border-radius: 10px;
     overflow: hidden;
     border: 2px solid #C5A059;
-    width: 420px;
+    width: 100%;
+    max-width: 420px;
     max-height: 410px;
     transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
     display: flex;
@@ -451,4 +452,38 @@
 
 .fleet-grid-col .car-grid-container {
     max-width: none;
+}
+
+/* ---- Pagination ---- */
+
+.car-grid-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 50px;
+    width: 100%;
+}
+
+.pagination-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #FFFFFF;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pagination-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.pagination-btn.active {
+    background: #C5A059;
+    border-color: #C5A059;
+    color: #0B0B0B;
 }

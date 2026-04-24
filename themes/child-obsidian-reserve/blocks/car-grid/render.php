@@ -283,6 +283,7 @@ $build_scope_data = function ( $car_id ) {
 		<p class="car-grid-no-results" hidden>
 			No vehicles match the current filters. Try clearing them or picking a different location.
 		</p>
+		<div class="car-grid-pagination" hidden></div>
 
 		<?php else : ?>
 			<p class="car-grid-empty">No vehicles are currently available. Please check back soon.</p>
@@ -309,8 +310,12 @@ $build_scope_data = function ( $car_id ) {
 		     the external Fleet Filters block. ── */
 		var state = {
 			classes: [],     // multi-select; empty = all
-			scope: 'all'     // 'all' | 'branch_<id>' | 'region_<slug>'
+			scope: 'all',    // 'all' | 'branch_<id>' | 'region_<slug>'
+			page: 1          // Pagination
 		};
+
+		var CARS_PER_PAGE = 6;
+		var paginationWrap = grid.querySelector('.car-grid-pagination');
 
 		/* ── Internal class-button row (only present if showInternalFilters) ── */
 		var internalFilters = grid.querySelectorAll('.car-grid-filters .filter-btn');
@@ -320,6 +325,7 @@ $build_scope_data = function ( $car_id ) {
 				btn.classList.add('active');
 				var filter = btn.getAttribute('data-filter');
 				state.classes = filter === 'all' ? [] : [filter];
+				state.page = 1;
 				applyFilters();
 			});
 		});
@@ -329,6 +335,7 @@ $build_scope_data = function ( $car_id ) {
 			if (!e.detail) { return; }
 			state.classes = Array.isArray(e.detail.classes) ? e.detail.classes : [];
 			state.scope   = e.detail.scope || 'all';
+			state.page = 1;
 			applyFilters();
 		});
 
@@ -377,13 +384,7 @@ $build_scope_data = function ( $car_id ) {
 			}, 200);
 		}
 
-		/* ── Update each swatch for the current scope.
-		     - Hides swatches whose color isn't stocked at the selected
-		       branch / region (missing key in `data-units-by-scope`).
-		     - Updates the displayed unit count for visible swatches.
-		     - If the previously active swatch is now hidden, promotes the
-		       first remaining visible swatch (and swaps the card image
-		       and units text to match). ── */
+		/* ── Update each swatch for the current scope. ── */
 		function updateScopedUnits(card) {
 			var swatches = card.querySelectorAll('.color-swatch');
 			var firstVisible = null;
@@ -395,9 +396,6 @@ $build_scope_data = function ( $car_id ) {
 				var map;
 				try { map = JSON.parse(raw); } catch (e) { return; }
 
-				// For branch_/region_ scopes, a MISSING key means "this color
-				// isn't stocked here" — not "fall back to the aggregated count".
-				// Only the special "all" scope falls back to the `all` value.
 				var isScopedFilter = (state.scope.indexOf('branch_') === 0
 				                   || state.scope.indexOf('region_') === 0);
 				var hasScopeKey    = (typeof map[state.scope] !== 'undefined');
@@ -423,8 +421,6 @@ $build_scope_data = function ( $car_id ) {
 				if (swatch.classList.contains('active')) { activeStillVisible = true; }
 			});
 
-			// If the active swatch is now hidden, promote the first visible
-			// one and sync the card image + unit count to it.
 			if (!activeStillVisible && firstVisible) {
 				swatches.forEach(function(s) { s.classList.remove('active'); });
 				firstVisible.classList.add('active');
@@ -436,7 +432,6 @@ $build_scope_data = function ( $car_id ) {
 				if (img && newImg) { swipeImage(img, newImg); }
 				if (unitsEl)       { unitsEl.textContent = newU + ' available'; }
 			} else {
-				// Active swatch is still visible — just refresh its units in the footer.
 				var activeSwatch = card.querySelector('.color-swatch.active');
 				if (activeSwatch) {
 					var unitsEl2 = card.querySelector('.units-text');
@@ -447,20 +442,79 @@ $build_scope_data = function ( $car_id ) {
 			}
 		}
 
-		/* ── Apply filters: hide non-matching cards, recompute units. ── */
+		/* ── Apply filters: hide non-matching cards, recompute units, apply pagination. ── */
 		function applyFilters() {
-			var visible = 0;
+			var matchingCards = [];
 			cards.forEach(function(card) {
 				var ok = cardMatches(card);
-				card.style.display = ok ? '' : 'none';
 				if (ok) {
-					visible++;
 					updateScopedUnits(card);
+					matchingCards.push(card);
+				} else {
+					card.style.display = 'none';
 				}
 			});
+			
 			if (noResults) {
-				noResults.hidden = visible !== 0;
+				noResults.hidden = matchingCards.length !== 0;
 			}
+
+			// Pagination
+			var totalPages = Math.ceil(matchingCards.length / CARS_PER_PAGE);
+			if (state.page > totalPages) { state.page = Math.max(1, totalPages); }
+
+			var startIndex = (state.page - 1) * CARS_PER_PAGE;
+			var endIndex = startIndex + CARS_PER_PAGE;
+
+			matchingCards.forEach(function(card, index) {
+				if (index >= startIndex && index < endIndex) {
+					card.style.display = '';
+				} else {
+					card.style.display = 'none';
+				}
+			});
+
+			renderPagination(totalPages);
+		}
+
+		function renderPagination(totalPages) {
+			if (!paginationWrap) return;
+			if (totalPages <= 1) {
+				paginationWrap.hidden = true;
+				paginationWrap.innerHTML = '';
+				return;
+			}
+
+			paginationWrap.hidden = false;
+			var html = '';
+
+			if (state.page > 1) {
+				html += '<button class="pagination-btn prev-btn" data-page="' + (state.page - 1) + '">&laquo; Prev</button>';
+			}
+
+			for (var i = 1; i <= totalPages; i++) {
+				var activeClass = i === state.page ? ' active' : '';
+				html += '<button class="pagination-btn page-num' + activeClass + '" data-page="' + i + '">' + i + '</button>';
+			}
+
+			if (state.page < totalPages) {
+				html += '<button class="pagination-btn next-btn" data-page="' + (state.page + 1) + '">Next &raquo;</button>';
+			}
+
+			paginationWrap.innerHTML = html;
+		}
+
+		if (paginationWrap) {
+			paginationWrap.addEventListener('click', function(e) {
+				var btn = e.target.closest('.pagination-btn');
+				if (!btn) return;
+				var newPage = parseInt(btn.getAttribute('data-page'), 10);
+				if (newPage && newPage !== state.page) {
+					state.page = newPage;
+					applyFilters();
+					grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				}
+			});
 		}
 
 		/* ── Color swatch clicks: swap image + update units (active swatch wins). ── */
