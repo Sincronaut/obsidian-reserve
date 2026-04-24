@@ -330,6 +330,35 @@ function obsidian_booking_render_modal()
 add_action('wp_footer', 'obsidian_booking_render_modal');
 
 /* ──────────────────────────────────────────────
+   Text Modal (Phase 12)
+   Reusable modal for Privacy Policy, Terms, etc.
+   ────────────────────────────────────────────── */
+function obsidian_booking_render_text_modal()
+{
+   if (is_admin()) {
+      return;
+   }
+   ?>
+   <div id="obsidian-text-modal" class="obsidian-text-modal-wrapper" aria-hidden="true">
+      <div class="obsidian-text-modal-overlay"></div>
+      <div class="obsidian-text-modal-panel" role="dialog" aria-modal="true">
+         <button class="obsidian-text-modal-close" aria-label="Close">&times;</button>
+         
+         <div class="obsidian-text-modal-loader" id="obsidian-text-modal-loader" style="display: none;">
+            <span class="obsidian-modal-spinner"></span>
+         </div>
+
+         <div class="obsidian-text-modal-content" id="obsidian-text-modal-content">
+            <h2 id="obsidian-text-modal-title"></h2>
+            <div id="obsidian-text-modal-body"></div>
+         </div>
+      </div>
+   </div>
+   <?php
+}
+add_action('wp_footer', 'obsidian_booking_render_text_modal');
+
+/* ──────────────────────────────────────────────
    Activation / Deactivation
    ────────────────────────────────────────────── */
 function obsidian_booking_activate()

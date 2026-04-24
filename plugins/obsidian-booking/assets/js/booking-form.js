@@ -33,7 +33,6 @@
 		submitSpinner = submitBtn ? submitBtn.querySelector('.obf-submit-spinner') : null;
 		messageEl     = document.getElementById('obf-message');
 
-		initDocsToggle();
 		initBirthDatePicker();
 		initFileUploads();
 		initGovIdMirror();
@@ -87,19 +86,6 @@
 
 		hideMessage();
 		window.scrollTo({ top: 0, behavior: 'smooth' });
-	}
-
-	/* ── Documents Requirements Toggle ── */
-
-	function initDocsToggle() {
-		var toggle = document.getElementById('obf-docs-toggle');
-		var info   = document.getElementById('obf-docs-info');
-		if (!toggle || !info) return;
-
-		toggle.addEventListener('click', function () {
-			var visible = info.style.display !== 'none';
-			info.style.display = visible ? 'none' : '';
-		});
 	}
 
 	/* ── Birth Date Picker (Flatpickr) ── */
