@@ -414,9 +414,10 @@
 		// Return date/time are auto-set from the end date + delivery time,
 		// so they're intentionally not in this list.
 		var checks = [
-			{ id: 'obf-pickup-location',  label: 'Pickup Location' },
+			{ id: 'obf-pickup-location',  label: 'Available Branch' },
 			{ id: 'obf-delivery-contact', label: 'Contact Number' },
 			{ id: 'obf-delivery-dropoff', label: 'Delivery Type' },
+			{ id: 'obf-delivery-address', label: 'Delivery Address' },
 			{ id: 'obf-delivery-date',    label: 'Delivery Date' },
 			{ id: 'obf-delivery-time',    label: 'Delivery Time' },
 			{ id: 'obf-return-address',   label: 'Return Pickup Address' }
@@ -501,6 +502,7 @@
 			// Delivery fields
 			delivery_contact:  val('obf-delivery-contact'),
 			delivery_dropoff:  val('obf-delivery-dropoff'),
+			delivery_address:  val('obf-delivery-address'),
 			delivery_date:     val('obf-delivery-date'),
 			delivery_time:     val('obf-delivery-time'),
 			return_address:    val('obf-return-address'),

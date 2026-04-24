@@ -121,7 +121,10 @@ $gov_id_options = array(
 $branches_by_region = array();
 $branch_lookup      = array();
 
-$branch_query = new WP_Query( array(
+// Only get branches where this specific car is available
+$car_branches = function_exists('obsidian_get_car_branches') ? obsidian_get_car_branches( $car_id ) : array();
+
+$query_args = array(
 	'post_type'      => 'location',
 	'post_status'    => 'publish',
 	'posts_per_page' => -1,
@@ -134,7 +137,16 @@ $branch_query = new WP_Query( array(
 			'compare' => '=',
 		),
 	),
-) );
+);
+
+if ( ! empty( $car_branches ) ) {
+	$query_args['post__in'] = $car_branches;
+} else {
+	// If no branches have this car, force empty result
+	$query_args['post__in'] = array(0);
+}
+
+$branch_query = new WP_Query( $query_args );
 
 if ( $branch_query->have_posts() ) {
 	foreach ( $branch_query->posts as $b ) {
@@ -424,37 +436,22 @@ $change_location_url = add_query_arg(
 			<div class="obsidian-bf-fields-group">
 
 				<!-- ── Phase 11.14: Pickup Branch ──
-				     If location_id was passed via URL we render this as
-				     read-only with a "Change location" link back to the
-				     fleet/modal. Otherwise, full dropdown grouped by region. -->
-				<?php if ( $location_locked ) : ?>
-				<div class="obsidian-bf-field obsidian-bf-location-field obsidian-bf-location-locked">
-					<label>Pickup Location</label>
-					<div class="obsidian-bf-location-display">
-						<div class="obsidian-bf-location-name">
-							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-							<strong><?php echo esc_html( $preselected_branch['name'] ); ?></strong>
-							<span class="obsidian-bf-location-region">— <?php echo esc_html( $preselected_branch['region'] ); ?></span>
-						</div>
-						<a href="<?php echo esc_url( $change_location_url ); ?>" class="obsidian-bf-location-change">Change location</a>
-					</div>
-					<input type="hidden" id="obf-pickup-location" name="pickup_location" value="<?php echo esc_attr( $location_id ); ?>" required />
-				</div>
-				<?php else : ?>
+				     Now a dynamic dropdown of branches where this car is available. -->
 				<div class="obsidian-bf-field obsidian-bf-location-field">
-					<label for="obf-pickup-location">Pickup Location</label>
+					<label for="obf-pickup-location">Available Branch</label>
 					<select id="obf-pickup-location" name="pickup_location" required>
 						<option value="">Select a branch&hellip;</option>
 						<?php foreach ( $branches_by_region as $group ) : ?>
 							<optgroup label="<?php echo esc_attr( $group['label'] ); ?>">
 								<?php foreach ( $group['branches'] as $b ) : ?>
-									<option value="<?php echo esc_attr( $b->ID ); ?>"><?php echo esc_html( $b->post_title ); ?></option>
+									<option value="<?php echo esc_attr( $b->ID ); ?>" <?php selected( $b->ID, $location_id ); ?>>
+										<?php echo esc_html( $b->post_title ); ?>
+									</option>
 								<?php endforeach; ?>
 							</optgroup>
 						<?php endforeach; ?>
 					</select>
 				</div>
-				<?php endif; ?>
 
 				<!-- ── Contact Number (pre-filled from renter form for local) ── -->
 				<div class="obsidian-bf-field">
@@ -470,6 +467,12 @@ $change_location_url = add_query_arg(
 						<option value="home_delivery">Home Delivery</option>
 						<option value="airport_delivery">Airport Delivery</option>
 					</select>
+				</div>
+
+				<!-- ── Delivery Address ── -->
+				<div class="obsidian-bf-field">
+					<label for="obf-delivery-address">Delivery Address</label>
+					<input type="text" id="obf-delivery-address" name="delivery_address" placeholder="ex : 123 Street, City of Manila" required />
 				</div>
 
 				<!-- ── Delivery Date and Time ── -->

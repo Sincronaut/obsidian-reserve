@@ -56,9 +56,9 @@ function obsidian_render_booking_meta_box( $post ) {
 	$gov_id_type   = get_post_meta( $booking_id, '_booking_gov_id_type', true );
 	$gov_id_type_2 = get_post_meta( $booking_id, '_booking_gov_id_type_2', true );
 
-	// Delivery info
 	$delivery_contact = get_post_meta( $booking_id, '_booking_delivery_contact', true );
 	$delivery_dropoff = get_post_meta( $booking_id, '_booking_delivery_dropoff', true );
+	$delivery_address = get_post_meta( $booking_id, '_booking_delivery_address', true );
 	$delivery_date    = get_post_meta( $booking_id, '_booking_delivery_date', true );
 	$delivery_time    = get_post_meta( $booking_id, '_booking_delivery_time', true );
 	$return_address   = get_post_meta( $booking_id, '_booking_return_address', true );
@@ -246,6 +246,12 @@ function obsidian_render_booking_meta_box( $post ) {
 				<tr>
 					<th>Drop Off</th>
 					<td><?php echo esc_html( ucwords( str_replace( '_', ' ', $delivery_dropoff ) ) ); ?></td>
+				</tr>
+				<?php endif; ?>
+				<?php if ( $delivery_address ) : ?>
+				<tr>
+					<th>Delivery Address</th>
+					<td><?php echo esc_html( $delivery_address ); ?></td>
 				</tr>
 				<?php endif; ?>
 				<?php if ( $delivery_date ) : ?>
