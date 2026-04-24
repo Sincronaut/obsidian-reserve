@@ -290,9 +290,14 @@
 
       var inputs = modal.querySelectorAll(
          'input[name="obsidian_customer_type"], #obsidian-pickup-date, #obsidian-dropoff-date, ' +
-         '.obsidian-modal-color-radio'
+         '.obsidian-modal-color-radio, .obsidian-modal-field .flatpickr-input'
       );
       inputs.forEach(function (i) { i.disabled = true; });
+
+      // Also disable via flatpickr API if instances exist (covers edge cases
+      // where flatpickr recreates the altInput after a DOM disable pass).
+      if (pickupFP)  { pickupFP.altInput  && (pickupFP.altInput.disabled  = true); }
+      if (dropoffFP) { dropoffFP.altInput && (dropoffFP.altInput.disabled = true); }
 
       proceedBtn.disabled = true;
 
@@ -310,9 +315,13 @@
    function enableForm() {
       var inputs = modal.querySelectorAll(
          'input[name="obsidian_customer_type"], #obsidian-pickup-date, #obsidian-dropoff-date, ' +
-         '.obsidian-modal-color-radio'
+         '.obsidian-modal-color-radio, .obsidian-modal-field .flatpickr-input'
       );
       inputs.forEach(function (i) { i.disabled = false; });
+
+      // Explicitly re-enable flatpickr alt inputs (the visible date fields).
+      if (pickupFP)  { pickupFP.altInput  && (pickupFP.altInput.disabled  = false); }
+      if (dropoffFP) { dropoffFP.altInput && (dropoffFP.altInput.disabled = false); }
 
       colorsContainer.classList.remove('is-disabled');
       setColorsNote('');
