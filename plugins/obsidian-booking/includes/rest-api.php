@@ -501,8 +501,15 @@ function obsidian_api_create_booking( $request ) {
 	}
 
 	// --- Validate color exists for this car at this branch ---
-	if ( ! empty( $color ) ) {
-		$variants = obsidian_get_color_variants( $car_id, $location_id );
+	$variants = obsidian_get_color_variants( $car_id, $location_id );
+	if ( ! empty( $variants ) ) {
+		if ( empty( $color ) ) {
+			return new WP_Error(
+				'missing_color',
+				__( 'Please select a color variant for this vehicle.', 'obsidian-booking' ),
+				array( 'status' => 400 )
+			);
+		}
 		if ( ! isset( $variants[ $color ] ) || (int) $variants[ $color ]['units'] <= 0 ) {
 			return new WP_Error(
 				'invalid_color',
@@ -528,6 +535,15 @@ function obsidian_api_create_booking( $request ) {
 		return new WP_Error(
 			'invalid_date_range',
 			__( 'End date must be after start date.', 'obsidian-booking' ),
+			array( 'status' => 400 )
+		);
+	}
+
+	$duration_days = $start->diff( $end )->days;
+	if ( $duration_days > 30 ) {
+		return new WP_Error(
+			'duration_too_long',
+			__( 'For rentals longer than 30 days, please contact our corporate team directly.', 'obsidian-booking' ),
 			array( 'status' => 400 )
 		);
 	}
