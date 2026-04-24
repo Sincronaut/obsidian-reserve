@@ -211,7 +211,7 @@ $rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 							$is_coming = $branch['status'] === 'coming_soon';
 						?>
 							<li class="locations-map-region-branch<?php echo $is_coming ? ' is-coming-soon' : ''; ?>">
-								<a href="<?php echo esc_url( home_url( '/fleet/?location=' . $branch['slug'] ) ); ?>">
+								<a href="<?php echo esc_url( home_url( '/fleet/?location=' . $branch['slug'] ) ); ?>" data-slug="<?php echo esc_attr( $branch['slug'] ); ?>" class="branch-link">
 									<?php echo esc_html( $branch['name'] ); ?>
 								</a>
 								<?php if ( $is_coming ) : ?>
@@ -297,7 +297,8 @@ $rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 			}
 
 			/* ── 3. Fetch every non-closed branch and plot it ── */
-			var markers = [];
+			var markersArr = [];
+			var markersBySlug = {};
 
 			fetch(restUrl + '?per_page=200')
 				.then(function(r) { return r.json(); })
@@ -316,16 +317,33 @@ $rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 							populateInfoCard(b);
 						});
 
-						markers.push(marker);
+						markersArr.push(marker);
+						markersBySlug[b.slug] = { marker: marker, data: b };
 					});
 
-					// Auto-fit the map to whatever pins we plotted (with a
-					// minimum zoom so we don't zoom in past zoom 12 on a
-					// single-branch deployment).
-					if (markers.length > 0) {
-						var group = L.featureGroup(markers);
+					// Auto-fit the map to whatever pins we plotted
+					if (markersArr.length > 0) {
+						var group = L.featureGroup(markersArr);
 						map.fitBounds(group.getBounds().pad(0.15), { maxZoom: 11 });
 					}
+
+					// Link clicking from the list
+					var listLinks = section.querySelectorAll('.branch-link');
+					listLinks.forEach(function(link) {
+						link.addEventListener('click', function(e) {
+							e.preventDefault();
+							var slug = this.getAttribute('data-slug');
+							if (markersBySlug[slug]) {
+								var m = markersBySlug[slug];
+								map.setView(m.marker.getLatLng(), 14); // zoom in
+								populateInfoCard(m.data);
+								canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
+							} else {
+								// If the pin isn't on the map (e.g. no coordinates), fallback to the href
+								window.location.href = this.href;
+							}
+						});
+					});
 				})
 				.catch(function(err) {
 					console.warn('Obsidian: failed to load branches —', err);
