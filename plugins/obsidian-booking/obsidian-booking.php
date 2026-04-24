@@ -246,7 +246,7 @@ function obsidian_booking_render_modal()
                     everything downstream. The JS swaps between `.is-locked`
                     (URL had ?location/?region) and `.is-pickable`. -->
                <div class="obsidian-modal-branch" id="obsidian-modal-branch" hidden>
-                  <span class="branch-label">Pick up at:</span>
+                  <span class="branch-label">Available Branches:</span>
                   <span class="branch-name" id="obsidian-modal-branch-name"></span>
                   <button type="button"
                           class="branch-change"
