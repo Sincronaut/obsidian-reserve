@@ -57,6 +57,24 @@
 		grab_pay: 'GrabPay',
 	};
 
+	// PayMongo test cards that are expected to fail.
+	// This lets us surface those failures on the payment form before review.
+	const PAYMONGO_TEST_CARD_FAILURES = {
+		'4200000000000018': 'This test card is marked as expired.',
+		'4300000000000017': 'This test card is configured to fail CVC validation.',
+		'4400000000000016': 'This test card is configured to be declined.',
+		'4028220000001457': 'This test card is configured to be declined.',
+		'4500000000000015': 'This test card is configured as fraudulent.',
+		'5100000000000198': 'This test card is configured with insufficient funds.',
+		'5240460000001466': 'This test card is configured with insufficient funds.',
+		'5200000000000197': 'This test card is configured as blocked by processor.',
+		'5300000000000196': 'This test card is configured as a lost card.',
+		'5483530000001462': 'This test card is configured as a lost card.',
+		'5400000000000195': 'This test card is configured as a stolen card.',
+		'5500000000000194': 'This test card is configured as processor unavailable.',
+		'4600000000000014': 'This test card is configured as blocked.',
+	};
+
 	/* ── Format helpers ── */
 
 	function formatCurrency( num ) {
@@ -125,17 +143,77 @@
 
 	/* ── Validation ── */
 
+	function isValidLuhn( cardNumber ) {
+		let sum = 0;
+		let shouldDouble = false;
+
+		for ( let i = cardNumber.length - 1; i >= 0; i-- ) {
+			let digit = parseInt( cardNumber.charAt( i ), 10 );
+			if ( Number.isNaN( digit ) ) {
+				return false;
+			}
+
+			if ( shouldDouble ) {
+				digit *= 2;
+				if ( digit > 9 ) {
+					digit -= 9;
+				}
+			}
+
+			sum += digit;
+			shouldDouble = ! shouldDouble;
+		}
+
+		return sum % 10 === 0;
+	}
+
 	function validateCard() {
 		const num    = ( cardNumberInput?.value || '' ).replace( /\s/g, '' );
 		const expiry = ( cardExpiryInput?.value || '' ).replace( /\s/g, '' );
 		const cvc    = ( cardCvcInput?.value || '' ).trim();
 		const name   = ( cardNameInput?.value || '' ).trim();
+		const parts  = expiry.split( '/' );
 
-		if ( num.length < 13 || num.length > 16 ) return false;
-		if ( ! /^\d{2}\/\d{2}$/.test( expiry ) )  return false;
-		if ( cvc.length < 3 )                      return false;
-		if ( name.length < 2 )                     return false;
-		return true;
+		if ( ! /^\d{13,16}$/.test( num ) ) {
+			return { valid: false, message: 'Please enter a valid card number.' };
+		}
+
+		if ( ! isValidLuhn( num ) ) {
+			return { valid: false, message: 'Card number failed validation. Please check and try again.' };
+		}
+
+		if ( ! /^\d{2}\/\d{2}$/.test( expiry ) || parts.length !== 2 ) {
+			return { valid: false, message: 'Please enter a valid expiry date (MM / YY).' };
+		}
+
+		const expMonth = parseInt( parts[0], 10 );
+		const expYear  = parseInt( '20' + parts[1], 10 );
+
+		if ( Number.isNaN( expMonth ) || Number.isNaN( expYear ) || expMonth < 1 || expMonth > 12 ) {
+			return { valid: false, message: 'Please enter a valid expiry date (MM / YY).' };
+		}
+
+		const now = new Date();
+		const currentMonth = now.getMonth() + 1;
+		const currentYear  = now.getFullYear();
+		if ( expYear < currentYear || ( expYear === currentYear && expMonth < currentMonth ) ) {
+			return { valid: false, message: 'Card is expired. Please use another card.' };
+		}
+
+		if ( ! /^\d{3,4}$/.test( cvc ) ) {
+			return { valid: false, message: 'Please enter a valid CVC.' };
+		}
+
+		if ( name.length < 2 ) {
+			return { valid: false, message: 'Please enter the cardholder name.' };
+		}
+
+		const isTestMode = /^pk_test_/i.test( publicKey || '' );
+		if ( isTestMode && PAYMONGO_TEST_CARD_FAILURES[ num ] ) {
+			return { valid: false, message: PAYMONGO_TEST_CARD_FAILURES[ num ] };
+		}
+
+		return { valid: true };
 	}
 
 	/* ── Show message ── */
@@ -212,8 +290,9 @@
 	/* ── CARD flow: create PI + PM, store, redirect ── */
 
 	async function processCardPayment() {
-		if ( ! validateCard() ) {
-			showMessage( 'Please fill in all card details correctly.', 'error' );
+		const cardValidation = validateCard();
+		if ( ! cardValidation.valid ) {
+			showMessage( cardValidation.message || 'Please fill in all card details correctly.', 'error' );
 			return;
 		}
 
