@@ -107,40 +107,19 @@
 		if ( submitTextEl ) submitTextEl.textContent      = 'Continue to Review';
 	}
 
-	/* ── Payment option toggle ── */
-
-	const paymentRadios = form.querySelectorAll( 'input[name="payment_option"]' );
-	paymentRadios.forEach( radio => {
-		radio.addEventListener( 'change', updateChargeSummary );
-	});
-
 	function getSelectedOption() {
-		const checked = form.querySelector( 'input[name="payment_option"]:checked' );
-		return checked ? checked.value : 'down';
+		return 'full';
 	}
 
 	function updateChargeSummary() {
-		const option = getSelectedOption();
-		let rentalCharge, balance;
-
-		if ( option === 'full' ) {
-			rentalCharge = totalVal;
-			balance      = 0;
-			if ( paymentLabelEl ) paymentLabelEl.textContent = '100% full prepayment';
-		} else {
-			rentalCharge = Math.round( totalVal * 0.50 );
-			balance      = totalVal - rentalCharge;
-			if ( paymentLabelEl ) paymentLabelEl.textContent = '50% down payment';
-		}
-
-		const chargeTotal = rentalCharge + depositVal;
+		const rentalCharge = totalVal;
+		const chargeTotal  = rentalCharge + depositVal;
 
 		if ( rentalAmountEl )  rentalAmountEl.textContent  = formatCurrency( rentalCharge );
 		if ( chargeTotalEl )   chargeTotalEl.textContent    = formatCurrency( chargeTotal );
-		if ( balanceAmountEl ) balanceAmountEl.textContent  = formatCurrency( balance );
 
 		if ( balanceLineEl ) {
-			balanceLineEl.style.display = balance > 0 ? '' : 'none';
+			balanceLineEl.style.display = 'none';
 		}
 	}
 

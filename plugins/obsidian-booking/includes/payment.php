@@ -77,7 +77,7 @@ function obsidian_get_payment_url( $booking_id, $token ) {
  * @param string $payment_method PayMongo payment method type.
  * @return array|WP_Error Payment Intent data or error.
  */
-function obsidian_create_payment_intent( $booking_id, $payment_option = 'down', $payment_method = 'card' ) {
+function obsidian_create_payment_intent( $booking_id, $payment_option = 'full', $payment_method = 'card' ) {
 
 	if ( ! defined( 'PAYMONGO_SECRET_KEY' ) || empty( PAYMONGO_SECRET_KEY ) ) {
 		return new WP_Error( 'paymongo_not_configured', 'PayMongo API keys are not configured.' );
@@ -200,7 +200,7 @@ function obsidian_api_create_payment_intent( $request ) {
 	$params         = $request->get_json_params();
 	$booking_id     = (int) ( $params['booking_id'] ?? 0 );
 	$token          = sanitize_text_field( $params['token'] ?? '' );
-	$payment_option = sanitize_text_field( $params['payment_option'] ?? 'down' );
+	$payment_option = sanitize_text_field( $params['payment_option'] ?? 'full' );
 	$payment_method = sanitize_text_field( $params['payment_method'] ?? 'card' );
 
 	if ( ! $booking_id ) {

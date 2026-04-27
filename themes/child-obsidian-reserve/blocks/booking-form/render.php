@@ -485,7 +485,7 @@ $change_location_url = add_query_arg(
 						</div>
 						<div class="obf-datetime-field">
 							<svg class="obf-datetime-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-							<input type="text" id="obf-delivery-time" name="delivery_time" placeholder="00 : 00 : 00 AM / PM" required />
+							<input type="text" id="obf-delivery-time" name="delivery_time" placeholder="00:00 AM/PM" required readonly />
 						</div>
 					</div>
 				</div>

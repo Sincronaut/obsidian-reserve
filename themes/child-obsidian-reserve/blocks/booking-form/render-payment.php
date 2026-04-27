@@ -97,9 +97,8 @@ $color_display = ucfirst( $color );
 	<input type="hidden" id="obp-total" value="<?php echo esc_attr( $total ); ?>" />
 	<input type="hidden" id="obp-deposit" value="<?php echo esc_attr( $deposit ); ?>" />
 
-	<!-- Header -->
 	<div class="obsidian-bf-header">
-		<h1 class="obsidian-bf-title"><span class="text-gold">Payment</span></h1>
+		<h1 class="obsidian-bf-title"><span class="text-gold">Payment</span> Form</h1>
 	</div>
 
 	<!-- Progress Stepper -->
@@ -117,43 +116,67 @@ $color_display = ucfirst( $color );
 		</div>
 	</div>
 
-	<!-- Booking Summary -->
-	<div class="obsidian-bf-summary">
-		<?php if ( $variant_img ) : ?>
-			<img src="<?php echo esc_url( $variant_img ); ?>" alt="<?php echo esc_attr( $car_name ); ?>" class="obsidian-bf-summary-img" />
-		<?php endif; ?>
-		<div class="obsidian-bf-summary-info">
-			<strong><?php echo esc_html( $car_name ); ?> <?php if ( $color_display ) echo '— ' . esc_html( $color_display ); ?></strong>
-			<span><?php echo esc_html( $start_display . ' – ' . $end_display ); ?> (<?php echo esc_html( $num_days ); ?> day<?php echo $num_days !== 1 ? 's' : ''; ?>)</span>
-			<span>Daily Rate: ₱<?php echo esc_html( number_format( $daily_rate ) ); ?> | Total: <strong class="text-gold">₱<?php echo esc_html( number_format( $total ) ); ?></strong></span>
+	<!-- Vehicle Showcase -->
+	<?php
+	// Parse car specs — extract only Engine, Power, Performance
+	$car_specs_raw   = function_exists( 'get_field' ) ? get_field( 'car_specs', $car_id ) : '';
+	$specs_lines     = $car_specs_raw ? array_filter( array_map( 'trim', explode( "\n", $car_specs_raw ) ) ) : array();
+	$showcase_specs  = array();
+	$spec_keys       = array( 'engine', 'power', 'performance' );
+
+	foreach ( $specs_lines as $line ) {
+		$parts = explode( ':', $line, 2 );
+		if ( count( $parts ) === 2 ) {
+			$key = strtolower( trim( $parts[0] ) );
+			if ( in_array( $key, $spec_keys, true ) ) {
+				$showcase_specs[] = array(
+					'label' => trim( $parts[0] ),
+					'value' => trim( $parts[1] ),
+				);
+			}
+		}
+	}
+
+	// Use a larger image for the showcase
+	$showcase_img = '';
+	if ( $color && function_exists( 'obsidian_get_color_variants' ) ) {
+		$variants = obsidian_get_color_variants( $car_id );
+		$c_lower  = strtolower( $color );
+		if ( isset( $variants[ $c_lower ]['images'][0] ) ) {
+			$showcase_img = wp_get_attachment_image_url( (int) $variants[ $c_lower ]['images'][0], 'large' );
+		}
+	}
+	if ( ! $showcase_img ) {
+		$showcase_img = get_the_post_thumbnail_url( $car_id, 'large' ) ?: '';
+	}
+	?>
+	<div class="obp-vehicle-showcase">
+		<div class="obp-showcase-hero">
+			<?php if ( $showcase_img ) : ?>
+				<img src="<?php echo esc_url( $showcase_img ); ?>" alt="<?php echo esc_attr( $car_name ); ?>" class="obp-showcase-img" />
+			<?php endif; ?>
+			<h3 class="obp-showcase-name"><?php echo esc_html( $car_name ); ?> <span class="text-gold"><?php echo esc_html( $color_display ); ?></span></h3>
+		</div>
+		<div class="obp-showcase-bottom">
+			<div class="obp-showcase-specs">
+				<?php if ( ! empty( $showcase_specs ) ) : ?>
+					<p class="obp-showcase-specs-title"><strong>Specifications</strong></p>
+					<?php foreach ( $showcase_specs as $spec ) : ?>
+						<p class="obp-showcase-spec-line"><strong><?php echo esc_html( $spec['label'] ); ?>:</strong> <?php echo esc_html( $spec['value'] ); ?></p>
+					<?php endforeach; ?>
+				<?php endif; ?>
+			</div>
+			<div class="obp-showcase-total">
+				<span class="obp-showcase-total-label">Total Amount</span>
+				<span class="obp-showcase-total-value">₱<?php echo esc_html( number_format( $total + $deposit, 2 ) ); ?></span>
+			</div>
 		</div>
 	</div>
 
 	<!-- Payment Form -->
 	<form id="obsidian-payment-form" class="obsidian-bf-form" novalidate>
 
-		<!-- Payment Option -->
-		<div class="obp-section">
-			<h3 class="obp-section-title">Payment Option</h3>
-			<div class="obp-payment-options">
-				<label class="obp-payment-option">
-					<input type="radio" name="payment_option" value="down" checked />
-					<span class="obp-option-radio"></span>
-					<div class="obp-option-content">
-						<strong>Down Payment — ₱<?php echo esc_html( number_format( $half_payment ) ); ?> (50%)</strong>
-						<span>Balance of ₱<?php echo esc_html( number_format( $total - $half_payment ) ); ?> due at pickup</span>
-					</div>
-				</label>
-				<label class="obp-payment-option">
-					<input type="radio" name="payment_option" value="full" />
-					<span class="obp-option-radio"></span>
-					<div class="obp-option-content">
-						<strong>Full Prepayment — ₱<?php echo esc_html( number_format( $total ) ); ?> (100%)</strong>
-						<span>No balance due at pickup</span>
-					</div>
-				</label>
-			</div>
-		</div>
+
 
 		<!-- Security Deposit -->
 		<div class="obp-section obp-deposit-info">
@@ -218,8 +241,8 @@ $color_display = ucfirst( $color );
 		<!-- Charge Summary -->
 		<div class="obp-charge-summary">
 			<div class="obp-charge-line">
-				<span>Rental (<span id="obp-payment-label">50% down payment</span>)</span>
-				<span id="obp-rental-amount">₱<?php echo esc_html( number_format( $half_payment ) ); ?></span>
+				<span>Rental (<span id="obp-payment-label">100% full prepayment</span>)</span>
+				<span id="obp-rental-amount">₱<?php echo esc_html( number_format( $total ) ); ?></span>
 			</div>
 			<div class="obp-charge-line">
 				<span>Security deposit (refundable)</span>
@@ -227,14 +250,8 @@ $color_display = ucfirst( $color );
 			</div>
 			<div class="obp-charge-total">
 				<span>You will be charged</span>
-				<span id="obp-charge-total">₱<?php echo esc_html( number_format( $charge_half ) ); ?></span>
+				<span id="obp-charge-total">₱<?php echo esc_html( number_format( $total + $deposit ) ); ?></span>
 			</div>
-			<?php if ( $total > $half_payment ) : ?>
-			<div class="obp-charge-balance" id="obp-balance-line">
-				<span>Balance at pickup</span>
-				<span id="obp-balance-amount">₱<?php echo esc_html( number_format( $total - $half_payment ) ); ?></span>
-			</div>
-			<?php endif; ?>
 		</div>
 
 		<!-- Submit -->
