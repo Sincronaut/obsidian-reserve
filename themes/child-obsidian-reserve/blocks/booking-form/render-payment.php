@@ -99,7 +99,7 @@ $color_display = ucfirst( $color );
 
 	<!-- Header -->
 	<div class="obsidian-bf-header">
-		<h1 class="obsidian-bf-title"><span class="text-gold">Payment</span></h1>
+		<h1 class="obsidian-bf-title"><span class="text-gold">Payment Form</span></h1>
 	</div>
 
 	<!-- Progress Stepper -->
@@ -132,28 +132,7 @@ $color_display = ucfirst( $color );
 	<!-- Payment Form -->
 	<form id="obsidian-payment-form" class="obsidian-bf-form" novalidate>
 
-		<!-- Payment Option -->
-		<div class="obp-section">
-			<h3 class="obp-section-title">Payment Option</h3>
-			<div class="obp-payment-options">
-				<label class="obp-payment-option">
-					<input type="radio" name="payment_option" value="down" checked />
-					<span class="obp-option-radio"></span>
-					<div class="obp-option-content">
-						<strong>Down Payment — ₱<?php echo esc_html( number_format( $half_payment ) ); ?> (50%)</strong>
-						<span>Balance of ₱<?php echo esc_html( number_format( $total - $half_payment ) ); ?> due at pickup</span>
-					</div>
-				</label>
-				<label class="obp-payment-option">
-					<input type="radio" name="payment_option" value="full" />
-					<span class="obp-option-radio"></span>
-					<div class="obp-option-content">
-						<strong>Full Prepayment — ₱<?php echo esc_html( number_format( $total ) ); ?> (100%)</strong>
-						<span>No balance due at pickup</span>
-					</div>
-				</label>
-			</div>
-		</div>
+
 
 		<!-- Security Deposit -->
 		<div class="obp-section obp-deposit-info">
@@ -218,8 +197,8 @@ $color_display = ucfirst( $color );
 		<!-- Charge Summary -->
 		<div class="obp-charge-summary">
 			<div class="obp-charge-line">
-				<span>Rental (<span id="obp-payment-label">50% down payment</span>)</span>
-				<span id="obp-rental-amount">₱<?php echo esc_html( number_format( $half_payment ) ); ?></span>
+				<span>Rental (<span id="obp-payment-label">100% full prepayment</span>)</span>
+				<span id="obp-rental-amount">₱<?php echo esc_html( number_format( $total ) ); ?></span>
 			</div>
 			<div class="obp-charge-line">
 				<span>Security deposit (refundable)</span>
@@ -227,14 +206,8 @@ $color_display = ucfirst( $color );
 			</div>
 			<div class="obp-charge-total">
 				<span>You will be charged</span>
-				<span id="obp-charge-total">₱<?php echo esc_html( number_format( $charge_half ) ); ?></span>
+				<span id="obp-charge-total">₱<?php echo esc_html( number_format( $total + $deposit ) ); ?></span>
 			</div>
-			<?php if ( $total > $half_payment ) : ?>
-			<div class="obp-charge-balance" id="obp-balance-line">
-				<span>Balance at pickup</span>
-				<span id="obp-balance-amount">₱<?php echo esc_html( number_format( $total - $half_payment ) ); ?></span>
-			</div>
-			<?php endif; ?>
 		</div>
 
 		<!-- Submit -->
