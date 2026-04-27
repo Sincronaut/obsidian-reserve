@@ -393,5 +393,184 @@ body.obsidian-admin .tagsdiv .newtag { color: var(--ob-text); }
   .obm-actions { flex-direction: column; }
   .obm-deny-group { flex-direction: column; width: 100%; }
   .obm-deny-group input { width: 100%; }
+  .obsidian-dw-stats { grid-template-columns: 1fr 1fr; }
 }
 
+/* =============================================================
+   PHASE 5 — Dashboard Widgets
+   ============================================================= */
+
+/* Dashboard postbox dark chrome */
+body.obsidian-dashboard #dashboard-widgets .postbox {
+  background: var(--ob-surface); border-color: var(--ob-border);
+  border-radius: var(--ob-radius); box-shadow: var(--ob-shadow);
+}
+body.obsidian-dashboard #dashboard-widgets .postbox .postbox-header {
+  background: var(--ob-surface-2); border-color: var(--ob-border);
+  border-radius: var(--ob-radius) var(--ob-radius) 0 0;
+}
+body.obsidian-dashboard #dashboard-widgets .postbox .postbox-header h2 {
+  color: var(--ob-text); font-family: var(--ob-font);
+}
+body.obsidian-dashboard #dashboard-widgets .postbox .inside {
+  color: var(--ob-text); font-family: var(--ob-font);
+}
+
+/* ── Bookings Pipeline Widget ── */
+.obsidian-dw-stats {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  padding-bottom: 16px; border-bottom: 1px solid var(--ob-border, #eee); margin-bottom: 16px;
+}
+.obsidian-dw-stat {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 12px; background: var(--ob-surface-2, #f6f7f7);
+  border-radius: var(--ob-radius-sm, 4px); font-size: 13px;
+  font-family: var(--ob-font, inherit);
+  border-left: 3px solid var(--ob-border);
+}
+.obsidian-dw-stat-count {
+  font-size: 22px; font-weight: 700; line-height: 1;
+}
+.obsidian-dw-stat-label {
+  font-size: 11px; color: var(--ob-text-2, #666);
+  text-transform: uppercase; letter-spacing: .04em; font-weight: 600;
+}
+.obsidian-dw-heading {
+  margin: 0 0 10px; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px; color: var(--ob-text-2, #666);
+}
+.obsidian-dw-list { margin: 0; padding: 0; list-style: none; }
+.obsidian-dw-item {
+  padding: 10px 0; border-bottom: 1px solid var(--ob-border, #f0f0f0);
+  font-size: 13px; font-family: var(--ob-font, inherit);
+}
+.obsidian-dw-item:last-child { border-bottom: none; }
+.obsidian-dw-item-main strong { color: var(--ob-text, inherit); }
+.obsidian-dw-sep { color: var(--ob-border, #bbb); margin: 0 4px; }
+.obsidian-dw-item-meta {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 4px; font-size: 12px; color: var(--ob-text-2, #888);
+}
+.obsidian-dw-review {
+  margin-left: auto; color: var(--ob-gold, #2271b1);
+  text-decoration: none; font-weight: 600;
+}
+.obsidian-dw-review:hover { text-decoration: underline; }
+.obsidian-dw-urgent {
+  background: rgba(245,127,23,.08); margin: 0 -12px; padding: 10px 12px;
+  border-radius: var(--ob-radius-sm, 0);
+}
+.obsidian-dw-urgent-badge { color: #ffb74d; font-weight: 600; }
+.obsidian-dw-empty { color: var(--ob-text-2, #999); font-style: italic; font-size: 13px; }
+.obsidian-dw-footer {
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px solid var(--ob-border, #eee); text-align: center;
+}
+.obsidian-dw-footer a {
+  font-size: 13px; font-weight: 600; text-decoration: none;
+  color: var(--ob-gold, #2271b1);
+}
+.obsidian-dw-footer a:hover { text-decoration: underline; }
+
+/* ── Branch Utilization Widget ── */
+.obsidian-bu-region + .obsidian-bu-region {
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--ob-border, #eee);
+}
+.obsidian-bu-region-title {
+  margin: 0 0 8px; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .6px; color: var(--ob-text-2, #666);
+  font-family: var(--ob-font, inherit);
+}
+.obsidian-bu-list { margin: 0; padding: 0; list-style: none; }
+.obsidian-bu-item + .obsidian-bu-item { margin-top: 10px; }
+.obsidian-bu-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; margin-bottom: 4px; font-family: var(--ob-font, inherit);
+}
+.obsidian-bu-name {
+  font-weight: 600; text-decoration: none; color: var(--ob-text, #1d2327);
+}
+.obsidian-bu-name:hover { text-decoration: underline; color: var(--ob-gold); }
+.obsidian-bu-status {
+  font-size: 10px; text-transform: uppercase; padding: 2px 6px;
+  border-radius: 10px; background: #f0b849; color: #1d2327;
+  font-weight: 600; letter-spacing: .4px;
+}
+.obsidian-bu-status-coming_soon { background: #f0b849; }
+.obsidian-bu-status-closed { background: #d63638; color: #fff; }
+.obsidian-bu-count {
+  margin-left: auto; color: var(--ob-text-2, #50575e); font-variant-numeric: tabular-nums;
+}
+.obsidian-bu-percent { color: var(--ob-text-2, #787c82); margin-left: 2px; }
+.obsidian-bu-view {
+  margin-left: 4px; color: var(--ob-gold, #2271b1); text-decoration: none; font-size: 14px;
+}
+.obsidian-bu-view:hover { text-decoration: underline; }
+.obsidian-bu-bar {
+  height: 6px; background: var(--ob-surface-2, #f0f0f1);
+  border-radius: 3px; overflow: hidden;
+}
+.obsidian-bu-bar-fill {
+  height: 100%; background: var(--ob-gold, #2271b1);
+  border-radius: 3px; transition: width .6s ease;
+  animation: ob-barGrow .8s ease-out;
+}
+.obsidian-bu-bar-fill.is-warm { background: #f0b849; }
+.obsidian-bu-bar-fill.is-hot { background: #ef5350; }
+.obsidian-bu-bar-empty {
+  padding: 0 8px; line-height: 16px; font-size: 11px;
+  color: var(--ob-text-2, #888); font-style: italic;
+}
+.obsidian-bu-empty { color: var(--ob-text-2, #999); font-style: italic; font-size: 13px; }
+.obsidian-bu-footer {
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px solid var(--ob-border, #eee); text-align: center;
+}
+.obsidian-bu-footer a {
+  font-size: 13px; font-weight: 600; text-decoration: none;
+  color: var(--ob-gold, #2271b1);
+}
+.obsidian-bu-footer a:hover { text-decoration: underline; }
+
+/* =============================================================
+   PHASE 7 — Polish & Micro-Interactions
+   ============================================================= */
+
+/* Bar grow animation for utilization widget */
+@keyframes ob-barGrow { from { max-width: 0; } to { max-width: 100%; } }
+
+/* Smooth transitions on all interactive elements */
+body.obsidian-admin a { transition: color .15s ease; }
+body.obsidian-admin .postbox { transition: box-shadow .2s ease; }
+body.obsidian-admin .postbox:hover { box-shadow: var(--ob-shadow-lg); }
+
+/* Toast-style feedback positioning */
+.obm-feedback {
+  position: relative; margin-top: 12px; padding: 10px 16px;
+  font-size: 13px; font-family: var(--ob-font, inherit);
+  animation: ob-fadeIn .3s ease;
+}
+
+/* Subtle gold accent line on the booking detail meta box */
+body.obsidian-admin #obsidian_booking_details .postbox-header {
+  border-top: 3px solid var(--ob-gold);
+  border-radius: 0;
+}
+
+/* Focus-visible outlines for accessibility */
+body.obsidian-admin :focus-visible {
+  outline: 2px solid var(--ob-gold);
+  outline-offset: 2px;
+}
+
+/* Smooth page entrance */
+body.obsidian-admin .wrap {
+  animation: ob-fadeIn .4s ease;
+}
+
+/* Print-friendly: strip dark bg */
+@media print {
+  body.obsidian-admin #wpcontent { background: #fff; }
+  body.obsidian-admin .wp-list-table tbody tr { background: #fff; }
+  body.obsidian-admin .postbox { background: #fff; border: 1px solid #ddd; box-shadow: none; }
+}

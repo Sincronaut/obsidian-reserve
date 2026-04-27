@@ -116,7 +116,6 @@ function obsidian_render_branch_utilization_widget() {
 			esc_url( admin_url( 'post-new.php?post_type=location' ) )
 		);
 		echo '</p>';
-		obsidian_render_branch_utilization_styles();
 		return;
 	}
 
@@ -196,8 +195,6 @@ function obsidian_render_branch_utilization_widget() {
 		</a>
 	</div>
 	<?php
-
-	obsidian_render_branch_utilization_styles();
 }
 
 /**
@@ -295,115 +292,3 @@ function obsidian_count_branch_active_today( $branch_id, $today ) {
 	return (int) $query->found_posts;
 }
 
-/**
- * Inline styles for the widget — kept here so the widget is fully
- * self-contained (no admin.css enqueue needed on the dashboard).
- */
-function obsidian_render_branch_utilization_styles() {
-	?>
-	<style>
-		.obsidian-bu-region + .obsidian-bu-region {
-			margin-top: 14px;
-			padding-top: 12px;
-			border-top: 1px solid #eee;
-		}
-		.obsidian-bu-region-title {
-			margin: 0 0 8px;
-			font-size: 11px;
-			font-weight: 700;
-			text-transform: uppercase;
-			letter-spacing: 0.6px;
-			color: #666;
-		}
-		.obsidian-bu-list {
-			margin: 0;
-			padding: 0;
-			list-style: none;
-		}
-		.obsidian-bu-item + .obsidian-bu-item {
-			margin-top: 10px;
-		}
-		.obsidian-bu-row {
-			display: flex;
-			align-items: center;
-			gap: 8px;
-			font-size: 13px;
-			margin-bottom: 4px;
-		}
-		.obsidian-bu-name {
-			font-weight: 600;
-			text-decoration: none;
-			color: #1d2327;
-		}
-		.obsidian-bu-name:hover {
-			text-decoration: underline;
-		}
-		.obsidian-bu-status {
-			font-size: 10px;
-			text-transform: uppercase;
-			padding: 2px 6px;
-			border-radius: 10px;
-			background: #f0b849;
-			color: #1d2327;
-			font-weight: 600;
-			letter-spacing: 0.4px;
-		}
-		.obsidian-bu-status-coming_soon { background: #f0b849; }
-		.obsidian-bu-status-closed     { background: #d63638; color: #fff; }
-		.obsidian-bu-count {
-			margin-left: auto;
-			color: #50575e;
-			font-variant-numeric: tabular-nums;
-		}
-		.obsidian-bu-percent {
-			color: #787c82;
-			margin-left: 2px;
-		}
-		.obsidian-bu-view {
-			margin-left: 4px;
-			color: #2271b1;
-			text-decoration: none;
-			font-size: 14px;
-		}
-		.obsidian-bu-view:hover {
-			text-decoration: underline;
-		}
-		.obsidian-bu-bar {
-			height: 6px;
-			background: #f0f0f1;
-			border-radius: 3px;
-			overflow: hidden;
-		}
-		.obsidian-bu-bar-fill {
-			height: 100%;
-			background: #2271b1;
-			transition: width 0.3s ease;
-		}
-		.obsidian-bu-bar-fill.is-warm { background: #f0b849; }
-		.obsidian-bu-bar-fill.is-hot  { background: #d63638; }
-		.obsidian-bu-bar-empty {
-			padding: 0 8px;
-			line-height: 16px;
-			font-size: 11px;
-			color: #888;
-			font-style: italic;
-		}
-		.obsidian-bu-empty {
-			color: #999;
-			font-style: italic;
-			font-size: 13px;
-		}
-		.obsidian-bu-footer {
-			margin-top: 14px;
-			padding-top: 12px;
-			border-top: 1px solid #eee;
-			text-align: center;
-		}
-		.obsidian-bu-footer a {
-			font-size: 13px;
-			font-weight: 500;
-			text-decoration: none;
-		}
-	</style>
-	<?php
-}
