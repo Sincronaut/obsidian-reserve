@@ -146,6 +146,18 @@
 					returnTimeDisplay.textContent = t || '—';
 				}
 			};
+
+			flatpickr(deliveryTimeInput, {
+				enableTime: true,
+				noCalendar: true,
+				dateFormat: 'h:i K',
+				minuteIncrement: 15,
+				onChange: function () {
+					syncReturnTime();
+					validateDelivery();
+				}
+			});
+
 			deliveryTimeInput.addEventListener('input', syncReturnTime);
 			deliveryTimeInput.addEventListener('change', syncReturnTime);
 		}
