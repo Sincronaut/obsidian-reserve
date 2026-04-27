@@ -6,13 +6,13 @@
 /* ---- Meta Box Notices ---- */
 
 .obsidian-meta-notice {
-    color: #666;
+    color: var(--ob-text-2, #666);
     font-style: italic;
     padding: 12px 0;
 }
 
 .obsidian-meta-description {
-    color: #555;
+    color: var(--ob-text-2, #555);
     margin-bottom: 16px;
 }
 
@@ -63,8 +63,8 @@
 
 .obsidian-variant-row {
     padding: 16px;
-    background: #f9f9f9;
-    border: 1px solid #e0e0e0;
+    background: var(--ob-surface-2, #f9f9f9);
+    border: 1px solid var(--ob-border, #e0e0e0);
     border-radius: 6px;
 }
 
@@ -76,7 +76,7 @@
     gap: 12px;
     margin-bottom: 14px;
     padding-bottom: 12px;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid var(--ob-border, #e0e0e0);
 }
 
 .variant-swatch {
@@ -84,7 +84,7 @@
     height: 28px;
     border-radius: 50%;
     flex-shrink: 0;
-    border: 2px solid #ccc;
+    border: 2px solid var(--ob-border, #ccc);
 }
 
 .variant-label {
@@ -138,8 +138,8 @@
     aspect-ratio: 1;
     border-radius: 4px;
     overflow: hidden;
-    background: #eee;
-    border: 1px dashed #ccc;
+    background: var(--ob-bg, #eee);
+    border: 1px dashed var(--ob-border, #ccc);
 }
 
 .variant-image-preview img {
@@ -189,7 +189,7 @@
    ============================================================ */
 
 .obsidian-col-muted {
-    color: #999;
+    color: var(--ob-text-2, #999);
     font-size: 12px;
 }
 
@@ -219,14 +219,15 @@
     text-transform: uppercase;
     letter-spacing: 0.3px;
     line-height: 1.6;
+    font-family: var(--ob-font, inherit);
 }
 .obsidian-badge-local {
-    background: #e8f5e9;
-    color: #2e7d32;
+    background: rgba(46,125,50,.15);
+    color: #81c784;
 }
 .obsidian-badge-intl {
-    background: #e3f2fd;
-    color: #1565c0;
+    background: rgba(21,101,192,.15);
+    color: #64b5f6;
 }
 
 /* ── Status Badges ── */
@@ -248,55 +249,20 @@
     border-radius: 50%;
     flex-shrink: 0;
 }
-.obsidian-status-pending {
-    background: #fff8e1;
-    color: #f57f17;
-}
-.obsidian-status-pending::before {
-    background: #f57f17;
-}
-.obsidian-status-awaiting {
-    background: #e3f2fd;
-    color: #1565c0;
-}
-.obsidian-status-awaiting::before {
-    background: #1565c0;
-}
-.obsidian-status-paid {
-    background: #e8f5e9;
-    color: #2e7d32;
-}
-.obsidian-status-paid::before {
-    background: #2e7d32;
-}
-.obsidian-status-confirmed {
-    background: #e8f5e9;
-    color: #1b5e20;
-}
-.obsidian-status-confirmed::before {
-    background: #1b5e20;
-}
-.obsidian-status-active {
-    background: #e0f2f1;
-    color: #00695c;
-}
-.obsidian-status-active::before {
-    background: #00695c;
-}
-.obsidian-status-completed {
-    background: #f3e5f5;
-    color: #6a1b9a;
-}
-.obsidian-status-completed::before {
-    background: #6a1b9a;
-}
-.obsidian-status-denied {
-    background: #ffebee;
-    color: #c62828;
-}
-.obsidian-status-denied::before {
-    background: #c62828;
-}
+.obsidian-status-pending { background: rgba(245,127,23,.12); color: #ffb74d; }
+.obsidian-status-pending::before { background: #ffb74d; animation: ob-pulse 2s infinite; }
+.obsidian-status-awaiting { background: rgba(21,101,192,.12); color: #64b5f6; }
+.obsidian-status-awaiting::before { background: #64b5f6; }
+.obsidian-status-paid { background: rgba(46,125,50,.12); color: #81c784; }
+.obsidian-status-paid::before { background: #81c784; }
+.obsidian-status-confirmed { background: rgba(27,94,32,.12); color: #66bb6a; }
+.obsidian-status-confirmed::before { background: #66bb6a; }
+.obsidian-status-active { background: rgba(0,105,92,.12); color: #4db6ac; }
+.obsidian-status-active::before { background: #4db6ac; }
+.obsidian-status-completed { background: rgba(106,27,154,.12); color: #ba68c8; }
+.obsidian-status-completed::before { background: #ba68c8; }
+.obsidian-status-denied { background: rgba(198,40,40,.12); color: #ef5350; }
+.obsidian-status-denied::before { background: #ef5350; }
 
 /* ============================================================
    Booking Detail Meta Box
@@ -304,6 +270,7 @@
 
 .obsidian-booking-detail {
     margin: -6px -12px -12px;
+    color: var(--ob-text, #1d2327);
 }
 
 /* ── Status Banner ── */
@@ -312,9 +279,10 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 16px;
+    padding: 14px 16px;
     font-size: 14px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--ob-border, #eee);
+    font-family: var(--ob-font, inherit);
 }
 .obm-status-dot {
     width: 10px;
@@ -322,20 +290,20 @@
     border-radius: 50%;
     flex-shrink: 0;
 }
-.obm-status-pending_review  { background: #fff8e1; }
-.obm-status-pending_review .obm-status-dot { background: #f57f17; }
-.obm-status-awaiting_payment { background: #e3f2fd; }
-.obm-status-awaiting_payment .obm-status-dot { background: #1565c0; }
-.obm-status-paid { background: #e8f5e9; }
-.obm-status-paid .obm-status-dot { background: #2e7d32; }
-.obm-status-confirmed { background: #e8f5e9; }
-.obm-status-confirmed .obm-status-dot { background: #1b5e20; }
-.obm-status-active { background: #e0f2f1; }
-.obm-status-active .obm-status-dot { background: #00695c; }
-.obm-status-completed { background: #f3e5f5; }
-.obm-status-completed .obm-status-dot { background: #6a1b9a; }
-.obm-status-denied { background: #ffebee; }
-.obm-status-denied .obm-status-dot { background: #c62828; }
+.obm-status-pending_review  { background: rgba(245,127,23,.1); }
+.obm-status-pending_review .obm-status-dot { background: #ffb74d; animation: ob-pulse 2s infinite; }
+.obm-status-awaiting_payment { background: rgba(21,101,192,.1); }
+.obm-status-awaiting_payment .obm-status-dot { background: #64b5f6; }
+.obm-status-paid { background: rgba(46,125,50,.1); }
+.obm-status-paid .obm-status-dot { background: #81c784; }
+.obm-status-confirmed { background: rgba(27,94,32,.1); }
+.obm-status-confirmed .obm-status-dot { background: #66bb6a; }
+.obm-status-active { background: rgba(0,105,92,.1); }
+.obm-status-active .obm-status-dot { background: #4db6ac; }
+.obm-status-completed { background: rgba(106,27,154,.1); }
+.obm-status-completed .obm-status-dot { background: #ba68c8; }
+.obm-status-denied { background: rgba(198,40,40,.1); }
+.obm-status-denied .obm-status-dot { background: #ef5350; }
 
 .obm-denial-reason {
     color: #999;
@@ -346,7 +314,7 @@
 
 .obm-section {
     padding: 16px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--ob-border, #eee);
 }
 .obm-section:last-child {
     border-bottom: none;
@@ -357,10 +325,11 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #444;
+    color: var(--ob-gold, #444);
+    font-family: var(--ob-font, inherit);
 }
 .obm-muted {
-    color: #999;
+    color: var(--ob-text-2, #999);
     font-size: 12px;
 }
 
@@ -376,14 +345,15 @@
     padding: 6px 12px 6px 0;
     font-weight: 600;
     font-size: 13px;
-    color: #555;
+    color: var(--ob-text-2, #555);
     vertical-align: top;
 }
 .obm-table td {
     padding: 6px 0;
     font-size: 13px;
-    color: #1d2327;
+    color: var(--ob-text, #1d2327);
 }
+.obm-table td a { color: var(--ob-gold, #2271b1); }
 
 /* ── Documents ── */
 
@@ -428,7 +398,7 @@
 /* ── Actions ── */
 
 .obm-actions-section {
-    background: #fafafa;
+    background: var(--ob-surface-2, #fafafa);
 }
 .obm-actions {
     display: flex;
@@ -497,7 +467,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 2px;
-    border-bottom: 2px solid #c3c4c7;
+    border-bottom: 2px solid var(--ob-border, #c3c4c7);
     margin-bottom: 0;
 }
 
@@ -506,27 +476,29 @@
     align-items: center;
     gap: 8px;
     padding: 10px 14px;
-    margin-bottom: -2px; /* sit on the bottom border */
-    background: #f6f7f7;
-    border: 1px solid #c3c4c7;
-    border-bottom: 2px solid #c3c4c7;
+    margin-bottom: -2px;
+    background: var(--ob-surface-2, #f6f7f7);
+    border: 1px solid var(--ob-border, #c3c4c7);
+    border-bottom: 2px solid var(--ob-border, #c3c4c7);
     border-radius: 4px 4px 0 0;
     cursor: pointer;
     font-size: 13px;
-    color: #50575e;
-    transition: background 0.15s ease, color 0.15s ease;
+    color: var(--ob-text-2, #50575e);
+    transition: background .15s ease, color .15s ease;
+    font-family: var(--ob-font, inherit);
 }
 
 .obsidian-tab:hover {
-    background: #fff;
-    color: #1d2327;
+    background: var(--ob-hover, #fff);
+    color: var(--ob-text, #1d2327);
 }
 
 .obsidian-tab.is-active {
-    background: #fff;
-    color: #1d2327;
+    background: var(--ob-surface, #fff);
+    color: var(--ob-text, #1d2327);
     font-weight: 600;
-    border-bottom-color: #fff;
+    border-bottom-color: var(--ob-surface, #fff);
+    border-top: 2px solid var(--ob-gold, #2271b1);
 }
 
 .obsidian-tab .tab-label {
@@ -573,9 +545,9 @@
 
 /* Tab panels */
 .obsidian-tab-panels {
-    border: 1px solid #c3c4c7;
+    border: 1px solid var(--ob-border, #c3c4c7);
     border-top: none;
-    background: #fff;
+    background: var(--ob-surface, #fff);
     padding: 16px;
     border-radius: 0 0 4px 4px;
 }
@@ -589,7 +561,7 @@
 
 /* Per-branch units table */
 .obsidian-branch-units-table {
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--ob-border, #e0e0e0);
 }
 
 .obsidian-branch-units-table th,
@@ -646,8 +618,8 @@
     flex-wrap: wrap;
     padding: 10px 12px;
     margin-bottom: 12px;
-    background: #f6f7f7;
-    border: 1px solid #dcdcde;
+    background: var(--ob-surface-2, #f6f7f7);
+    border: 1px solid var(--ob-border, #dcdcde);
     border-radius: 4px;
 }
 

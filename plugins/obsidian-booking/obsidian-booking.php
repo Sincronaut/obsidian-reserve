@@ -180,8 +180,11 @@ function obsidian_booking_admin_assets($hook)
 {
    global $post_type;
 
-   // Only load on our CPT screens
-   if (!in_array($post_type, array('car', 'booking'), true)) {
+   // Load on our CPT screens + dashboard
+   $is_our_cpt   = in_array($post_type, array('car', 'booking', 'location'), true);
+   $is_dashboard  = ($hook === 'index.php');
+
+   if (!$is_our_cpt && !$is_dashboard) {
       return;
    }
 
@@ -190,27 +193,67 @@ function obsidian_booking_admin_assets($hook)
       wp_enqueue_media();
    }
 
+   // Google Fonts — Inter
    wp_enqueue_style(
-      'obsidian-booking-admin',
-      OBSIDIAN_BOOKING_URL . 'assets/css/admin.css',
+      'obsidian-admin-font',
+      'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
       array(),
+      null
+   );
+
+   wp_enqueue_style(
+      'obsidian-admin-dark',
+      OBSIDIAN_BOOKING_URL . 'assets/css/admin-dark.css',
+      array('obsidian-admin-font'),
       OBSIDIAN_BOOKING_VERSION
    );
 
-   wp_enqueue_script(
+   wp_enqueue_style(
       'obsidian-booking-admin',
-      OBSIDIAN_BOOKING_URL . 'assets/js/admin-booking.js',
-      array('jquery'),
-      OBSIDIAN_BOOKING_VERSION,
-      true
+      OBSIDIAN_BOOKING_URL . 'assets/css/admin.css',
+      array('obsidian-admin-dark'),
+      OBSIDIAN_BOOKING_VERSION
    );
 
-   wp_localize_script('obsidian-booking-admin', 'obsidianAdmin', array(
-      'ajaxUrl' => admin_url('admin-ajax.php'),
-      'nonce' => wp_create_nonce('obsidian_admin_nonce'),
-   ));
+   // Admin JS — only on CPT screens (not dashboard)
+   if ($is_our_cpt) {
+      wp_enqueue_script(
+         'obsidian-booking-admin',
+         OBSIDIAN_BOOKING_URL . 'assets/js/admin-booking.js',
+         array('jquery'),
+         OBSIDIAN_BOOKING_VERSION,
+         true
+      );
+
+      wp_localize_script('obsidian-booking-admin', 'obsidianAdmin', array(
+         'ajaxUrl' => admin_url('admin-ajax.php'),
+         'nonce' => wp_create_nonce('obsidian_admin_nonce'),
+      ));
+   }
 }
 add_action('admin_enqueue_scripts', 'obsidian_booking_admin_assets');
+
+/**
+ * Add a body class on our admin screens so CSS stays scoped.
+ * Dark-theme styles target `body.obsidian-admin` — they never
+ * leak into Posts, Pages, Settings, or any other WP screen.
+ */
+function obsidian_admin_body_class($classes)
+{
+   $screen = get_current_screen();
+   if (!$screen) {
+      return $classes;
+   }
+
+   if (in_array($screen->post_type, array('car', 'booking', 'location'), true)) {
+      $classes .= ' obsidian-admin';
+   }
+   if ($screen->id === 'dashboard') {
+      $classes .= ' obsidian-admin obsidian-dashboard';
+   }
+   return $classes;
+}
+add_filter('admin_body_class', 'obsidian_admin_body_class');
 
 /* ──────────────────────────────────────────────
    Booking Modal (Phase 5)

@@ -26,7 +26,7 @@ function obsidian_booking_columns( $columns ) {
 		'booking_type'     => __( 'Type', 'obsidian-booking' ),
 		'booking_status'   => __( 'Status', 'obsidian-booking' ),
 		'booking_total'    => __( 'Total', 'obsidian-booking' ),
-		'date'             => $columns['date'],
+		'booking_actions'  => __( 'Actions', 'obsidian-booking' ),
 	);
 }
 add_filter( 'manage_booking_posts_columns', 'obsidian_booking_columns' );
@@ -40,6 +40,7 @@ function obsidian_booking_column_content( $column, $post_id ) {
 
 		case 'booking_car':
 			$car_id = (int) get_post_meta( $post_id, '_booking_car_id', true );
+			printf( '<span class="obsidian-col-ref">BK-%s</span>', esc_html( str_pad( $post_id, 4, '0', STR_PAD_LEFT ) ) );
 			if ( $car_id && get_post( $car_id ) ) {
 				printf(
 					'<a href="%s"><strong>%s</strong></a>',
@@ -166,6 +167,23 @@ function obsidian_booking_column_content( $column, $post_id ) {
 			} else {
 				echo '<span class="obsidian-col-muted">—</span>';
 			}
+			break;
+
+		case 'booking_actions':
+			$edit_url  = get_edit_post_link( $post_id );
+			$trash_url = get_delete_post_link( $post_id );
+			echo '<div class="obsidian-row-actions">';
+			printf(
+				'<a href="%s" class="obsidian-action-btn obsidian-action-edit" title="%s"><span class="dashicons dashicons-visibility"></span></a>',
+				esc_url( $edit_url ),
+				esc_attr__( 'View / Edit', 'obsidian-booking' )
+			);
+			printf(
+				'<a href="%s" class="obsidian-action-btn obsidian-action-trash" title="%s"><span class="dashicons dashicons-trash"></span></a>',
+				esc_url( $trash_url ),
+				esc_attr__( 'Move to Trash', 'obsidian-booking' )
+			);
+			echo '</div>';
 			break;
 	}
 }
