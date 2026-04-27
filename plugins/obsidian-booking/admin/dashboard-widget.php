@@ -78,12 +78,11 @@ function obsidian_render_dashboard_widget() {
 		<!-- Stats -->
 		<div class="obsidian-dw-stats">
 			<?php foreach ( $statuses as $key => $info ) : ?>
-				<div class="obsidian-dw-stat">
-					<span class="obsidian-dw-stat-icon"><?php echo $info['icon']; ?></span>
-					<span class="obsidian-dw-stat-label"><?php echo esc_html( $info['label'] ); ?>:</span>
-					<strong class="obsidian-dw-stat-count" style="color:<?php echo esc_attr( $info['color'] ); ?>">
+				<div class="obsidian-dw-stat" style="border-left: 3px solid <?php echo esc_attr( $info['color'] ); ?>">
+					<span class="obsidian-dw-stat-count" style="color:<?php echo esc_attr( $info['color'] ); ?>">
 						<?php echo esc_html( $counts[ $key ] ); ?>
-					</strong>
+					</span>
+					<span class="obsidian-dw-stat-label"><?php echo esc_html( $info['label'] ); ?></span>
 				</div>
 			<?php endforeach; ?>
 		</div>
@@ -150,100 +149,5 @@ function obsidian_render_dashboard_widget() {
 			<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=booking' ) ); ?>">View All Bookings →</a>
 		</div>
 	</div>
-
-	<style>
-		.obsidian-dw-stats {
-			display: flex;
-			flex-direction: column;
-			gap: 6px;
-			padding-bottom: 14px;
-			border-bottom: 1px solid #eee;
-			margin-bottom: 14px;
-		}
-		.obsidian-dw-stat {
-			display: flex;
-			align-items: center;
-			gap: 6px;
-			font-size: 13px;
-		}
-		.obsidian-dw-stat-icon {
-			width: 20px;
-			text-align: center;
-		}
-		.obsidian-dw-stat-count {
-			margin-left: auto;
-			font-size: 15px;
-		}
-		.obsidian-dw-heading {
-			margin: 0 0 10px;
-			font-size: 12px;
-			font-weight: 600;
-			text-transform: uppercase;
-			letter-spacing: 0.5px;
-			color: #666;
-		}
-		.obsidian-dw-list {
-			margin: 0;
-			padding: 0;
-			list-style: none;
-		}
-		.obsidian-dw-item {
-			padding: 8px 0;
-			border-bottom: 1px solid #f0f0f0;
-			font-size: 13px;
-		}
-		.obsidian-dw-item:last-child {
-			border-bottom: none;
-		}
-		.obsidian-dw-item-main {
-			font-size: 13px;
-		}
-		.obsidian-dw-sep {
-			color: #bbb;
-			margin: 0 4px;
-		}
-		.obsidian-dw-item-meta {
-			display: flex;
-			align-items: center;
-			gap: 8px;
-			margin-top: 3px;
-			font-size: 12px;
-			color: #888;
-		}
-		.obsidian-dw-review {
-			margin-left: auto;
-			color: #2271b1;
-			text-decoration: none;
-			font-weight: 500;
-		}
-		.obsidian-dw-review:hover {
-			text-decoration: underline;
-		}
-		.obsidian-dw-urgent {
-			background: #fff8e1;
-			margin: 0 -12px;
-			padding: 8px 12px;
-		}
-		.obsidian-dw-urgent-badge {
-			color: #f57f17;
-			font-weight: 600;
-		}
-		.obsidian-dw-empty {
-			color: #999;
-			font-style: italic;
-			font-size: 13px;
-		}
-		.obsidian-dw-footer {
-			margin-top: 14px;
-			padding-top: 12px;
-			border-top: 1px solid #eee;
-			text-align: center;
-		}
-		.obsidian-dw-footer a {
-			font-size: 13px;
-			font-weight: 500;
-			text-decoration: none;
-		}
-	</style>
 	<?php
 }
