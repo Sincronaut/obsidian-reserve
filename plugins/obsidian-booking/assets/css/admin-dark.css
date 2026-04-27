@@ -387,6 +387,56 @@ body.obsidian-admin #tagsdiv-region .inside {
 body.obsidian-admin .categorydiv .category-tabs li a,
 body.obsidian-admin .tagsdiv .newtag { color: var(--ob-text); }
 
+/* =============================================================
+   Flatpickr Dark Theme (Admin)
+   ============================================================= */
+.flatpickr-calendar {
+  background: var(--ob-surface) !important;
+  border: 1px solid var(--ob-border) !important;
+  border-radius: var(--ob-radius) !important;
+  box-shadow: var(--ob-shadow-lg) !important;
+  font-family: var(--ob-font) !important;
+}
+.flatpickr-day {
+  color: var(--ob-text) !important;
+  border-radius: var(--ob-radius-sm) !important;
+}
+.flatpickr-day:hover {
+  background: var(--ob-hover) !important;
+  border-color: var(--ob-border) !important;
+}
+.flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange {
+  background: var(--ob-gold) !important;
+  border-color: var(--ob-gold) !important;
+  color: var(--ob-text-inv) !important;
+}
+.flatpickr-day.inRange {
+  background: var(--ob-hover) !important;
+  box-shadow: none !important;
+}
+.flatpickr-day.flatpickr-disabled {
+  color: var(--ob-border) !important;
+}
+.flatpickr-months .flatpickr-month,
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+  color: var(--ob-text) !important;
+}
+.flatpickr-current-month .flatpickr-monthDropdown-months option {
+  background-color: var(--ob-surface) !important;
+  color: var(--ob-text) !important;
+}
+.flatpickr-current-month input.cur-year {
+  color: var(--ob-text) !important;
+}
+.flatpickr-weekday {
+  color: var(--ob-text-2) !important;
+  font-weight: 600 !important;
+}
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+  fill: var(--ob-gold) !important;
+}
+
 /* ── Responsive ── */
 @media (max-width: 782px) {
   .obm-grid { grid-template-columns: 1fr; }

@@ -550,6 +550,11 @@ body.obsidian-modal-open {
    color: #FFFFFF !important;
 }
 
+.flatpickr-current-month .flatpickr-monthDropdown-months option {
+   background-color: #1A1A1A !important;
+   color: #FFFFFF !important;
+}
+
 .flatpickr-current-month input.cur-year {
    color: #FFFFFF !important;
 }
