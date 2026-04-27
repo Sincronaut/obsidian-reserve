@@ -105,9 +105,12 @@ function obsidian_render_booking_meta_box( $post ) {
 			<?php endif; ?>
 		</div>
 
+		<!-- Two-column grid: Summary + Customer -->
+		<div class="obm-grid">
+
 		<!-- Booking Summary -->
-		<div class="obm-section">
-			<h4 class="obm-section-title">Booking Summary</h4>
+		<div class="obm-card">
+			<h4 class="obm-section-title"><span class="dashicons dashicons-car"></span> Booking Summary</h4>
 			<table class="obm-table">
 				<tr>
 					<th>Car</th>
@@ -157,8 +160,8 @@ function obsidian_render_booking_meta_box( $post ) {
 		</div>
 
 		<!-- Customer Info -->
-		<div class="obm-section">
-			<h4 class="obm-section-title">Customer Info</h4>
+		<div class="obm-card">
+			<h4 class="obm-section-title"><span class="dashicons dashicons-admin-users"></span> Customer Info</h4>
 			<table class="obm-table">
 				<tr>
 					<th>Name</th>
@@ -230,11 +233,12 @@ function obsidian_render_booking_meta_box( $post ) {
 				<?php endif; ?>
 			</table>
 		</div>
+		</div><!-- /.obm-grid -->
 
 		<!-- Delivery Info -->
 		<?php if ( $delivery_dropoff || $delivery_date || $return_address ) : ?>
 		<div class="obm-section">
-			<h4 class="obm-section-title">Delivery Info</h4>
+			<h4 class="obm-section-title"><span class="dashicons dashicons-location"></span> Delivery Info</h4>
 			<table class="obm-table">
 				<?php if ( $delivery_contact ) : ?>
 				<tr>
@@ -296,7 +300,7 @@ function obsidian_render_booking_meta_box( $post ) {
 
 		<!-- Uploaded Documents -->
 		<div class="obm-section">
-			<h4 class="obm-section-title">Uploaded Documents</h4>
+			<h4 class="obm-section-title"><span class="dashicons dashicons-media-document"></span> Uploaded Documents</h4>
 			<?php if ( empty( $docs ) ) : ?>
 				<p class="obm-muted">No documents uploaded.</p>
 			<?php else : ?>
@@ -337,9 +341,10 @@ function obsidian_render_booking_meta_box( $post ) {
 							<?php if ( $mime && strpos( $mime, 'image/' ) === 0 ) : ?>
 								<a href="<?php echo esc_url( $url ); ?>" target="_blank" class="obm-doc-preview">
 									<img src="<?php echo esc_url( $url ); ?>" alt="<?php echo esc_attr( $label ); ?>" />
+									<span class="obm-doc-overlay"><span class="dashicons dashicons-visibility"></span> View Full Size</span>
 								</a>
 							<?php else : ?>
-								<a href="<?php echo esc_url( $url ); ?>" target="_blank" class="button button-small">View PDF</a>
+								<a href="<?php echo esc_url( $url ); ?>" target="_blank" class="button button-small"><span class="dashicons dashicons-pdf"></span> View PDF</a>
 							<?php endif; ?>
 						</div>
 					<?php endforeach; ?>
@@ -349,7 +354,7 @@ function obsidian_render_booking_meta_box( $post ) {
 
 		<!-- Admin Notes -->
 		<div class="obm-section">
-			<h4 class="obm-section-title">Admin Notes <span class="obm-muted">(internal only)</span></h4>
+			<h4 class="obm-section-title"><span class="dashicons dashicons-edit"></span> Admin Notes <span class="obm-muted">(internal only)</span></h4>
 			<textarea id="obm-admin-notes" class="obm-textarea" rows="3" placeholder="Add internal notes about this booking..."><?php echo esc_textarea( $admin_notes ); ?></textarea>
 			<button type="button" id="obm-save-notes" class="button" data-booking-id="<?php echo esc_attr( $booking_id ); ?>">Save Notes</button>
 		</div>
@@ -357,15 +362,15 @@ function obsidian_render_booking_meta_box( $post ) {
 		<!-- Actions -->
 		<?php if ( $status === 'pending_review' ) : ?>
 		<div class="obm-section obm-actions-section">
-			<h4 class="obm-section-title">Actions</h4>
+			<h4 class="obm-section-title"><span class="dashicons dashicons-yes-alt"></span> Actions</h4>
 			<div class="obm-actions">
-				<button type="button" id="obm-approve" class="button button-primary button-large obm-action-btn" data-booking-id="<?php echo esc_attr( $booking_id ); ?>">
-					Approve Documents
+				<button type="button" id="obm-approve" class="obm-btn obm-btn-approve" data-booking-id="<?php echo esc_attr( $booking_id ); ?>">
+					<span class="dashicons dashicons-yes"></span> Approve Documents
 				</button>
 				<div class="obm-deny-group">
 					<input type="text" id="obm-denial-reason" class="regular-text" placeholder="Reason for denial (required)" />
-					<button type="button" id="obm-deny" class="button button-large obm-action-btn obm-deny-btn" data-booking-id="<?php echo esc_attr( $booking_id ); ?>" disabled>
-						Deny
+					<button type="button" id="obm-deny" class="obm-btn obm-btn-deny" data-booking-id="<?php echo esc_attr( $booking_id ); ?>" disabled>
+						<span class="dashicons dashicons-no"></span> Deny
 					</button>
 				</div>
 			</div>
@@ -374,20 +379,20 @@ function obsidian_render_booking_meta_box( $post ) {
 
 		<?php if ( $status === 'confirmed' ) : ?>
 		<div class="obm-section obm-actions-section">
-			<h4 class="obm-section-title">Actions</h4>
-			<button type="button" id="obm-mark-active" class="button button-primary button-large obm-action-btn" data-booking-id="<?php echo esc_attr( $booking_id ); ?>">
-				Mark as Active
+			<h4 class="obm-section-title"><span class="dashicons dashicons-yes-alt"></span> Actions</h4>
+			<button type="button" id="obm-mark-active" class="obm-btn obm-btn-approve" data-booking-id="<?php echo esc_attr( $booking_id ); ?>">
+				<span class="dashicons dashicons-controls-play"></span> Mark as Active
 			</button>
 		</div>
 		<?php endif; ?>
 
 		<?php if ( $status === 'active' ) : ?>
 		<div class="obm-section obm-actions-section">
-			<h4 class="obm-section-title">Actions</h4>
-			<button type="button" id="obm-mark-completed" class="button button-primary button-large obm-action-btn" data-booking-id="<?php echo esc_attr( $booking_id ); ?>">
-				Mark as Completed
+			<h4 class="obm-section-title"><span class="dashicons dashicons-yes-alt"></span> Actions</h4>
+			<button type="button" id="obm-mark-completed" class="obm-btn obm-btn-approve" data-booking-id="<?php echo esc_attr( $booking_id ); ?>">
+				<span class="dashicons dashicons-saved"></span> Mark as Completed
 			</button>
-			<p class="obm-muted" style="margin-top:8px;">Remember to process the security deposit refund.</p>
+			<p class="obm-muted" style="margin-top:8px;"><span class="dashicons dashicons-warning" style="font-size:14px;width:14px;height:14px;"></span> Remember to process the security deposit refund.</p>
 		</div>
 		<?php endif; ?>
 

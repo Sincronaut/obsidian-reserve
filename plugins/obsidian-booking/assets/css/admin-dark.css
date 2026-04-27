@@ -1,0 +1,397 @@
+/* =============================================================
+   Obsidian Admin — Dark Theme Foundation + Booking List
+   Scoped to body.obsidian-admin so nothing else is affected.
+   ============================================================= */
+
+/* ── Design Tokens ── */
+body.obsidian-admin {
+  --ob-bg:         #111318;
+  --ob-surface:    #1a1d24;
+  --ob-surface-2:  #22262e;
+  --ob-hover:      #2a2e38;
+  --ob-border:     #2e333d;
+  --ob-border-focus:#c9a962;
+  --ob-text:       #e8e9eb;
+  --ob-text-2:     #d4b96e;
+  --ob-text-inv:   #111318;
+  --ob-gold:       #c9a962;
+  --ob-gold-h:     #b8943f;
+  --ob-gold-soft:  rgba(201,169,98,.12);
+  --ob-radius:     8px;
+  --ob-radius-sm:  4px;
+  --ob-shadow:     0 1px 3px rgba(0,0,0,.3);
+  --ob-shadow-lg:  0 4px 16px rgba(0,0,0,.4);
+  --ob-font:       'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+}
+
+/* ── Global Wrapper ── */
+body.obsidian-admin #wpcontent { background: var(--ob-bg); }
+body.obsidian-admin #wpbody-content { padding-bottom: 40px; }
+body.obsidian-admin .wrap { font-family: var(--ob-font); }
+body.obsidian-admin .wrap h1.wp-heading-inline,
+body.obsidian-admin .wrap > h1 { color: var(--ob-text); font-weight: 700; letter-spacing: -.02em; }
+body.obsidian-admin .page-title-action {
+  background: transparent; color: var(--ob-gold); border: 1px solid var(--ob-gold);
+  border-radius: var(--ob-radius-sm); transition: all .2s;
+}
+body.obsidian-admin .page-title-action:hover { background: var(--ob-gold); color: var(--ob-text-inv); }
+body.obsidian-admin .subsubsub { color: var(--ob-text-2); }
+body.obsidian-admin .subsubsub a { color: var(--ob-text); }
+body.obsidian-admin .subsubsub a:hover,
+body.obsidian-admin .subsubsub a.current { color: var(--ob-gold); }
+body.obsidian-admin .search-box input[type="search"] {
+  background: var(--ob-surface); color: var(--ob-text); border-color: var(--ob-border);
+}
+body.obsidian-admin .search-box input[type="search"]:focus { border-color: var(--ob-gold); box-shadow: 0 0 0 1px var(--ob-gold); }
+body.obsidian-admin .search-box .button { background: var(--ob-surface-2); color: var(--ob-text); border-color: var(--ob-border); }
+
+/* ── Notices ── */
+body.obsidian-admin .notice { border-radius: var(--ob-radius-sm); }
+
+/* ── Filter Toolbar ── */
+body.obsidian-admin .tablenav .actions select,
+body.obsidian-admin .tablenav .actions .button-action {
+  background: var(--ob-surface); color: var(--ob-text); border: 1px solid var(--ob-border);
+  border-radius: var(--ob-radius-sm);
+}
+body.obsidian-admin .tablenav .actions select:focus { border-color: var(--ob-gold); }
+body.obsidian-admin .tablenav .tablenav-pages { color: var(--ob-text-2); }
+body.obsidian-admin .tablenav .tablenav-pages a { color: var(--ob-text); background: var(--ob-surface); border-color: var(--ob-border); }
+body.obsidian-admin .tablenav .tablenav-pages a:hover { border-color: var(--ob-gold); color: var(--ob-gold); }
+body.obsidian-admin .tablenav .displaying-num { color: var(--ob-text-2); }
+
+/* ── List Table ── */
+body.obsidian-admin .wp-list-table { border-collapse: separate; border-spacing: 0 6px; background: transparent; border: none; }
+body.obsidian-admin .wp-list-table thead th,
+body.obsidian-admin .wp-list-table thead td { background: var(--ob-surface); color: var(--ob-text-2); border-bottom: 2px solid var(--ob-border); font-family: var(--ob-font); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; padding: 10px 12px; }
+body.obsidian-admin .wp-list-table thead th a { color: var(--ob-text-2); }
+body.obsidian-admin .wp-list-table thead th a:hover,
+body.obsidian-admin .wp-list-table thead .sorted a { color: var(--ob-gold); }
+body.obsidian-admin .wp-list-table thead .sorting-indicators .sorting-indicator { color: var(--ob-text-2); }
+
+body.obsidian-admin .wp-list-table tbody tr {
+  background: var(--ob-surface); border-radius: var(--ob-radius); transition: all .2s;
+}
+body.obsidian-admin .wp-list-table tbody tr:hover { background: var(--ob-hover); }
+body.obsidian-admin .wp-list-table tbody tr td,
+body.obsidian-admin .wp-list-table tbody tr th { border: none; padding: 14px 12px; color: var(--ob-text); font-family: var(--ob-font); vertical-align: middle; }
+body.obsidian-admin .wp-list-table tbody tr td:first-child,
+body.obsidian-admin .wp-list-table tbody tr th:first-child { border-radius: var(--ob-radius) 0 0 var(--ob-radius); }
+body.obsidian-admin .wp-list-table tbody tr td:last-child { border-radius: 0 var(--ob-radius) var(--ob-radius) 0; }
+body.obsidian-admin .wp-list-table tbody tr td a { color: var(--ob-gold); text-decoration: none; }
+body.obsidian-admin .wp-list-table tbody tr td a:hover { color: #e0c478; text-decoration: underline; }
+body.obsidian-admin .wp-list-table tbody tr td strong { color: var(--ob-text); }
+
+/* Hide default WP row actions — we have our own Actions column */
+body.obsidian-admin .wp-list-table .row-actions { display: none !important; }
+
+body.obsidian-admin .wp-list-table tfoot th,
+body.obsidian-admin .wp-list-table tfoot td { background: var(--ob-surface); color: var(--ob-text-2); border-top: 2px solid var(--ob-border); }
+
+/* Striped override */
+body.obsidian-admin .wp-list-table.striped > tbody > :nth-child(odd) { background: var(--ob-surface); }
+body.obsidian-admin .wp-list-table.striped > tbody > :nth-child(even) { background: var(--ob-surface-2); }
+body.obsidian-admin .wp-list-table.striped > tbody > tr:hover { background: var(--ob-hover); }
+
+/* Checkbox column */
+body.obsidian-admin .wp-list-table .check-column input[type="checkbox"] {
+  accent-color: var(--ob-gold);
+}
+
+/* ── Booking Ref ID ── */
+.obsidian-col-ref {
+  display: block; font-size: 10px; font-weight: 600; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--ob-text-2); margin-bottom: 2px;
+}
+
+/* ── Row Actions Column ── */
+.obsidian-row-actions { display: flex; gap: 6px; }
+.obsidian-action-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: var(--ob-radius-sm);
+  background: var(--ob-surface-2); border: 1px solid var(--ob-border);
+  color: var(--ob-text-2); text-decoration: none; transition: all .2s;
+}
+.obsidian-action-btn:hover { color: var(--ob-text); border-color: var(--ob-text-2); background: var(--ob-hover); text-decoration: none; }
+.obsidian-action-btn .dashicons { font-size: 16px; width: 16px; height: 16px; }
+.obsidian-action-edit:hover { color: var(--ob-gold); border-color: var(--ob-gold); }
+.obsidian-action-trash:hover { color: #ef5350; border-color: #ef5350; }
+
+/* ── Postbox / Meta Box Chrome ── */
+body.obsidian-admin .postbox {
+  background: var(--ob-surface); border: 1px solid var(--ob-border);
+  border-radius: var(--ob-radius); box-shadow: var(--ob-shadow);
+}
+body.obsidian-admin .postbox .postbox-header {
+  border-bottom: 1px solid var(--ob-border); background: var(--ob-surface-2);
+  border-radius: var(--ob-radius) var(--ob-radius) 0 0;
+}
+body.obsidian-admin .postbox .postbox-header h2,
+body.obsidian-admin .postbox .hndle { color: var(--ob-text); font-family: var(--ob-font); font-size: 13px; font-weight: 600; }
+body.obsidian-admin .postbox .inside { color: var(--ob-text); }
+body.obsidian-admin .postbox .handle-actions button { color: var(--ob-text-2); }
+
+/* ── Form Controls (on our screens) ── */
+body.obsidian-admin input[type="text"],
+body.obsidian-admin input[type="number"],
+body.obsidian-admin input[type="email"],
+body.obsidian-admin input[type="url"],
+body.obsidian-admin input[type="search"],
+body.obsidian-admin input[type="tel"],
+body.obsidian-admin textarea,
+body.obsidian-admin select {
+  background: var(--ob-bg); color: var(--ob-text); border: 1px solid var(--ob-border);
+  border-radius: var(--ob-radius-sm); font-family: var(--ob-font);
+}
+body.obsidian-admin input:focus,
+body.obsidian-admin textarea:focus,
+body.obsidian-admin select:focus { border-color: var(--ob-gold); box-shadow: 0 0 0 1px var(--ob-gold); outline: none; }
+body.obsidian-admin .button {
+  background: var(--ob-surface-2); color: var(--ob-text); border-color: var(--ob-border);
+  font-family: var(--ob-font); border-radius: var(--ob-radius-sm);
+}
+body.obsidian-admin .button:hover { background: var(--ob-hover); color: var(--ob-text); border-color: var(--ob-text-2); }
+body.obsidian-admin .button-primary {
+  background: var(--ob-gold); color: var(--ob-text-inv); border-color: var(--ob-gold-h);
+}
+body.obsidian-admin .button-primary:hover { background: var(--ob-gold-h); border-color: var(--ob-gold-h); color: var(--ob-text-inv); }
+
+/* ── Editor area (Gutenberg wrapper) ── */
+body.obsidian-admin #poststuff { color: var(--ob-text); }
+body.obsidian-admin #post-body-content,
+body.obsidian-admin #titlediv #title { background: var(--ob-surface); color: var(--ob-text); border-color: var(--ob-border); }
+body.obsidian-admin #titlediv #title-prompt-text { color: var(--ob-text-2); }
+
+/* ── Publish Box ── */
+body.obsidian-admin #submitdiv .inside { background: var(--ob-surface); }
+body.obsidian-admin .misc-pub-section { color: var(--ob-text-2); border-color: var(--ob-border); }
+body.obsidian-admin #major-publishing-actions { background: var(--ob-surface-2); border-color: var(--ob-border); }
+
+/* ── ACF Fields (for Location CPT) ── */
+body.obsidian-admin .acf-fields > .acf-field { border-color: var(--ob-border); }
+body.obsidian-admin .acf-label label { color: var(--ob-text); font-family: var(--ob-font); }
+body.obsidian-admin .acf-input .description,
+body.obsidian-admin .acf-field .description { color: var(--ob-text-2); }
+
+/* ── Animations ── */
+@keyframes ob-pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+@keyframes ob-fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@keyframes ob-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* =============================================================
+   PHASE 2 — Booking Detail Meta Box
+   ============================================================= */
+
+/* Two-column grid for Summary + Customer */
+.obm-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  padding: 16px; border-bottom: 1px solid var(--ob-border, #eee);
+}
+@media (max-width: 960px) { .obm-grid { grid-template-columns: 1fr; } }
+
+/* Cards inside the grid */
+.obm-card {
+  background: var(--ob-surface-2, #f6f7f7); border: 1px solid var(--ob-border, #e0e0e0);
+  border-radius: var(--ob-radius, 8px); padding: 16px;
+}
+.obm-card .obm-section-title { margin-top: 0; }
+
+/* Section title icons */
+.obm-section-title .dashicons {
+  font-size: 16px; width: 16px; height: 16px;
+  vertical-align: -2px; margin-right: 4px; opacity: .7;
+}
+
+/* Document gallery overlay */
+.obm-doc-preview { position: relative; display: block; border-radius: var(--ob-radius-sm, 4px); overflow: hidden; }
+.obm-doc-overlay {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 6px;
+  background: rgba(0,0,0,.6); color: #fff; font-size: 12px; font-weight: 600;
+  opacity: 0; transition: opacity .2s;
+}
+.obm-doc-preview:hover .obm-doc-overlay { opacity: 1; }
+.obm-doc-overlay .dashicons { font-size: 18px; width: 18px; height: 18px; }
+.obm-doc-preview img {
+  border-color: var(--ob-border, #ddd); background: var(--ob-bg, #fafafa);
+}
+
+/* Custom action buttons (Phase 2) */
+.obm-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px; border: none; border-radius: var(--ob-radius-sm, 4px);
+  font-family: var(--ob-font, inherit); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all .2s; line-height: 1;
+}
+.obm-btn .dashicons { font-size: 18px; width: 18px; height: 18px; }
+.obm-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.obm-btn-approve {
+  background: var(--ob-gold, #c9a962); color: var(--ob-text-inv, #111);
+}
+.obm-btn-approve:hover:not(:disabled) { background: var(--ob-gold-h, #b8943f); }
+
+.obm-btn-deny {
+  background: transparent; color: #ef5350;
+  border: 1px solid #ef5350;
+}
+.obm-btn-deny:hover:not(:disabled) { background: #ef5350; color: #fff; }
+
+/* Spinner animation for loading states */
+.ob-spin { animation: ob-spin .8s linear infinite; }
+
+/* AJAX feedback toast */
+.obm-feedback { animation: ob-fadeIn .3s ease; border-radius: var(--ob-radius-sm, 4px); }
+.obm-feedback-success { background: rgba(46,125,50,.15); color: #81c784; border: 1px solid rgba(46,125,50,.3); }
+.obm-feedback-error { background: rgba(198,40,40,.15); color: #ef5350; border: 1px solid rgba(198,40,40,.3); }
+
+/* =============================================================
+   PHASE 3 — Car Edit Screen Polish
+   ============================================================= */
+
+/* Inventory meta box dark overrides */
+body.obsidian-admin .obsidian-branch-units-table {
+  border-color: var(--ob-border);
+}
+body.obsidian-admin .obsidian-branch-units-table th,
+body.obsidian-admin .obsidian-branch-units-table td {
+  color: var(--ob-text); border-color: var(--ob-border);
+}
+body.obsidian-admin .obsidian-branch-units-table thead th {
+  background: var(--ob-surface-2); color: var(--ob-text-2);
+  font-family: var(--ob-font); font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
+}
+body.obsidian-admin .obsidian-branch-units-table tbody tr {
+  transition: background .15s;
+}
+body.obsidian-admin .obsidian-branch-units-table tbody tr:hover {
+  background: var(--ob-hover);
+}
+body.obsidian-admin .obsidian-branch-units-table tfoot th {
+  background: var(--ob-surface-2); color: var(--ob-text-2);
+}
+body.obsidian-admin .obsidian-branch-units-table .branch-units-total {
+  color: var(--ob-gold); font-weight: 700;
+}
+body.obsidian-admin .obsidian-branch-units-table .branch-color-name {
+  color: var(--ob-text);
+}
+body.obsidian-admin .obsidian-branch-units-table .branch-swatch {
+  border-color: var(--ob-border);
+}
+
+/* Stocked toggle — custom appearance */
+body.obsidian-admin .branch-stocked-toggle {
+  accent-color: var(--ob-gold);
+}
+
+/* Greyed-out unstocked rows on dark bg */
+body.obsidian-admin .branch-color-row:not(.is-stocked) .branch-color-name,
+body.obsidian-admin .branch-color-row:not(.is-stocked) .branch-swatch { opacity: .3; }
+body.obsidian-admin .branch-color-row:not(.is-stocked) .branch-units-input {
+  background: var(--ob-bg); color: var(--ob-text-2); cursor: not-allowed;
+}
+
+/* Gallery color variant rows */
+body.obsidian-admin .obsidian-variant-row {
+  background: var(--ob-surface-2); border-color: var(--ob-border);
+}
+body.obsidian-admin .variant-header {
+  border-color: var(--ob-border);
+}
+body.obsidian-admin .variant-label {
+  color: var(--ob-text); font-family: var(--ob-font);
+}
+body.obsidian-admin .variant-image-label {
+  color: var(--ob-text-2);
+}
+body.obsidian-admin .variant-image-preview {
+  background: var(--ob-bg); border-color: var(--ob-border);
+  transition: border-color .2s, box-shadow .2s;
+}
+body.obsidian-admin .variant-image-preview:has(img) {
+  border-style: solid;
+}
+body.obsidian-admin .variant-image-slot:hover .variant-image-preview {
+  border-color: var(--ob-gold); box-shadow: 0 0 0 1px var(--ob-gold-soft);
+}
+
+/* Add branch dropdown */
+body.obsidian-admin .obsidian-add-branch-select {
+  background: var(--ob-bg); color: var(--ob-text); border-color: var(--ob-border);
+}
+body.obsidian-admin .obsidian-add-branch-select:focus {
+  border-color: var(--ob-gold);
+}
+
+/* Tab remove button */
+body.obsidian-admin .obsidian-tab .tab-remove {
+  color: var(--ob-text-2);
+}
+body.obsidian-admin .obsidian-tab .tab-remove:hover {
+  background: #ef5350; color: #fff;
+}
+body.obsidian-admin .obsidian-tab .tab-region {
+  color: var(--ob-text-2);
+}
+
+/* =============================================================
+   PHASE 4 — Location Edit Screen
+   ============================================================= */
+
+/* ACF field group on dark background */
+body.obsidian-admin .acf-fields {
+  background: var(--ob-surface); border-color: var(--ob-border);
+}
+body.obsidian-admin .acf-field {
+  padding: 16px 12px;
+}
+body.obsidian-admin .acf-field input[type="text"],
+body.obsidian-admin .acf-field input[type="number"],
+body.obsidian-admin .acf-field input[type="email"],
+body.obsidian-admin .acf-field input[type="url"],
+body.obsidian-admin .acf-field textarea,
+body.obsidian-admin .acf-field select {
+  background: var(--ob-bg); color: var(--ob-text);
+  border: 1px solid var(--ob-border); border-radius: var(--ob-radius-sm);
+}
+body.obsidian-admin .acf-field input:focus,
+body.obsidian-admin .acf-field textarea:focus,
+body.obsidian-admin .acf-field select:focus {
+  border-color: var(--ob-gold); box-shadow: 0 0 0 1px var(--ob-gold); outline: none;
+}
+
+/* ACF instructions text */
+body.obsidian-admin .acf-field .acf-label label {
+  color: var(--ob-text); font-family: var(--ob-font); font-weight: 600;
+}
+body.obsidian-admin .acf-field .acf-input p.description,
+body.obsidian-admin .acf-field .acf-label p.description {
+  color: var(--ob-text-2); font-size: 12px;
+}
+
+/* ACF select (status field) */
+body.obsidian-admin .acf-field select option {
+  background: var(--ob-surface); color: var(--ob-text);
+}
+
+/* ACF side-by-side fields (lat/lng) */
+body.obsidian-admin .acf-fields.-left > .acf-field {
+  border-color: var(--ob-border);
+}
+
+/* Region taxonomy meta box */
+body.obsidian-admin #regiondiv .inside,
+body.obsidian-admin #tagsdiv-region .inside {
+  color: var(--ob-text);
+}
+body.obsidian-admin .categorydiv .category-tabs li a,
+body.obsidian-admin .tagsdiv .newtag { color: var(--ob-text); }
+
+/* ── Responsive ── */
+@media (max-width: 782px) {
+  .obm-grid { grid-template-columns: 1fr; }
+  .obm-actions { flex-direction: column; }
+  .obm-deny-group { flex-direction: column; width: 100%; }
+  .obm-deny-group input { width: 100%; }
+}
+

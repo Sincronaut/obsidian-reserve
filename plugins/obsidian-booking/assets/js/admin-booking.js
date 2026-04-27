@@ -233,7 +233,7 @@
 		$(document).on('click', '#obm-approve', function() {
 			var $btn = $(this);
 			var bookingId = $btn.data('booking-id');
-			$btn.prop('disabled', true).text('Approving...');
+			$btn.prop('disabled', true).html('<span class="dashicons dashicons-update ob-spin"></span> Approving...');
 
 			bookingAction('approve', bookingId).done(function(res) {
 				if (res.success) {
@@ -241,11 +241,11 @@
 					setTimeout(function() { location.reload(); }, 1200);
 				} else {
 					showFeedback(res.data.message, 'error');
-					$btn.prop('disabled', false).text('Approve Documents');
+					$btn.prop('disabled', false).html('<span class="dashicons dashicons-yes"></span> Approve Documents');
 				}
 			}).fail(function() {
 				showFeedback('Request failed. Please try again.', 'error');
-				$btn.prop('disabled', false).text('Approve Documents');
+				$btn.prop('disabled', false).html('<span class="dashicons dashicons-yes"></span> Approve Documents');
 			});
 		});
 
@@ -260,7 +260,7 @@
 
 			if (!reason) return;
 
-			$btn.prop('disabled', true).text('Denying...');
+			$btn.prop('disabled', true).html('<span class="dashicons dashicons-update ob-spin"></span> Denying...');
 
 			bookingAction('deny', bookingId, { reason: reason }).done(function(res) {
 				if (res.success) {
@@ -268,38 +268,38 @@
 					setTimeout(function() { location.reload(); }, 1200);
 				} else {
 					showFeedback(res.data.message, 'error');
-					$btn.prop('disabled', false).text('Deny');
+					$btn.prop('disabled', false).html('<span class="dashicons dashicons-no"></span> Deny');
 				}
 			}).fail(function() {
 				showFeedback('Request failed. Please try again.', 'error');
-				$btn.prop('disabled', false).text('Deny');
+				$btn.prop('disabled', false).html('<span class="dashicons dashicons-no"></span> Deny');
 			});
 		});
 
 		$(document).on('click', '#obm-mark-active', function() {
 			var $btn = $(this);
-			$btn.prop('disabled', true).text('Updating...');
+			$btn.prop('disabled', true).html('<span class="dashicons dashicons-update ob-spin"></span> Updating...');
 			bookingAction('mark_active', $btn.data('booking-id')).done(function(res) {
 				if (res.success) {
 					showFeedback(res.data.message, 'success');
 					setTimeout(function() { location.reload(); }, 1200);
 				} else {
 					showFeedback(res.data.message, 'error');
-					$btn.prop('disabled', false).text('Mark as Active');
+					$btn.prop('disabled', false).html('<span class="dashicons dashicons-controls-play"></span> Mark as Active');
 				}
 			});
 		});
 
 		$(document).on('click', '#obm-mark-completed', function() {
 			var $btn = $(this);
-			$btn.prop('disabled', true).text('Updating...');
+			$btn.prop('disabled', true).html('<span class="dashicons dashicons-update ob-spin"></span> Updating...');
 			bookingAction('mark_completed', $btn.data('booking-id')).done(function(res) {
 				if (res.success) {
 					showFeedback(res.data.message, 'success');
 					setTimeout(function() { location.reload(); }, 1200);
 				} else {
 					showFeedback(res.data.message, 'error');
-					$btn.prop('disabled', false).text('Mark as Completed');
+					$btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> Mark as Completed');
 				}
 			});
 		});
