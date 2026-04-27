@@ -4,7 +4,7 @@
    ═══════════════════════════════════════════ */
 
 .obsidian-booking-form-wrap {
-	max-width: 720px;
+	max-width: 900px;
 	margin: 120px auto 0;
 	padding: 48px 56px 56px;
 	background: rgba(20, 20, 20, 0.85);
@@ -634,6 +634,99 @@
    PAYMENT PAGE
    ═══════════════════════════════════════════ */
 
+/* ── Vehicle Showcase Card ── */
+.obp-vehicle-showcase {
+	background: rgba(20, 20, 20, 0.9);
+	border: 1px solid rgba(197, 160, 89, 0.4);
+	border-radius: 12px;
+	margin-bottom: 32px;
+	overflow: hidden;
+}
+
+.obp-showcase-hero {
+	text-align: center;
+	padding: 32px 32px 16px;
+}
+
+.obp-showcase-img {
+	max-width: 220px;
+	width: 100%;
+	height: auto;
+	object-fit: contain;
+	margin: 0 auto 16px;
+	display: block;
+}
+
+.obp-showcase-name {
+	font-size: 18px;
+	font-weight: 600;
+	color: #C5A059;
+	margin: 0;
+	letter-spacing: 0.02em;
+}
+
+.obp-showcase-name .text-gold {
+	color: #C5A059;
+}
+
+.obp-showcase-bottom {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	padding: 24px 32px 28px;
+	border-top: 1px solid rgba(197, 160, 89, 0.12);
+	gap: 24px;
+}
+
+.obp-showcase-specs {
+	flex: 1;
+	min-width: 0;
+}
+
+.obp-showcase-specs-title {
+	font-size: 14px;
+	color: #fff;
+	margin: 0 0 10px;
+}
+
+.obp-showcase-specs-title strong {
+	font-weight: 700;
+}
+
+.obp-showcase-spec-line {
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.7);
+	margin: 0 0 6px;
+	line-height: 1.5;
+}
+
+.obp-showcase-spec-line strong {
+	color: #fff;
+	font-weight: 600;
+}
+
+.obp-showcase-total {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	flex-shrink: 0;
+	gap: 4px;
+	padding-top: 4px;
+}
+
+.obp-showcase-total-label {
+	font-size: 14px;
+	font-weight: 600;
+	color: rgba(255, 255, 255, 0.65);
+}
+
+.obp-showcase-total-value {
+	font-size: 28px;
+	font-weight: 700;
+	color: #fff;
+	letter-spacing: -0.01em;
+}
+
 /* Section headings */
 .obp-section-title {
 	font-size: 16px;
@@ -1149,6 +1242,32 @@
 
 	.obp-card-row {
 		grid-template-columns: 1fr;
+	}
+
+	.obp-showcase-bottom {
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+	}
+
+	.obp-showcase-specs {
+		text-align: left;
+		width: 100%;
+	}
+
+	.obp-showcase-total {
+		align-items: center;
+		width: 100%;
+		padding-top: 16px;
+		border-top: 1px solid rgba(197, 160, 89, 0.1);
+	}
+
+	.obp-showcase-hero {
+		padding: 24px 20px 12px;
+	}
+
+	.obp-showcase-bottom {
+		padding: 20px;
 	}
 
 	.obc-totals-header {
