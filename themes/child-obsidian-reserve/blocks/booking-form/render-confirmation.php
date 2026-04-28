@@ -57,6 +57,22 @@ if ( function_exists( 'get_field' ) ) {
 }
 $specs_lines = $car_specs ? array_filter( array_map( 'trim', explode( "\n", $car_specs ) ) ) : array();
 
+// Match the payment page showcase specs (engine, power, performance only)
+$showcase_specs = array();
+$spec_keys      = array( 'engine', 'power', 'performance' );
+foreach ( $specs_lines as $line ) {
+	$parts = explode( ':', $line, 2 );
+	if ( count( $parts ) === 2 ) {
+		$key = strtolower( trim( $parts[0] ) );
+		if ( in_array( $key, $spec_keys, true ) ) {
+			$showcase_specs[] = array(
+				'label' => trim( $parts[0] ),
+				'value' => trim( $parts[1] ),
+			);
+		}
+	}
+}
+
 // Car image
 $variant_img = '';
 if ( $color && function_exists( 'obsidian_get_color_variants' ) ) {
@@ -70,6 +86,19 @@ if ( ! $variant_img ) {
 	$variant_img = get_the_post_thumbnail_url( $car_id, 'medium_large' ) ?: '';
 }
 
+// Use a larger image for the confirmation car card (match payment page)
+$showcase_img = '';
+if ( $color && function_exists( 'obsidian_get_color_variants' ) ) {
+	$variants = obsidian_get_color_variants( $car_id );
+	$c_lower  = strtolower( $color );
+	if ( isset( $variants[ $c_lower ]['images'][0] ) ) {
+		$showcase_img = wp_get_attachment_image_url( (int) $variants[ $c_lower ]['images'][0], 'large' );
+	}
+}
+if ( ! $showcase_img ) {
+	$showcase_img = get_the_post_thumbnail_url( $car_id, 'large' ) ?: '';
+}
+
 $color_display = ucfirst( $color );
 
 // ── If already paid, show the "Reserved" success page ──
@@ -77,29 +106,32 @@ if ( $is_paid ) : ?>
 
 <div class="obsidian-booking-form-wrap obsidian-reserved-wrap" id="obsidian-confirmation-wrap">
 
-	<h1 class="obr-title">RESERVED</h1>
-
-	<?php if ( $variant_img ) : ?>
-		<img src="<?php echo esc_url( $variant_img ); ?>" alt="<?php echo esc_attr( $car_name ); ?>" class="obr-car-img" />
-	<?php endif; ?>
-
-	<h3 class="obr-car-name"><?php echo esc_html( $car_name ); ?> <span class="text-gold"><?php echo esc_html( $color_display ); ?></span></h3>
-
-	<?php if ( ! empty( $specs_lines ) ) : ?>
-	<div class="obr-specs">
-		<p class="obr-specs-label"><strong>Specifications</strong></p>
-		<?php foreach ( $specs_lines as $line ) :
-			$parts = explode( ':', $line, 2 );
-			if ( count( $parts ) === 2 ) : ?>
-				<p class="obr-specs-line"><strong><?php echo esc_html( trim( $parts[0] ) ); ?>:</strong> <?php echo esc_html( trim( $parts[1] ) ); ?></p>
-			<?php else : ?>
-				<p class="obr-specs-line"><?php echo esc_html( $line ); ?></p>
-			<?php endif;
-		endforeach; ?>
+	<div class="obsidian-bf-header obr-header-centered">
+		<h1 class="obsidian-bf-title" id="obr-title"><span class="text-gold italic">Reserved</span></h1>
 	</div>
-	<?php endif; ?>
 
-	<div class="obr-actions">
+	<!-- Car Card (same as confirmation page) -->
+	<div class="obp-vehicle-showcase">
+		<div class="obp-showcase-hero">
+			<?php if ( $showcase_img ) : ?>
+				<img src="<?php echo esc_url( $showcase_img ); ?>" alt="<?php echo esc_attr( $car_name ); ?>" class="obp-showcase-img" />
+			<?php endif; ?>
+			<h3 class="obp-showcase-name"><?php echo esc_html( $car_name ); ?> <span class="text-gold"><?php echo esc_html( $color_display ); ?></span></h3>
+		</div>
+		<div class="obp-showcase-bottom">
+			<div class="obp-showcase-specs">
+				<?php if ( ! empty( $showcase_specs ) ) : ?>
+					<p class="obp-showcase-specs-title"><strong>Specifications</strong></p>
+					<?php foreach ( $showcase_specs as $spec ) : ?>
+						<p class="obp-showcase-spec-line"><strong><?php echo esc_html( $spec['label'] ); ?>:</strong> <?php echo esc_html( $spec['value'] ); ?></p>
+					<?php endforeach; ?>
+				<?php endif; ?>
+			</div>
+		</div>
+	</div>
+
+	<!-- Back to Fleet button -->
+	<div class="obsidian-bf-actions obr-actions">
 		<a href="<?php echo esc_url( home_url( '/fleet/' ) ); ?>" class="obsidian-bf-submit">Back to Fleet</a>
 	</div>
 
@@ -161,30 +193,28 @@ if ( $birth_date ) {
 		</div>
 	</div>
 
-	<!-- Car Card -->
-	<div class="obc-car-card">
-		<?php if ( $variant_img ) : ?>
-			<img src="<?php echo esc_url( $variant_img ); ?>" alt="<?php echo esc_attr( $car_name ); ?>" class="obc-car-card-img" />
-		<?php endif; ?>
-		<h3 class="obc-car-card-name"><?php echo esc_html( $car_name ); ?> <span class="text-gold"><?php echo esc_html( $color_display ); ?></span></h3>
-
-		<?php if ( ! empty( $specs_lines ) ) : ?>
-		<div class="obc-specs">
-			<p class="obc-specs-label"><strong>Specifications</strong></p>
-			<?php foreach ( $specs_lines as $line ) :
-				$parts = explode( ':', $line, 2 );
-				if ( count( $parts ) === 2 ) : ?>
-					<p class="obc-specs-line"><strong><?php echo esc_html( trim( $parts[0] ) ); ?>:</strong> <?php echo esc_html( trim( $parts[1] ) ); ?></p>
-				<?php else : ?>
-					<p class="obc-specs-line"><?php echo esc_html( $line ); ?></p>
-				<?php endif;
-			endforeach; ?>
+	<!-- Car Card (match payment page styling, without total amount) -->
+	<div class="obp-vehicle-showcase">
+		<div class="obp-showcase-hero">
+			<?php if ( $showcase_img ) : ?>
+				<img src="<?php echo esc_url( $showcase_img ); ?>" alt="<?php echo esc_attr( $car_name ); ?>" class="obp-showcase-img" />
+			<?php endif; ?>
+			<h3 class="obp-showcase-name"><?php echo esc_html( $car_name ); ?> <span class="text-gold"><?php echo esc_html( $color_display ); ?></span></h3>
 		</div>
-		<?php endif; ?>
+		<div class="obp-showcase-bottom">
+			<div class="obp-showcase-specs">
+				<?php if ( ! empty( $showcase_specs ) ) : ?>
+					<p class="obp-showcase-specs-title"><strong>Specifications</strong></p>
+					<?php foreach ( $showcase_specs as $spec ) : ?>
+						<p class="obp-showcase-spec-line"><strong><?php echo esc_html( $spec['label'] ); ?>:</strong> <?php echo esc_html( $spec['value'] ); ?></p>
+					<?php endforeach; ?>
+				<?php endif; ?>
+			</div>
+		</div>
 	</div>
 
-	<!-- Total Amount -->
-	<div class="obc-totals-card">
+	<!-- Summary + Personal Information (single card) -->
+	<div class="obc-info-card">
 		<div class="obc-totals-header">
 			<span class="obc-totals-label">Total Amount:</span>
 			<span class="obc-totals-value" id="obc-total-display">₱<?php echo esc_html( number_format( $total + $deposit_amt, 2 ) ); ?></span>
@@ -197,10 +227,8 @@ if ( $birth_date ) {
 			<span>Security Deposit</span>
 			<span>₱<?php echo esc_html( number_format( $deposit_amt, 2 ) ); ?></span>
 		</div>
-	</div>
+		<div class="obc-info-divider"></div>
 
-	<!-- Personal Information -->
-	<div class="obc-info-card">
 		<p class="obc-info-heading text-gold italic">Please Confirm the Information is right and correct</p>
 
 		<div class="obc-info-row">
