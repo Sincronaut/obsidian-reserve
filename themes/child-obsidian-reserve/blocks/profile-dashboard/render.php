@@ -71,6 +71,60 @@ if ( ! empty( $recent_bookings ) ) {
 	);
 }
 
+/* ── ALL bookings for the Transaction History modal ── */
+$all_bookings_data = array();
+$all_bookings_query = get_posts( array(
+	'post_type'      => 'booking',
+	'posts_per_page' => -1,
+	'meta_query'     => array(
+		array(
+			'key'   => '_booking_user_id',
+			'value' => $user_id,
+		),
+	),
+	'orderby'  => 'date',
+	'order'    => 'DESC',
+) );
+
+foreach ( $all_bookings_query as $bk ) {
+	$bk_car_id = (int) get_post_meta( $bk->ID, '_booking_car_id', true );
+	$bk_color  = get_post_meta( $bk->ID, '_booking_color', true );
+	$bk_status = get_post_meta( $bk->ID, '_booking_status', true );
+
+	// Get car image
+	$bk_image = '';
+	if ( $bk_color && function_exists( 'obsidian_get_color_variants' ) ) {
+		$bk_variants = obsidian_get_color_variants( $bk_car_id );
+		$bk_c_lower  = strtolower( $bk_color );
+		if ( isset( $bk_variants[ $bk_c_lower ]['images'][0] ) ) {
+			$bk_image = wp_get_attachment_image_url( (int) $bk_variants[ $bk_c_lower ]['images'][0], 'medium' );
+		}
+	}
+	if ( ! $bk_image ) {
+		$bk_image = get_the_post_thumbnail_url( $bk_car_id, 'medium' ) ?: '';
+	}
+
+	$status_labels_all = array(
+		'confirmed'        => 'Confirmed',
+		'paid'             => 'Paid',
+		'awaiting_payment' => 'Awaiting Payment',
+		'pending_review'   => 'Pending Review',
+		'completed'        => 'Completed',
+		'cancelled'        => 'Cancelled',
+		'denied'           => 'Denied',
+	);
+
+	$all_bookings_data[] = array(
+		'id'           => $bk->ID,
+		'date'         => get_the_date( 'F j, Y', $bk ),
+		'car_name'     => get_the_title( $bk_car_id ),
+		'color'        => ucfirst( $bk_color ),
+		'car_image'    => $bk_image,
+		'status'       => $bk_status,
+		'status_label' => $status_labels_all[ $bk_status ] ?? ucfirst( $bk_status ),
+	);
+}
+
 /* ── Upcoming reservations (confirmed / paid / awaiting_payment) ── */
 $upcoming_reservations = array();
 $upcoming_query = get_posts( array(
@@ -249,7 +303,7 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 					<p class="opd-empty">No booking history yet.</p>
 				<?php endif; ?>
 
-				<a href="#" class="opd-history-link">
+				<a href="#" class="opd-history-link" id="opd-history-trigger">
 					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
 					View all Transaction History
 				</a>
@@ -390,6 +444,42 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 		</div>
 	</div>
 
+	<!-- ═══════════════════════════════════════════════
+	     TRANSACTION HISTORY MODAL
+	     ═══════════════════════════════════════════════ -->
+	<div class="opd-modal" id="opd-history-modal" aria-hidden="true">
+		<div class="opd-modal-overlay"></div>
+		<div class="opd-modal-panel opd-history-panel" role="dialog" aria-modal="true" aria-label="Transaction History">
+			<button class="opd-modal-close" id="opd-history-close" aria-label="Close">&times;</button>
+			<h2 class="opd-card-title" style="margin-bottom:28px;"><span class="text-white">Booking</span> <span class="text-gold">History</span> 📋</h2>
+
+			<?php if ( ! empty( $all_bookings_data ) ) : ?>
+				<div class="opd-txn-list">
+					<?php foreach ( $all_bookings_data as $txn ) : ?>
+						<div class="opd-txn-card">
+							<div class="opd-txn-info">
+								<h3 class="opd-txn-car"><?php echo esc_html( $txn['car_name'] ); ?> <span class="text-gold"><?php echo esc_html( $txn['color'] ); ?></span></h3>
+								<div class="opd-txn-meta">
+									<span class="opd-txn-date"><?php echo esc_html( $txn['date'] ); ?></span>
+									<span class="opd-txn-id">(Transac No: <?php echo esc_html( $txn['id'] ); ?>)</span>
+								</div>
+								<span class="opd-txn-status opd-txn-status--<?php echo esc_attr( $txn['status'] ); ?>"><?php echo esc_html( $txn['status_label'] ); ?></span>
+							</div>
+							<?php if ( $txn['car_image'] ) : ?>
+								<div class="opd-txn-img-wrap">
+									<img src="<?php echo esc_url( $txn['car_image'] ); ?>" alt="<?php echo esc_attr( $txn['car_name'] ); ?>" />
+									<span class="opd-txn-img-label"><?php echo esc_html( $txn['car_name'] . ' ' . $txn['color'] ); ?></span>
+								</div>
+							<?php endif; ?>
+						</div>
+					<?php endforeach; ?>
+				</div>
+			<?php else : ?>
+				<p class="opd-empty">No transaction history yet.</p>
+			<?php endif; ?>
+		</div>
+	</div>
+
 </div>
 
 <script>
@@ -426,7 +516,30 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 	cancelBtn.addEventListener('click', closeModal);
 	document.addEventListener('keydown', function(e) {
 		if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') closeModal();
+		if (e.key === 'Escape' && historyModal.getAttribute('aria-hidden') === 'false') closeHistoryModal();
 	});
+
+	// ── Transaction History modal ──
+	var historyModal     = document.getElementById('opd-history-modal');
+	var historyTrigger   = document.getElementById('opd-history-trigger');
+	var historyClose     = document.getElementById('opd-history-close');
+	var historyOverlay   = historyModal.querySelector('.opd-modal-overlay');
+
+	function openHistoryModal() {
+		historyModal.setAttribute('aria-hidden', 'false');
+		document.body.classList.add('opd-modal-open');
+		document.documentElement.classList.add('opd-modal-open');
+	}
+
+	function closeHistoryModal() {
+		historyModal.setAttribute('aria-hidden', 'true');
+		document.body.classList.remove('opd-modal-open');
+		document.documentElement.classList.remove('opd-modal-open');
+	}
+
+	historyTrigger.addEventListener('click', function(e) { e.preventDefault(); openHistoryModal(); });
+	historyClose.addEventListener('click', closeHistoryModal);
+	historyOverlay.addEventListener('click', closeHistoryModal);
 
 	// ── Avatar upload with cropper ──
 	var avatarTrigger = document.getElementById('opd-avatar-trigger');
