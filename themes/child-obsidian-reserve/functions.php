@@ -236,8 +236,32 @@ function obsidian_reserve_register_blocks() {
 	register_block_type( get_stylesheet_directory() . '/blocks/trending-blogs' );
 	register_block_type( get_stylesheet_directory() . '/blocks/top-reads-journal' );
 	register_block_type( get_stylesheet_directory() . '/blocks/blog-grid' );
+	register_block_type( get_stylesheet_directory() . '/blocks/profile-dashboard' );
 }
 add_action( 'init', 'obsidian_reserve_register_blocks' );
+
+/**
+ * Enqueue Cropper.js (CDN) only on the Profile page for avatar cropping.
+ */
+function obsidian_reserve_enqueue_cropper() {
+	if ( ! is_page( 'profile' ) ) {
+		return;
+	}
+	wp_enqueue_style(
+		'cropperjs',
+		'https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css',
+		array(),
+		'1.6.2'
+	);
+	wp_enqueue_script(
+		'cropperjs',
+		'https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js',
+		array(),
+		'1.6.2',
+		true
+	);
+}
+add_action( 'wp_enqueue_scripts', 'obsidian_reserve_enqueue_cropper' );
 
 /* Disable the WordPress Admin Bar on the front-end */
 add_filter( 'show_admin_bar', '__return_false' );
