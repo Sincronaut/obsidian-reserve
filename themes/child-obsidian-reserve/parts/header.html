@@ -3,7 +3,8 @@
     style="padding-left:var(--wp--preset--spacing--section-padding-h);padding-right:var(--wp--preset--spacing--section-padding-h)">
     <!-- wp:html -->
     <a href="/" class="obsidian-logo-link">
-        <img class="obsidian-site-logo-img" src="/wp-content/themes/child-obsidian-reserve/assets/images/logo.webp" alt="Obsidian Reserve">
+        <img class="obsidian-site-logo-img" src="/wp-content/themes/child-obsidian-reserve/assets/images/logo.webp"
+            alt="Obsidian Reserve">
     </a>
     <!-- /wp:html -->
 
@@ -15,7 +16,10 @@
                 [obsidian_locations_menu]
                 <li><a href="/blog/">Blog</a></li>
                 <li class="obsidian-dropdown">
-                    <button class="obsidian-dropdown-toggle">Services <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+                    <button class="obsidian-dropdown-toggle">Services <svg class="chevron" width="12" height="12"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 9l6 6 6-6" />
+                        </svg></button>
                     <ul class="obsidian-dropdown-menu">
                         <li><a href="/services/special-occasion/">Special Ocassion</a></li>
                         <li><a href="/services/airport-delivery/">Airport Delivery</a></li>
@@ -60,25 +64,25 @@
                 document.body.style.overflow = navWrapper.classList.contains('is-active') ? 'hidden' : '';
             }
 
-            if(toggleBtn) {
+            if (toggleBtn) {
                 toggleBtn.addEventListener('click', toggleMobileMenu);
                 overlay.addEventListener('click', toggleMobileMenu);
             }
 
             // Dropdown logic
             const dropdownToggles = document.querySelectorAll('.obsidian-dropdown-toggle');
-            
+
             dropdownToggles.forEach(toggle => {
                 toggle.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     const parent = toggle.closest('.obsidian-dropdown');
-                    
+
                     // Close other dropdowns
                     document.querySelectorAll('.obsidian-dropdown').forEach(d => {
                         if (d !== parent) d.classList.remove('is-active');
                     });
-                    
+
                     parent.classList.toggle('is-active');
                 });
             });
