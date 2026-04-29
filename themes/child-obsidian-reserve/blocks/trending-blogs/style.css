@@ -227,3 +227,27 @@
         height: 55px;
     }
 }
+
+@media (max-width: 480px) {
+    .trending-main-card {
+        min-height: 300px;
+    }
+    
+    .trending-main-content,
+    .trending-list-card {
+        padding: 20px;
+    }
+
+    .trending-list-items {
+        gap: 15px;
+    }
+
+    .trending-item-img-wrap {
+        flex: 0 0 60px;
+        height: 50px;
+    }
+    
+    .trending-item-title {
+        font-size: 14px;
+    }
+}
