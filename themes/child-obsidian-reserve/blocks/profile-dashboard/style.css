@@ -1,0 +1,807 @@
+/* ============================================================
+   Obsidian Profile Dashboard — Styles
+   Dark theme (#0B0B0B) · Gold accents (#C5A059) · Montserrat
+   ============================================================ */
+
+.obsidian-profile-wrap {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 40px 32px 80px;
+	font-family: var(--wp--preset--font-family--montserrat, 'Montserrat', sans-serif);
+	color: #fff;
+}
+
+.obsidian-profile-login {
+	text-align: center;
+	font-size: 16px;
+	padding: 60px 20px;
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.obsidian-profile-login a {
+	color: #C5A059;
+	text-decoration: underline;
+}
+
+/* ── Helper ── */
+.text-gold { color: #C5A059; }
+.text-white { color: #fff; }
+
+/* ============================================================
+   PROFILE HEADER
+   ============================================================ */
+
+.opd-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 32px;
+	background: rgba(20, 20, 20, 0.85);
+	border: 1px solid rgba(197, 160, 89, 0.15);
+	border-radius: 16px;
+	padding: 32px 40px;
+	margin-bottom: 32px;
+}
+
+.opd-header-left {
+	display: flex;
+	align-items: center;
+	gap: 24px;
+	flex: 1;
+	min-width: 0;
+}
+
+.opd-avatar {
+	width: 180px;
+	height: 180px;
+	border-radius: 50%;
+	overflow: hidden;
+	flex-shrink: 0;
+	border: 3px solid rgba(197, 160, 89, 0.35);
+	position: relative;
+	cursor: pointer;
+}
+
+.opd-avatar img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.opd-avatar-overlay {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.55);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	color: #fff;
+}
+
+.opd-avatar:hover .opd-avatar-overlay {
+	opacity: 1;
+}
+
+/* Loading overlay — shown during upload */
+.opd-avatar-loading {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.7);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	z-index: 2;
+}
+
+.opd-avatar-spinner {
+	width: 24px;
+	height: 24px;
+	border: 3px solid rgba(197, 160, 89, 0.3);
+	border-top-color: #C5A059;
+	border-radius: 50%;
+	animation: opd-avatar-spin 0.7s linear infinite;
+}
+
+@keyframes opd-avatar-spin {
+	to { transform: rotate(360deg); }
+}
+
+.opd-avatar-loading-text {
+	font-size: 11px;
+	color: #C5A059;
+	font-weight: 600;
+	letter-spacing: 0.3px;
+}
+
+.opd-user-info {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	min-width: 0;
+}
+
+.opd-user-top {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	flex-wrap: wrap;
+}
+
+.opd-user-name {
+	font-size: 28px;
+	font-weight: 700;
+	margin: 0;
+	line-height: 1.2;
+	color: #fff;
+}
+
+.opd-tier-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 5px 16px;
+	border: 1px solid #C5A059;
+	border-radius: 100px;
+	font-size: 12px;
+	font-weight: 600;
+	color: #C5A059;
+	letter-spacing: 0.5px;
+}
+
+.opd-notification-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	color: rgba(255, 255, 255, 0.6);
+	cursor: pointer;
+	transition: background 0.2s ease, color 0.2s ease;
+}
+
+.opd-notification-btn:hover {
+	background: rgba(197, 160, 89, 0.15);
+	color: #C5A059;
+}
+
+.opd-user-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px 24px;
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.6);
+}
+
+.opd-user-meta a {
+	color: #C5A059;
+	text-decoration: none;
+}
+
+.opd-user-meta a:hover {
+	text-decoration: underline;
+}
+
+/* Header actions */
+.opd-header-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	flex-shrink: 0;
+}
+
+.opd-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 12px 32px;
+	border-radius: 6px;
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 600;
+	text-decoration: none;
+	cursor: pointer;
+	transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+	white-space: nowrap;
+	text-align: center;
+}
+
+.opd-btn-edit {
+	background: rgba(197, 160, 89, 0.15);
+	border: 1px solid #C5A059;
+	color: #C5A059;
+}
+
+.opd-btn-edit:hover {
+	background: #C5A059;
+	color: #0B0B0B;
+}
+
+.opd-btn-logout {
+	background: transparent;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.opd-btn-logout:hover {
+	border-color: #ff4444;
+	color: #ff6b6b;
+}
+
+/* ============================================================
+   CONTENT GRID
+   ============================================================ */
+
+.opd-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 32px;
+	align-items: start;
+}
+
+.opd-col-left {
+	display: flex;
+	flex-direction: column;
+	gap: 32px;
+}
+
+.opd-col-right {
+	display: flex;
+	flex-direction: column;
+	gap: 32px;
+}
+
+/* ── Card base ── */
+
+.opd-card {
+	background: rgba(20, 20, 20, 0.85);
+	border: 1px solid rgba(197, 160, 89, 0.15);
+	border-radius: 16px;
+	padding: 28px 32px;
+}
+
+.opd-card-title {
+	font-size: 24px;
+	font-weight: 700;
+	margin: 0 0 24px;
+	font-style: italic;
+}
+
+.opd-card-title-plain {
+	font-size: 16px;
+	font-weight: 600;
+	margin: 0;
+	color: rgba(255, 255, 255, 0.85);
+}
+
+.opd-empty {
+	font-size: 14px;
+	color: rgba(255, 255, 255, 0.4);
+	font-style: italic;
+}
+
+/* ============================================================
+   BOOKING HISTORY
+   ============================================================ */
+
+.opd-history-row {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 20px;
+}
+
+.opd-history-label {
+	font-size: 14px;
+	color: rgba(255, 255, 255, 0.5);
+	font-weight: 500;
+}
+
+.opd-history-detail {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 2px;
+}
+
+.opd-history-date {
+	font-size: 14px;
+	font-weight: 600;
+	color: #fff;
+}
+
+.opd-history-txn {
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.4);
+}
+
+.opd-history-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 13px;
+	color: #C5A059;
+	text-decoration: none;
+	font-weight: 500;
+	transition: opacity 0.2s ease;
+}
+
+.opd-history-link:hover {
+	opacity: 0.75;
+}
+
+/* ============================================================
+   UPCOMING RESERVATIONS
+   ============================================================ */
+
+.opd-reservation-card {
+	border: 1px solid rgba(197, 160, 89, 0.25);
+	border-radius: 12px;
+	padding: 20px 24px;
+	text-align: center;
+	margin-bottom: 16px;
+}
+
+.opd-reservation-card:last-of-type {
+	margin-bottom: 0;
+}
+
+.opd-reservation-status {
+	display: inline-block;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 1px;
+	color: #C5A059;
+	margin-bottom: 12px;
+}
+
+.opd-reservation-img {
+	width: 180px;
+	height: 110px;
+	margin: 0 auto 16px;
+	overflow: hidden;
+	border-radius: 8px;
+}
+
+.opd-reservation-img img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	display: block;
+}
+
+.opd-reservation-name {
+	font-size: 15px;
+	font-weight: 700;
+	margin: 0 0 12px;
+	color: #C5A059;
+}
+
+.opd-reservation-meta {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.6);
+	margin-bottom: 16px;
+}
+
+.opd-btn-agreement {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 10px 24px;
+	background: #C5A059;
+	border: none;
+	border-radius: 6px;
+	color: #0B0B0B;
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 600;
+	text-decoration: none;
+	cursor: pointer;
+	transition: background 0.2s ease;
+}
+
+.opd-btn-agreement:hover {
+	background: #d4af6a;
+}
+
+/* ============================================================
+   RECENTLY VIEWED ARTICLE
+   ============================================================ */
+
+.opd-article-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 20px;
+}
+
+.opd-article-readmore {
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.5);
+	text-decoration: none;
+	font-weight: 500;
+	transition: color 0.2s ease;
+}
+
+.opd-article-readmore:hover {
+	color: #C5A059;
+}
+
+.opd-article-link {
+	display: block;
+	text-decoration: none;
+	color: inherit;
+	transition: opacity 0.2s ease;
+}
+
+.opd-article-link:hover {
+	opacity: 0.85;
+}
+
+.opd-article-img {
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	overflow: hidden;
+	border-radius: 10px;
+	margin-bottom: 16px;
+	background: #1a1a1a;
+}
+
+.opd-article-img img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.opd-article-title {
+	font-size: 17px;
+	font-weight: 700;
+	color: #fff;
+	margin: 0 0 10px;
+	line-height: 1.4;
+}
+
+.opd-article-excerpt {
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.55);
+	line-height: 1.65;
+	margin: 0;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 900px) {
+	.opd-header {
+		flex-direction: column;
+		align-items: flex-start;
+		padding: 24px;
+	}
+
+	.opd-header-left {
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		width: 100%;
+	}
+
+	.opd-user-top {
+		justify-content: center;
+	}
+
+	.opd-user-meta {
+		justify-content: center;
+	}
+
+	.opd-header-actions {
+		flex-direction: row;
+		width: 100%;
+	}
+
+	.opd-header-actions .opd-btn {
+		flex: 1;
+	}
+
+	.opd-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 480px) {
+	.obsidian-profile-wrap {
+		padding: 20px 16px 60px;
+	}
+
+	.opd-user-name {
+		font-size: 22px;
+	}
+
+	.opd-card {
+		padding: 20px 16px;
+	}
+
+	.opd-card-title {
+		font-size: 20px;
+	}
+}
+
+/* ============================================================
+   EDIT PROFILE MODAL
+   ============================================================ */
+
+/* Scroll lock */
+html.opd-modal-open,
+body.opd-modal-open {
+	overflow: hidden !important;
+	height: 100% !important;
+}
+
+/* Overlay */
+.opd-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 99999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.opd-modal[aria-hidden="true"] {
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+}
+
+.opd-modal[aria-hidden="false"] {
+	opacity: 1;
+	visibility: visible;
+}
+
+.opd-modal-overlay {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.75);
+	backdrop-filter: blur(4px);
+	-webkit-backdrop-filter: blur(4px);
+}
+
+/* Panel */
+.opd-modal-panel {
+	position: relative;
+	width: 90%;
+	max-width: 520px;
+	max-height: 85vh;
+	overflow-y: auto;
+	background: #141414;
+	border: 1px solid rgba(197, 160, 89, 0.25);
+	border-radius: 16px;
+	padding: 36px 32px 32px;
+	z-index: 1;
+}
+
+.opd-modal-close {
+	position: absolute;
+	top: 16px;
+	right: 20px;
+	background: none;
+	border: none;
+	color: rgba(255, 255, 255, 0.5);
+	font-size: 28px;
+	line-height: 1;
+	cursor: pointer;
+	transition: color 0.2s ease;
+	padding: 0;
+}
+
+.opd-modal-close:hover {
+	color: #fff;
+}
+
+.opd-modal-title {
+	font-size: 22px;
+	font-weight: 700;
+	color: #C5A059;
+	margin: 0 0 28px;
+}
+
+/* Form */
+.opd-edit-form {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.opd-edit-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+}
+
+.opd-edit-field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.opd-edit-field label {
+	font-size: 13px;
+	font-weight: 500;
+	color: rgba(255, 255, 255, 0.85);
+}
+
+.opd-field-hint {
+	font-weight: 400;
+	color: rgba(255, 255, 255, 0.4);
+	font-size: 11px;
+}
+
+.opd-edit-field input {
+	width: 100%;
+	padding: 13px 16px;
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(197, 160, 89, 0.35);
+	border-radius: 8px;
+	color: #fff;
+	font-family: 'Montserrat', sans-serif;
+	font-size: 14px;
+	outline: none;
+	box-sizing: border-box;
+	transition: border-color 0.2s ease;
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+.opd-edit-field input::placeholder {
+	color: rgba(197, 160, 89, 0.4);
+}
+
+.opd-edit-field input:focus {
+	border-color: #C5A059;
+}
+
+/* Actions */
+.opd-edit-actions {
+	display: flex;
+	gap: 12px;
+	margin-top: 8px;
+}
+
+.opd-btn-cancel {
+	flex: 1;
+	background: transparent;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.opd-btn-cancel:hover {
+	border-color: rgba(255, 255, 255, 0.5);
+	color: #fff;
+}
+
+.opd-btn-save {
+	flex: 1;
+	background: #C5A059;
+	border: 1px solid #C5A059;
+	color: #0B0B0B;
+}
+
+.opd-btn-save:hover {
+	background: #d4af6a;
+	border-color: #d4af6a;
+}
+
+.opd-btn-save:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.opd-save-spinner {
+	width: 18px;
+	height: 18px;
+	border: 2px solid rgba(11, 11, 11, 0.3);
+	border-top-color: #0B0B0B;
+	border-radius: 50%;
+	animation: opd-spin 0.6s linear infinite;
+}
+
+@keyframes opd-spin {
+	to { transform: rotate(360deg); }
+}
+
+/* Messages */
+.opd-edit-message {
+	padding: 12px 14px;
+	border-radius: 6px;
+	font-size: 13px;
+	line-height: 1.45;
+}
+
+.opd-msg-success {
+	background: rgba(80, 200, 120, 0.1);
+	border: 1px solid rgba(80, 200, 120, 0.35);
+	color: #6fcf97;
+}
+
+.opd-msg-error {
+	background: rgba(255, 68, 68, 0.1);
+	border: 1px solid rgba(255, 68, 68, 0.3);
+	color: #ff6b6b;
+}
+
+/* ============================================================
+   AVATAR CROP MODAL
+   ============================================================ */
+
+.opd-crop-panel {
+	max-width: 480px;
+}
+
+.opd-crop-hint {
+	font-size: 13px;
+	color: rgba(255, 255, 255, 0.45);
+	margin: -16px 0 20px;
+}
+
+.opd-crop-container {
+	width: 100%;
+	max-height: 400px;
+	overflow: hidden;
+	border-radius: 10px;
+	background: #0B0B0B;
+	margin-bottom: 24px;
+}
+
+.opd-crop-container img {
+	display: block;
+	max-width: 100%;
+}
+
+/* Cropper.js — make the crop area look circular */
+.opd-crop-modal .cropper-view-box,
+.opd-crop-modal .cropper-face {
+	border-radius: 50%;
+}
+
+.opd-crop-modal .cropper-view-box {
+	outline: 2px solid #C5A059;
+	outline-offset: -1px;
+}
+
+.opd-crop-modal .cropper-point,
+.opd-crop-modal .cropper-line {
+	display: none !important;
+}
+
+.opd-crop-modal .cropper-modal {
+	background: rgba(0, 0, 0, 0.65);
+}
+
+/* Modal responsive */
+@media (max-width: 600px) {
+	.opd-modal-panel {
+		width: 95%;
+		padding: 28px 20px 24px;
+		max-height: 90vh;
+	}
+
+	.opd-edit-row {
+		grid-template-columns: 1fr;
+	}
+
+	.opd-crop-container {
+		max-height: 300px;
+	}
+}

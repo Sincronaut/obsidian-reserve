@@ -18,6 +18,28 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Expose custom user meta to the WP REST API so the frontend
+ * Edit Profile modal can read/write these fields via
+ * POST /wp/v2/users/me  { meta: { _obsidian_phone: '…' } }
+ */
+function obsidian_register_user_meta_for_rest() {
+	$fields = array( '_obsidian_phone', '_obsidian_license', '_obsidian_nationality', '_obsidian_avatar' );
+
+	foreach ( $fields as $key ) {
+		register_meta( 'user', $key, array(
+			'type'              => 'string',
+			'single'            => true,
+			'show_in_rest'      => true,
+			'sanitize_callback' => 'sanitize_text_field',
+			'auth_callback'     => function () {
+				return current_user_can( 'edit_user', get_current_user_id() );
+			},
+		) );
+	}
+}
+add_action( 'init', 'obsidian_register_user_meta_for_rest' );
+
+/**
  * Display extra fields on the user profile edit screen (WP Admin).
  *
  * Fires on both the "Your Profile" and "Edit User" admin pages.

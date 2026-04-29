@@ -1,0 +1,17 @@
+{
+	"$schema": "https://schemas.wp.org/wp/6.9/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/profile-dashboard",
+	"version": "1.0.0",
+	"title": "Obsidian Profile Dashboard",
+	"category": "design",
+	"icon": "admin-users",
+	"description": "Dynamic user profile dashboard with booking history, upcoming reservations, and recently viewed articles.",
+	"supports": {
+		"html": false,
+		"anchor": true
+	},
+	"attributes": {},
+	"style": "file:./style.css",
+	"render": "file:./render.php"
+}
