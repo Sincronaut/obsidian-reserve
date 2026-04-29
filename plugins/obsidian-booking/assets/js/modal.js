@@ -107,6 +107,7 @@
    function openModal(carId) {
       modal.setAttribute('aria-hidden', 'false');
       document.body.classList.add('obsidian-modal-open');
+      document.documentElement.classList.add('obsidian-modal-open');
       loader.innerHTML = '<span class="obsidian-modal-spinner"></span>';
       loader.style.display = '';
       content.style.display = 'none';
@@ -351,6 +352,7 @@
    function closeModal() {
       modal.setAttribute('aria-hidden', 'true');
       document.body.classList.remove('obsidian-modal-open');
+      document.documentElement.classList.remove('obsidian-modal-open');
 
       if (pickupFP) { pickupFP.destroy(); pickupFP = null; }
       if (dropoffFP) { dropoffFP.destroy(); dropoffFP = null; }
