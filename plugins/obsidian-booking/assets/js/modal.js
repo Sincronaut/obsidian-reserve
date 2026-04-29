@@ -572,8 +572,11 @@
    }
 
    function initFlatpickr(unavailableDates) {
+      var tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
       pickupFP = flatpickr(pickupInput, {
-         minDate: 'today',
+         minDate: tomorrow,
          dateFormat: 'Y-m-d',
          altInput: true,
          altFormat: 'M d, Y',
@@ -591,7 +594,7 @@
       });
 
       dropoffFP = flatpickr(dropoffInput, {
-         minDate: 'today',
+         minDate: tomorrow,
          dateFormat: 'Y-m-d',
          altInput: true,
          altFormat: 'M d, Y',

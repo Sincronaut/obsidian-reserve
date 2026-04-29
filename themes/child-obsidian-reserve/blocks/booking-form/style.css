@@ -1179,11 +1179,16 @@
 	}
 
 	.obf-delivery-actions {
-		flex-direction: column;
+		flex-direction: row;
+		width: 100%;
 	}
 
-	.obsidian-bf-back {
-		width: 100%;
+	.obf-delivery-actions .obsidian-bf-back,
+	.obf-delivery-actions .obsidian-bf-submit {
+		flex: 1;
+		width: 50%;
+		padding-left: 8px;
+		padding-right: 8px;
 	}
 
 	.obp-card-row {
