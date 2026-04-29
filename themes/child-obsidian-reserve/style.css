@@ -26,6 +26,7 @@ body:not(.wp-admin):not(.editor-styles-wrapper) {
 	padding: 0;
 	background-color: var(--wp--preset--color--contrast, #0B0B0B);
 	scrollbar-gutter: stable; /* Prevents layout shift when scrollbar appears */
+	overflow-x: hidden;
 }
 html:not(.wp-toolbar) {
 	scroll-behavior: smooth;
