@@ -2,11 +2,17 @@
    GLOBAL SITE HEADER (FIXED & BLURRED)
    ============================================================ */
 /* Ensure WP Block wrappers allow the header to stick */
-body .wp-site-blocks > header,
-body .wp-site-blocks > .wp-block-template-part:has(.obsidian-site-header) {
+body .wp-site-blocks>header,
+body .wp-site-blocks>.wp-block-template-part:has(.obsidian-site-header) {
     position: sticky !important;
     top: 0;
     z-index: 1000;
+}
+
+/* Prevent CSS transition flashes on window resize */
+.resize-animation-stopper * {
+    animation: none !important;
+    transition: none !important;
 }
 
 .obsidian-site-header {
@@ -18,15 +24,25 @@ body .wp-site-blocks > .wp-block-template-part:has(.obsidian-site-header) {
     width: 100%;
     max-width: 1920px;
     min-height: 105px;
-    background-color: rgba(26, 26, 26, 0.2) !important;
-    /* #1A1A1A at 20% opacity */
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
+    background-color: transparent !important;
     z-index: 1000;
     display: flex;
     align-items: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     /* Subtle luxury divider */
+}
+
+/* Move the blur and background to a pseudo-element so it doesn't break position: fixed for the mobile drawer */
+.obsidian-site-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba(26, 26, 26, 0.2);
+    /* #1A1A1A at 20% opacity */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    z-index: -1;
+    pointer-events: none;
 }
 
 /* Base Desktop scale */
@@ -72,7 +88,7 @@ body .wp-site-blocks > .wp-block-template-part:has(.obsidian-site-header) {
     .obsidian-site-header {
         position: relative;
     }
-    
+
     .obsidian-site-header .obsidian-nav {
         position: absolute;
         left: 50%;
@@ -194,7 +210,7 @@ body .wp-site-blocks > .wp-block-template-part:has(.obsidian-site-header) {
     font-weight: 600;
     margin-bottom: 5px;
     padding-bottom: 15px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .obsidian-dropdown-menu a:hover {
@@ -230,7 +246,8 @@ body .wp-site-blocks > .wp-block-template-part:has(.obsidian-site-header) {
         position: fixed;
         top: 0;
         right: 0;
-        transform: translateX(100%);
+        transform: translateX(calc(100% + 20px));
+        /* Push out slightly further to hide shadow and border */
         width: 320px;
         height: 100vh;
         background-color: #0B0B0B;
@@ -242,6 +259,7 @@ body .wp-site-blocks > .wp-block-template-part:has(.obsidian-site-header) {
         transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         z-index: 1005;
         box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+        box-sizing: border-box;
     }
 
     .obsidian-nav-wrapper.is-active {
@@ -251,6 +269,35 @@ body .wp-site-blocks > .wp-block-template-part:has(.obsidian-site-header) {
     .obsidian-nav ul {
         flex-direction: column;
         gap: 25px;
+    }
+
+    /* Convert all dropdowns to accordion style on mobile with smooth transition */
+    .obsidian-dropdown-menu {
+        position: static !important;
+        display: block !important;
+        /* Block instead of none/flex to allow height animation */
+        max-height: 0;
+        overflow: hidden;
+        opacity: 1;
+        visibility: visible;
+        transform: none !important;
+        margin-top: 0 !important;
+        padding: 0 !important;
+        border: none;
+        background: transparent;
+        transition: max-height 1s cubic-bezier(0.16, 1, 0.3, 1), padding 1s ease;
+    }
+
+    .obsidian-dropdown.is-active .obsidian-dropdown-menu {
+        max-height: 1000px;
+        /* Allow it to expand to content height */
+        padding: 15px 0 0 15px !important;
+        /* Add some indentation for sub-items */
+    }
+
+    /* Adjust list items inside the accordion */
+    .obsidian-dropdown-menu li {
+        padding: 8px 0 !important;
     }
 
     /* Ambient background dimmer mask */
@@ -332,6 +379,7 @@ body .wp-site-blocks > .wp-block-template-part:has(.obsidian-site-header) {
     transform: translateX(-50%) translateY(10px);
     right: auto;
 }
+
 .obsidian-dropdown.obsidian-dropdown--mega.is-active .obsidian-dropdown-menu {
     transform: translateX(-50%) translateY(0);
 }
@@ -344,11 +392,23 @@ body .wp-site-blocks > .wp-block-template-part:has(.obsidian-site-header) {
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     margin-bottom: 14px;
 }
+
 /* Adapt the column count to however many regions exist. */
-.obsidian-locations-menu__columns[data-columns="1"] { --ob-mega-cols: 1; }
-.obsidian-locations-menu__columns[data-columns="2"] { --ob-mega-cols: 2; }
-.obsidian-locations-menu__columns[data-columns="3"] { --ob-mega-cols: 3; }
-.obsidian-locations-menu__columns[data-columns="4"] { --ob-mega-cols: 4; }
+.obsidian-locations-menu__columns[data-columns="1"] {
+    --ob-mega-cols: 1;
+}
+
+.obsidian-locations-menu__columns[data-columns="2"] {
+    --ob-mega-cols: 2;
+}
+
+.obsidian-locations-menu__columns[data-columns="3"] {
+    --ob-mega-cols: 3;
+}
+
+.obsidian-locations-menu__columns[data-columns="4"] {
+    --ob-mega-cols: 4;
+}
 
 .obsidian-locations-menu__region {
     display: block;
@@ -363,6 +423,7 @@ body .wp-site-blocks > .wp-block-template-part:has(.obsidian-site-header) {
     text-decoration: none;
     transition: color 0.15s ease;
 }
+
 .obsidian-locations-menu__region:hover {
     color: #FFFFFF !important;
 }
@@ -394,9 +455,11 @@ body .wp-site-blocks > .wp-block-template-part:has(.obsidian-site-header) {
     transition: color 0.12s ease;
     white-space: normal;
 }
+
 .obsidian-locations-menu__branch .branch-link:hover {
     color: #C5A059 !important;
 }
+
 .obsidian-locations-menu__branch.is-coming-soon .branch-link {
     color: #6f6f6f !important;
     cursor: default;
@@ -417,6 +480,7 @@ body .wp-site-blocks > .wp-block-template-part:has(.obsidian-site-header) {
 .obsidian-locations-menu__footer {
     text-align: right;
 }
+
 .obsidian-locations-menu__view-all {
     color: #C5A059 !important;
     font-size: 13px !important;
@@ -424,6 +488,7 @@ body .wp-site-blocks > .wp-block-template-part:has(.obsidian-site-header) {
     font-weight: 600;
     letter-spacing: 0.4px;
 }
+
 .obsidian-locations-menu__view-all:hover {
     color: #FFFFFF !important;
 }
@@ -435,13 +500,18 @@ body .wp-site-blocks > .wp-block-template-part:has(.obsidian-site-header) {
     .obsidian-dropdown.obsidian-dropdown--mega .obsidian-dropdown-menu {
         position: static;
         min-width: 0;
-        padding: 12px 24px !important;
+        padding: 0 !important;
+        /* Zero padding when closed to avoid gaps */
         transform: none;
         left: auto;
     }
+
     .obsidian-dropdown.obsidian-dropdown--mega.is-active .obsidian-dropdown-menu {
         transform: none;
+        padding: 15px 24px !important;
+        /* Restore padding when active */
     }
+
     .obsidian-locations-menu__columns {
         grid-template-columns: 1fr;
         gap: 16px;

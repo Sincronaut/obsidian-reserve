@@ -79,7 +79,7 @@
 .trending-main-content {
     position: relative;
     z-index: 2;
-    padding: calc(var(--wp--preset--spacing--40) * 1.5);
+    padding: var(--wp--preset--spacing--30);
     background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.7) 40%, rgba(0, 0, 0, 0) 100%);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -94,7 +94,7 @@
     font-size: 13px;
     font-weight: 500;
     color: #E5E5E5;
-    margin-bottom: 20px;
+    margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 1px;
     transition: background-color 0.3s ease, color 0.3s ease;
@@ -107,7 +107,7 @@
 
 .trending-main-title {
     color: #FFFFFF;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     transition: color 0.3s ease;
     /* Inherits font-size and weight from global h3 */
 }
@@ -225,5 +225,29 @@
     .trending-item-img-wrap {
         flex: 0 0 70px;
         height: 55px;
+    }
+}
+
+@media (max-width: 480px) {
+    .trending-main-card {
+        min-height: 300px;
+    }
+    
+    .trending-main-content,
+    .trending-list-card {
+        padding: 20px;
+    }
+
+    .trending-list-items {
+        gap: 15px;
+    }
+
+    .trending-item-img-wrap {
+        flex: 0 0 60px;
+        height: 50px;
+    }
+    
+    .trending-item-title {
+        font-size: 14px;
     }
 }

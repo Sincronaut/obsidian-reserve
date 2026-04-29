@@ -25,14 +25,15 @@ body:not(.wp-admin):not(.editor-styles-wrapper) {
 	margin: 0;
 	padding: 0;
 	background-color: var(--wp--preset--color--contrast, #0B0B0B);
-	scrollbar-gutter: stable; /* Prevents layout shift when scrollbar appears */
-	overflow-x: hidden;
+	overflow-x: clip;
 }
 html:not(.wp-toolbar) {
 	scroll-behavior: smooth;
 	margin: 0;
 	padding: 0;
 	background-color: var(--wp--preset--color--contrast, #0B0B0B);
+	overflow-x: clip;
+	width: 100%;
 }
 
 /* Ensure images are responsive globally */
