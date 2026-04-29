@@ -88,7 +88,7 @@
     border: 2px solid #C5A059;
     width: 100%;
     max-width: 420px;
-    max-height: 410px;
+    min-height: 410px;
     transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
     display: flex;
     flex-direction: column;
@@ -313,6 +313,7 @@
 .car-book-btn {
     display: block;
     width: 100%;
+    box-sizing: border-box; /* Prevents padding from causing overflow */
     padding: 14px 24px;
     background: #C5A059;
     border: none;
@@ -373,8 +374,13 @@
 
 @media (max-width: 700px) {
     .obsidian-car-grid {
-        padding-top: 56px;
-        padding-bottom: 56px;
+        padding-top: 40px;
+        padding-bottom: 40px;
+    }
+
+    .car-card {
+        min-height: 0;
+        max-width: 100%;
     }
 
     .car-grid-header {

@@ -159,18 +159,116 @@
     color: #a8a8a8;
 }
 
-/* ── Mobile collapse: stack on top of the grid ── */
+.fleet-filter-mobile-trigger,
+.fleet-filter-mobile-close {
+    display: none;
+}
+
+/* ── Mobile Drawer Overrides ── */
 @media (max-width: 900px) {
+    .fleet-filter-mobile-trigger {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        position: fixed;
+        bottom: 25px;
+        right: 20px;
+        left: auto;
+        transform: none;
+        z-index: 1001;
+        background: #C5A059;
+        color: #0B0B0B;
+        border: none;
+        width: 68px;
+        height: 68px;
+        border-radius: 50%;
+        font-family: inherit;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        cursor: pointer;
+        transition: transform 0.2s ease, background-color 0.2s ease;
+        line-height: 1;
+    }
+
+    .fleet-filter-mobile-trigger span {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .fleet-filter-mobile-trigger:active {
+        transform: scale(0.92);
+    }
+
     .obsidian-fleet-filters {
-        position: static;
-        margin-bottom: 24px;
+        position: static !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
     }
+
+    .fleet-filters-drawer {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        z-index: 9999 !important;
+        background: #0B0B0B !important;
+        display: block !important;
+        transform: translateY(100%);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        visibility: hidden;
+    }
+
+    .obsidian-fleet-filters.is-drawer-open .fleet-filters-drawer {
+        transform: translateY(0);
+        visibility: visible;
+    }
+
+    .fleet-filters-inner {
+        height: 100%;
+        overflow-y: auto;
+        padding: 30px 24px 120px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .fleet-filters-header {
+        position: sticky;
+        top: 0;
+        background: #0B0B0B;
+        z-index: 10;
+        padding: 10px 0 20px;
+        margin-bottom: 30px;
+    }
+
+    .fleet-filters-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .fleet-filter-mobile-close {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    .fleet-filter-mobile-close:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
     .fleet-filter-list {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0 12px;
-    }
-    .fleet-filter-list--locations {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important; /* Stack for easier tapping in drawer */
     }
 }
