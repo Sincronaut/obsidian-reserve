@@ -200,23 +200,93 @@
 
 /* Responsive Overrides */
 @media (max-width: 1024px) {
+    .fleet-main-card {
+        height: 700px; /* Increased from 600px */
+        width: 100%;
+    }
+
+    .variant-header-outside .fleet-main-header {
+        margin-bottom: 25px;
+    }
+
     .fleet-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr; /* Single column as requested */
+        gap: 40px;
     }
 }
 
 @media (max-width: 767px) {
     .fleet-main-header {
         flex-direction: column;
-        gap: 20px;
+        gap: 15px;
+    }
+
+    .variant-header-outside .fleet-main-header {
+        margin-bottom: 20px;
+    }
+
+    .fleet-main-card {
+        height: auto !important;
+        min-height: 400px;
+        padding: 40px 25px;
+        display: flex;
+        flex-direction: column;
+        overflow: visible; /* Ensure nothing is clipped */
+    }
+
+    /* Standard variant image flow */
+    .fleet-main-image {
+        margin-top: 20px;
+        flex: none;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .fleet-main-image img {
+        max-width: 100%;
+        height: auto;
+        transform: none; /* Disable scale boost on mobile to prevent overflow */
+        max-height: none;
+    }
+
+    /* Keep Special/Airport pages as they were (Full bleed background style) */
+    .variant-header-outside .fleet-main-card {
+        height: 500px !important; 
+        min-height: 500px;
+        padding: 0;
+        overflow: hidden;
+        display: block;
+    }
+    
+    .variant-header-outside .fleet-main-image {
+        margin: 0;
+        height: 100%;
+    }
+
+    .variant-header-outside .fleet-main-image img {
+        transform: none;
+        object-fit: cover;
+        width: 100%;
+        height: 100%;
     }
 
     .fleet-grid {
         grid-template-columns: 1fr;
+        gap: 30px;
     }
 
-    .fleet-main-card,
-    .fleet-grid-item {
-        padding: 25px;
+    .fleet-item-title {
+        font-size: 22px; /* Slightly larger title for the bigger 1-col items */
+    }
+
+    .fleet-item-description {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .fleet-main-card {
+        height: 450px; /* Increased from 350px */
     }
 }
