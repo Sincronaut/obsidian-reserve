@@ -108,14 +108,30 @@ if ( ! is_wp_error( $regions ) ) {
 
 <aside <?php echo get_block_wrapper_attributes( array( 'class' => 'obsidian-fleet-filters' ) ); ?>>
 
-	<div class="fleet-filters-inner">
+	<!-- Mobile Floating Trigger (Stays visible) -->
+	<button type="button" class="fleet-filter-mobile-trigger">
+		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+		<span><?php esc_html_e( 'Filter', 'child-obsidian-reserve' ); ?></span>
+	</button>
 
-		<header class="fleet-filters-header">
-			<h2 class="fleet-filters-title"><?php echo esc_html( $title ); ?></h2>
-			<button type="button" class="fleet-filters-clear" data-action="clear">
-				<?php esc_html_e( 'Clear', 'child-obsidian-reserve' ); ?>
-			</button>
-		</header>
+	<!-- The Drawer (Slides up/down) -->
+	<div class="fleet-filters-drawer">
+		<div class="fleet-filters-inner">
+
+			<header class="fleet-filters-header">
+				<h2 class="fleet-filters-title"><?php echo esc_html( $title ); ?></h2>
+				
+				<div class="fleet-filters-header-actions">
+					<button type="button" class="fleet-filters-clear" data-action="clear">
+						<?php esc_html_e( 'Clear', 'child-obsidian-reserve' ); ?>
+					</button>
+					<button type="button" class="fleet-filter-mobile-close" aria-label="Close">
+						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+					</button>
+				</div>
+			</header>
+			
+			<?php // Start of actual filter content ?>
 
 		<?php if ( ! empty( $car_classes ) && ! is_wp_error( $car_classes ) ) : ?>
 		<section class="fleet-filter-group" data-group="class">
@@ -200,6 +216,7 @@ if ( ! is_wp_error( $regions ) ) {
 		</section>
 		<?php endif; ?>
 
+		</div>
 	</div>
 
 </aside>
@@ -335,6 +352,24 @@ if ( ! is_wp_error( $regions ) ) {
 				region.classList.toggle('is-collapsed', expanded);
 			});
 		});
+
+		/* ── Mobile Drawer Toggle ── */
+		var trigger = root.querySelector('.fleet-filter-mobile-trigger');
+		var closeBtn = root.querySelector('.fleet-filter-mobile-close');
+		
+		if (trigger) {
+			trigger.addEventListener('click', function() {
+				root.classList.add('is-drawer-open');
+				document.body.style.overflow = 'hidden';
+			});
+		}
+		
+		if (closeBtn) {
+			closeBtn.addEventListener('click', function() {
+				root.classList.remove('is-drawer-open');
+				document.body.style.overflow = '';
+			});
+		}
 
 		/* ── Initialise from URL on load and broadcast immediately so the
 		     car-grid renders the correct subset on first paint. ── */
