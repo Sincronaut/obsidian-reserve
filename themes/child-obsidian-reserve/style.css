@@ -216,10 +216,24 @@ textarea,
 	transform: translateY(0);
 }
 
+/* Solid Gold Base */
+.is-style-solid-gold .wp-block-button__link {
+	background-color: #C5A059 !important;
+	color: #0B0B0B !important;
+	border: none !important;
+}
+
 /* Solid Gold Hover Treatment */
 .is-style-solid-gold .wp-block-button__link:hover {
 	background-color: #AF8E4D !important; /* Slightly darker gold shade for hover effect */
 	color: #FFFFFF !important;
+}
+
+/* Outline Gold Base */
+.is-style-outline-gold .wp-block-button__link {
+	background-color: transparent !important;
+	color: #C5A059 !important;
+	border: 1px solid #C5A059 !important;
 }
 
 /* Outline Gold Hover Treatment */

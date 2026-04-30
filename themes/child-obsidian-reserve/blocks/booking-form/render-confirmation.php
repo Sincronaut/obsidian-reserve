@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 if ( ! is_user_logged_in() ) {
 	printf(
-		'<div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">Please <a href="%s">log in</a> to view your booking.</p></div>',
+		'<section class="obsidian-booking-form-section"><div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">Please <a href="%s">log in</a> to view your booking.</p></div></section>',
 		esc_url( wp_login_url( home_url( $_SERVER['REQUEST_URI'] ) ) )
 	);
 	return;
@@ -24,13 +24,13 @@ $booking_id = isset( $_GET['booking_id'] ) ? (int) $_GET['booking_id'] : 0;
 $booking    = $booking_id ? get_post( $booking_id ) : null;
 
 if ( ! $booking || $booking->post_type !== 'booking' ) {
-	echo '<div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">Booking not found. <a href="' . esc_url( home_url( '/fleet/' ) ) . '">Back to Fleet</a></p></div>';
+	echo '<section class="obsidian-booking-form-section"><div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">Booking not found. <a href="' . esc_url( home_url( '/fleet/' ) ) . '">Back to Fleet</a></p></div></section>';
 	return;
 }
 
 $booking_user = (int) get_post_meta( $booking_id, '_booking_user_id', true );
 if ( $booking_user !== get_current_user_id() ) {
-	echo '<div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">You do not have permission to view this booking.</p></div>';
+	echo '<section class="obsidian-booking-form-section"><div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">You do not have permission to view this booking.</p></div></section>';
 	return;
 }
 
@@ -104,6 +104,7 @@ $color_display = ucfirst( $color );
 // ── If already paid, show the "Reserved" success page ──
 if ( $is_paid ) : ?>
 
+<section class="obsidian-booking-form-section">
 <div class="obsidian-booking-form-wrap obsidian-reserved-wrap" id="obsidian-confirmation-wrap">
 
 	<div class="obsidian-bf-header obr-header-centered">
@@ -136,6 +137,7 @@ if ( $is_paid ) : ?>
 	</div>
 
 </div>
+</section>
 
 <?php return; endif;
 
@@ -164,6 +166,7 @@ if ( $birth_date ) {
 }
 ?>
 
+<section class="obsidian-booking-form-section">
 <div class="obsidian-booking-form-wrap obsidian-confirmation-wrap" id="obsidian-confirmation-wrap">
 
 	<!-- Hidden data for JS reserved page -->
@@ -268,3 +271,4 @@ if ( $birth_date ) {
 	<div class="obsidian-bf-message" id="obc-message" style="display:none;"></div>
 
 </div>
+</section>

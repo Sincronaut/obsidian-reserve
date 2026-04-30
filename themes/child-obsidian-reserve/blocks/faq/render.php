@@ -57,7 +57,7 @@ $faqs = !empty($attributes['faqs']) ? $attributes['faqs'] : $default_faqs;
 				
 				<div class="faq-support-row">
 					<p class="wp-block-paragraph"><?php echo esc_html( $sidebarSupport ); ?></p>
-					<div class="wp-block-button">
+					<div class="wp-block-button is-style-solid-gold">
 						<a class="wp-block-button__link wp-element-button" href="<?php echo esc_url( $buttonLink ); ?>">
 							<?php echo esc_html( $buttonText ); ?>
 						</a>

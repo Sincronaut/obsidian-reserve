@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 /* ── Require login ── */
 if (!is_user_logged_in()) {
 	printf(
-		'<div class="obsidian-profile-wrap"><p class="obsidian-profile-login">Please <a href="%s">log in</a> to view your profile.</p></div>',
+		'<section class="obsidian-profile-section"><div class="obsidian-profile-wrap"><p class="obsidian-profile-login">Please <a href="%s">log in</a> to view your profile.</p></div></section>',
 		esc_url(wp_login_url(get_permalink()))
 	);
 	return;
@@ -254,6 +254,7 @@ if (is_array($reading_history) && !empty($reading_history)) {
 $logout_url = wp_logout_url(home_url('/'));
 ?>
 
+<section class="obsidian-profile-section">
 <div <?php echo get_block_wrapper_attributes(array('class' => 'obsidian-profile-wrap')); ?>>
 
 	<!-- ═══════════════════════════════════════════════
@@ -308,15 +309,12 @@ $logout_url = wp_logout_url(home_url('/'));
 				<?php endif; ?>
 			</div>
 		</div>
-		<div class="opd-header-actions wp-block-buttons"
-			style="flex-direction: column; gap: 12px; align-items: stretch;">
-			<div class="wp-block-button" style="width: 100%;">
-				<button type="button" class="wp-block-button__link wp-element-button" id="opd-edit-profile-trigger"
-					style="width: 100%;">Edit Profile</button>
+		<div class="opd-header-actions wp-block-buttons">
+			<div class="wp-block-button is-style-solid-gold">
+				<button type="button" class="wp-block-button__link wp-element-button" id="opd-edit-profile-trigger">Edit Profile</button>
 			</div>
-			<div class="wp-block-button is-style-outline" style="width: 100%;">
-				<a href="<?php echo esc_url($logout_url); ?>" class="wp-block-button__link wp-element-button"
-					style="width: 100%; text-align: center;">Log Out</a>
+			<div class="wp-block-button is-style-outline-gold">
+				<a href="<?php echo esc_url($logout_url); ?>" class="wp-block-button__link wp-element-button">Log Out</a>
 			</div>
 		</div>
 	</div>
@@ -600,8 +598,8 @@ $logout_url = wp_logout_url(home_url('/'));
 			<?php endif; ?>
 		</div>
 	</div>
-
 </div>
+</section>
 
 <script>
 	(function () {

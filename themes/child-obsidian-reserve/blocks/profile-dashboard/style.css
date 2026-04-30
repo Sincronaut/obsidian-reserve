@@ -3,7 +3,42 @@
    Dark theme (#0B0B0B) · Gold accents (#C5A059) · Montserrat
    ============================================================ */
 
+.obsidian-profile-section {
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+	background: transparent;
+}
+
+/* White Smudges (matching standard block) */
+.obsidian-profile-section::before,
+.obsidian-profile-section::after {
+	content: '';
+	position: absolute;
+	width: 600px;
+	height: 600px;
+	background-color: rgba(243, 244, 246, 0.5);
+	filter: blur(250px);
+	border-radius: 50%;
+	z-index: 0;
+	pointer-events: none;
+}
+
+/* Top Left Smudge */
+.obsidian-profile-section::before {
+	top: -100px;
+	left: -200px;
+}
+
+/* Middle Right Smudge (down a bit) */
+.obsidian-profile-section::after {
+	top: 40%;
+	right: -250px;
+}
+
 .obsidian-profile-wrap {
+	position: relative;
+	z-index: 2; /* Stay above smudges */
 	max-width: 1400px;
 	margin: 0 auto;
 	padding: 40px 32px 80px;
@@ -201,44 +236,18 @@
 	flex-direction: column;
 	gap: 12px;
 	flex-shrink: 0;
+	min-width: 160px;
 }
 
-.opd-btn {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	padding: 12px 32px;
-	border-radius: 6px;
-	font-family: inherit;
+.opd-header-actions .wp-block-button,
+.opd-header-actions .wp-block-button__link {
+	width: 100%;
+}
+
+.opd-header-actions .wp-block-button__link {
+	padding: 12px 24px;
 	font-size: 13px;
-	font-weight: 600;
-	text-decoration: none;
-	cursor: pointer;
-	transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-	white-space: nowrap;
 	text-align: center;
-}
-
-.opd-btn-edit {
-	background: rgba(197, 160, 89, 0.15);
-	border: 1px solid #C5A059;
-	color: #C5A059;
-}
-
-.opd-btn-edit:hover {
-	background: #C5A059;
-	color: #0B0B0B;
-}
-
-.opd-btn-logout {
-	background: transparent;
-	border: 1px solid rgba(255, 255, 255, 0.2);
-	color: rgba(255, 255, 255, 0.7);
-}
-
-.opd-btn-logout:hover {
-	border-color: #ff4444;
-	color: #ff6b6b;
 }
 
 /* ============================================================

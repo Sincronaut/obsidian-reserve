@@ -223,25 +223,11 @@
     flex: 0 1 450px; /* Constrain select dropdown to a classy width */
 }
 
-/* Button Container */
+/* Button Container Inheriting Global Solid Gold Styles */
 .obsidian-contact-form .form-submit-wrapper {
     display: flex;
     justify-content: center;
     margin-top: 40px;
-}
-
-.obsidian-contact-form button.wp-element-button {
-    background-color: #C5A059;
-    color: #0B0B0B; /* Dark text for contrast against solid gold */
-    border: none;
-    border-radius: 4px;
-    padding: 16px 45px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.obsidian-contact-form button.wp-element-button:hover {
-    background-color: #AF8E4D;
 }
 
 /* --- Footer Area --- */

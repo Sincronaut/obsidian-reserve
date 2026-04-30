@@ -10,7 +10,7 @@ $cards = [
         'title'    => $attributes['card1Title'] ?? '',
         'desc'     => $attributes['card1Desc'] ?? '',
         'btn_text' => $attributes['card1BtnText'] ?? '',
-        'btn_url  '=> $attributes['card1BtnUrl'] ?? '#',
+        'btn_url'  => $attributes['card1BtnUrl'] ?? '#',
         'img'      => $attributes['card1Img'] ?? '',
         'class'    => 'standard-card standard-card-full'
     ],
@@ -18,7 +18,7 @@ $cards = [
         'title'    => $attributes['card2Title'] ?? '',
         'desc'     => $attributes['card2Desc'] ?? '',
         'btn_text' => $attributes['card2BtnText'] ?? '',
-        'btn_url  '=> $attributes['card2BtnUrl'] ?? '#',
+        'btn_url'  => $attributes['card2BtnUrl'] ?? '#',
         'img'      => $attributes['card2Img'] ?? '',
         'class'    => 'standard-card standard-card-half'
     ],
@@ -26,7 +26,7 @@ $cards = [
         'title'    => $attributes['card3Title'] ?? '',
         'desc'     => $attributes['card3Desc'] ?? '',
         'btn_text' => $attributes['card3BtnText'] ?? '',
-        'btn_url  '=> $attributes['card3BtnUrl'] ?? '#',
+        'btn_url'  => $attributes['card3BtnUrl'] ?? '#',
         'img'      => $attributes['card3Img'] ?? '',
         'class'    => 'standard-card standard-card-half'
     ]
@@ -60,7 +60,7 @@ $cards = [
                     <?php if ( $card['btn_text'] ) : ?>
                         <div class="wp-block-buttons">
                             <div class="wp-block-button is-style-outline-gold">
-                                <a href="<?php echo esc_url($card['btn_url  ']); ?>" class="wp-block-button__link wp-element-button">
+                                <a href="<?php echo esc_url($card['btn_url']); ?>" class="wp-block-button__link wp-element-button">
                                     <?php echo esc_html( $card['btn_text'] ); ?>
                                 </a>
                             </div>

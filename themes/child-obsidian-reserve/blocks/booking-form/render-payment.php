@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 if ( ! is_user_logged_in() ) {
 	printf(
-		'<div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">Please <a href="%s">log in</a> to complete your payment.</p></div>',
+		'<section class="obsidian-booking-form-section"><div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">Please <a href="%s">log in</a> to complete your payment.</p></div></section>',
 		esc_url( wp_login_url( home_url( $_SERVER['REQUEST_URI'] ) ) )
 	);
 	return;
@@ -45,7 +45,7 @@ if ( ! $booking_id || ! get_post( $booking_id ) ) {
 }
 
 if ( $error ) {
-	echo '<div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">' . esc_html( $error ) . ' <a href="' . esc_url( home_url( '/fleet/' ) ) . '">Back to Fleet</a></p></div>';
+	echo '<section class="obsidian-booking-form-section"><div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">' . esc_html( $error ) . ' <a href="' . esc_url( home_url( '/fleet/' ) ) . '">Back to Fleet</a></p></div></section>';
 	return;
 }
 
@@ -89,6 +89,7 @@ if ( ! $variant_img ) {
 $color_display = ucfirst( $color );
 ?>
 
+<section class="obsidian-booking-form-section">
 <div class="obsidian-booking-form-wrap obsidian-payment-wrap" id="obsidian-payment-wrap">
 
 	<!-- Hidden fields for JS -->
@@ -266,3 +267,4 @@ $color_display = ucfirst( $color );
 
 	</form>
 </div>
+</section>
