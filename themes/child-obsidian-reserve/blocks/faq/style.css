@@ -108,22 +108,7 @@
     font-weight: 600;
 }
 
-.faq-support-row .wp-block-button__link {
-    background-color: #C5A059;
-    color: #000000;
-    font-size: 14px;
-    font-weight: 600;
-    padding: 12px 24px;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
-    text-decoration: none;
-    border: 1px solid #C5A059;
-}
-
-.faq-support-row .wp-block-button__link:hover {
-    background-color: transparent;
-    color: #C5A059;
-}
+/* Inheriting Global Button Styles (is-style-solid-gold) */
 
 /* Accordion Items */
 .faq-accordion-container {
