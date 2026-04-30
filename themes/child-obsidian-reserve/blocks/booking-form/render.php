@@ -491,6 +491,16 @@ $change_location_url = add_query_arg(
 					</div>
 				</div>
 
+				<!-- ── Need Chauffeur ── -->
+				<div class="obsidian-bf-field obsidian-bf-chauffeur">
+					<label class="obsidian-bf-checkbox">
+						<input type="checkbox" id="obf-need-chauffeur" name="need_chauffeur" value="yes" />
+						<span class="obf-check-box"></span>
+						<span>Need Chauffeur (₱2,000/day)</span>
+					</label>
+					<p class="obsidian-bf-field-helper">Chauffeur fee is paid separately in cash upon delivery.</p>
+				</div>
+
 				<!-- ── Return Address (where we'll pick the car up at the end of the booking) ── -->
 				<div class="obsidian-bf-field">
 					<label for="obf-return-address"><svg class="obf-label-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Return Pickup Address</label>

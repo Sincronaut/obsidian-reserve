@@ -520,7 +520,8 @@
 			return_address:    val('obf-return-address'),
 			return_date:       val('obf-return-date'),
 			return_time:       val('obf-return-time'),
-			special_requests:  val('obf-special-requests')
+			special_requests:  val('obf-special-requests'),
+			need_chauffeur:    (document.getElementById('obf-need-chauffeur') || {}).checked ? 'yes' : 'no'
 		};
 
 		if (customerType === 'local') {

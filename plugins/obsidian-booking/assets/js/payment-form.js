@@ -287,6 +287,16 @@
 		return '*'.repeat( cvc.length );
 	}
 
+	function getCardBrand( num ) {
+		const clean = num.replace( /\D/g, '' );
+		if ( /^4/.test( clean ) ) return 'Visa';
+		if ( /^(5[1-5]|2[2-7])/.test( clean ) ) return 'Mastercard';
+		if ( /^3[47]/.test( clean ) ) return 'American Express';
+		if ( /^35/.test( clean ) ) return 'JCB';
+		if ( /^6/.test( clean ) ) return 'Discover';
+		return 'Credit / Debit';
+	}
+
 	/* ── CARD flow: create PI + PM, store, redirect ── */
 
 	async function processCardPayment() {
@@ -325,6 +335,20 @@
 				},
 			});
 
+			const pmDetails = pmRes.data?.attributes?.details || {};
+			const rawBrand = pmDetails.network || pmDetails.brand || '';
+			const rawFunding = pmDetails.funding || '';
+			
+			let parsedBankName = 'Credit / Debit Card';
+			const fundingStr = rawFunding ? (rawFunding.charAt(0).toUpperCase() + rawFunding.slice(1)) : 'Credit / Debit';
+
+			if ( rawBrand ) {
+				const b = rawBrand.charAt(0).toUpperCase() + rawBrand.slice(1);
+				parsedBankName = b + ' ' + fundingStr;
+			} else {
+				parsedBankName = getCardBrand( cardNumberInput.value ) + ' ' + fundingStr;
+			}
+
 			sessionStorage.setItem( 'obPayment', JSON.stringify({
 				bookingId:      bookingId,
 				token:          token,
@@ -333,7 +357,7 @@
 				pmId:           pmRes.data.id,
 				method:         'card',
 				methodLabel:    METHOD_LABELS.card,
-				bankName:       '',
+				bankName:       parsedBankName,
 				cardName:       cardNameInput.value.trim(),
 				cardNumber:     maskCardNumber( cardNumberInput.value ),
 				cardExpiry:     cardExpiryInput.value,

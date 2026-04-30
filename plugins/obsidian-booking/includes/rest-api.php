@@ -460,6 +460,7 @@ function obsidian_api_create_booking( $request ) {
 	$return_date      = isset( $params['return_date'] ) ? sanitize_text_field( $params['return_date'] ) : '';
 	$return_time      = isset( $params['return_time'] ) ? sanitize_text_field( $params['return_time'] ) : '';
 	$special_requests = isset( $params['special_requests'] ) ? sanitize_textarea_field( $params['special_requests'] ) : '';
+	$need_chauffeur   = isset( $params['need_chauffeur'] ) ? sanitize_text_field( $params['need_chauffeur'] ) : 'no';
 
 	// Documents — structured object with attachment IDs per category
 	$documents = isset( $params['documents'] ) ? $params['documents'] : array();
@@ -697,6 +698,7 @@ function obsidian_api_create_booking( $request ) {
 	update_post_meta( $booking_id, '_booking_return_date', $return_date );
 	update_post_meta( $booking_id, '_booking_return_time', $return_time );
 	update_post_meta( $booking_id, '_booking_special_requests', $special_requests );
+	update_post_meta( $booking_id, '_booking_need_chauffeur', $need_chauffeur );
 
 	// Admin & payment defaults
 	update_post_meta( $booking_id, '_booking_admin_notes', '' );
