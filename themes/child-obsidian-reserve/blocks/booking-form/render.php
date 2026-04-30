@@ -38,7 +38,7 @@ if ( $ob_step === 'confirmation' ) {
 
 if ( ! is_user_logged_in() ) {
 	printf(
-		'<div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">Please <a href="%s">log in</a> to complete your booking.</p></div>',
+		'<section class="obsidian-booking-form-section"><div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">Please <a href="%s">log in</a> to complete your booking.</p></div></section>',
 		esc_url( wp_login_url( get_permalink() ) )
 	);
 	return;
@@ -57,7 +57,7 @@ $is_international = ( $customer_type === 'international' );
 // Validate car
 $car = $car_id ? get_post( $car_id ) : null;
 if ( ! $car || $car->post_type !== 'car' || $car->post_status !== 'publish' ) {
-	echo '<div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">Invalid vehicle. Please go back to the <a href="' . esc_url( home_url( '/fleet/' ) ) . '">fleet page</a> and try again.</p></div>';
+	echo '<section class="obsidian-booking-form-section"><div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">Invalid vehicle. Please go back to the <a href="' . esc_url( home_url( '/fleet/' ) ) . '">fleet page</a> and try again.</p></div></section>';
 	return;
 }
 
@@ -189,6 +189,7 @@ $change_location_url = add_query_arg(
 );
 ?>
 
+<section class="obsidian-booking-form-section">
 <div class="obsidian-booking-form-wrap" id="obsidian-booking-form-wrap">
 
 	<!-- Hidden fields for JS -->
@@ -563,3 +564,4 @@ $change_location_url = add_query_arg(
 
 	</form>
 </div>
+</section>

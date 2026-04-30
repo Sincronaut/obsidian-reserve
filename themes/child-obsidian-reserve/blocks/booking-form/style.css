@@ -3,7 +3,43 @@
    Dark theme with gold accents (#C5A059)
    ═══════════════════════════════════════════ */
 
+.obsidian-booking-form-section {
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+	background: transparent;
+	padding-bottom: 120px; /* Space below the form */
+}
+
+/* White Smudges (matching standard block) */
+.obsidian-booking-form-section::before,
+.obsidian-booking-form-section::after {
+	content: '';
+	position: absolute;
+	width: 600px;
+	height: 600px;
+	background-color: rgba(243, 244, 246, 0.5);
+	filter: blur(250px);
+	border-radius: 50%;
+	z-index: 0;
+	pointer-events: none;
+}
+
+/* Top Left Smudge */
+.obsidian-booking-form-section::before {
+	top: -100px;
+	left: -200px;
+}
+
+/* Middle Right Smudge (down a bit) */
+.obsidian-booking-form-section::after {
+	top: 35%;
+	right: -250px;
+}
+
 .obsidian-booking-form-wrap {
+	position: relative;
+	z-index: 2; /* Stay above smudges */
 	max-width: 900px;
 	margin: 120px auto 0;
 	padding: 48px 56px 56px;
