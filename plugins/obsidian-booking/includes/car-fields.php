@@ -79,6 +79,14 @@ function obsidian_register_car_acf_fields() {
 				'new_lines'         => 'wpautop',
 				'esc_html'          => 0,
 			),
+			array(
+				'key'          => 'field_obsidian_car_name',
+				'label'        => __( 'Car Name', 'obsidian-booking' ),
+				'name'         => 'car_name',
+				'type'         => 'text',
+				'instructions' => __( 'The display name of this vehicle (e.g. "Nissan GTR R35"). Updates the main post title automatically.', 'obsidian-booking' ),
+				'required'     => 1,
+			),
 
 			/* ── Identification ───────────────────────────────────────────── */
 			array(

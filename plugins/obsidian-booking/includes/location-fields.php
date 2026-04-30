@@ -26,6 +26,14 @@ function obsidian_register_location_acf_fields() {
 		'title'                 => __( 'Branch Details', 'obsidian-booking' ),
 		'fields'                => array(
 			array(
+				'key'          => 'field_obsidian_location_name',
+				'label'        => __( 'Branch Name', 'obsidian-booking' ),
+				'name'         => 'location_name',
+				'type'         => 'text',
+				'instructions' => __( 'The name of this branch (e.g. "Makati Main"). Updates the main post title automatically.', 'obsidian-booking' ),
+				'required'     => 1,
+			),
+			array(
 				'key'          => 'field_obsidian_location_address',
 				'label'        => __( 'Address', 'obsidian-booking' ),
 				'name'         => 'location_address',
