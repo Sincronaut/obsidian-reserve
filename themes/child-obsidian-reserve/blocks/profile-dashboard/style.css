@@ -409,25 +409,70 @@
 	margin-bottom: 16px;
 }
 
-.opd-btn-agreement {
+/* ── Buttons ── */
+.opd-btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	padding: 10px 24px;
+	padding: 12px 24px;
 	background: #C5A059;
-	border: none;
-	border-radius: 6px;
+	border: 1px solid #C5A059;
+	border-radius: 5px;
 	color: #0B0B0B;
 	font-family: inherit;
 	font-size: 13px;
 	font-weight: 600;
 	text-decoration: none;
 	cursor: pointer;
-	transition: background 0.2s ease;
+	transition: all 0.3s ease;
+	line-height: 1.2;
 }
 
-.opd-btn-agreement:hover {
-	background: #d4af6a;
+.opd-btn:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+	background: #AF8E4D;
+	border-color: #AF8E4D;
+	color: #FFFFFF;
+}
+
+.opd-btn:active {
+	transform: translateY(0);
+}
+
+.opd-btn-outline {
+	background: transparent !important;
+	border: 1px solid #C5A059 !important;
+	color: #C5A059 !important;
+}
+
+.opd-btn-outline:hover {
+	background: #C5A059 !important;
+	color: #FFFFFF !important;
+}
+
+.opd-reservation-actions {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+}
+
+.opd-reservation-actions .opd-btn {
+	min-width: 220px;
+}
+
+.opd-btn-payment {
+	/* width: auto; */
+}
+
+.opd-btn-agreement {
+	/* width: auto; */
+}
+
+.opd-btn-small {
+	padding: 6px 16px;
+	font-size: 12px;
 }
 
 /* ============================================================
