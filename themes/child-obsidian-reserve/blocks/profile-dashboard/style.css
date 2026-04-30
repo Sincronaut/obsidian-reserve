@@ -4,7 +4,7 @@
    ============================================================ */
 
 .obsidian-profile-wrap {
-	max-width: 1200px;
+	max-width: 1400px;
 	margin: 0 auto;
 	padding: 40px 32px 80px;
 	font-family: var(--wp--preset--font-family--montserrat, 'Montserrat', sans-serif);
@@ -24,8 +24,13 @@
 }
 
 /* ── Helper ── */
-.text-gold { color: #C5A059; }
-.text-white { color: #fff; }
+.text-gold {
+	color: #C5A059;
+}
+
+.text-white {
+	color: #fff;
+}
 
 /* ============================================================
    PROFILE HEADER
@@ -37,8 +42,8 @@
 	justify-content: space-between;
 	gap: 32px;
 	background: rgba(20, 20, 20, 0.85);
-	border: 1px solid rgba(197, 160, 89, 0.15);
-	border-radius: 16px;
+	border: 2px solid #C5A059;
+	border-radius: 5px;
 	padding: 32px 40px;
 	margin-bottom: 32px;
 }
@@ -57,7 +62,7 @@
 	border-radius: 50%;
 	overflow: hidden;
 	flex-shrink: 0;
-	border: 3px solid rgba(197, 160, 89, 0.35);
+	border: 2px solid #C5A059;
 	position: relative;
 	cursor: pointer;
 }
@@ -101,14 +106,16 @@
 .opd-avatar-spinner {
 	width: 24px;
 	height: 24px;
-	border: 3px solid rgba(197, 160, 89, 0.3);
+	border: 3px solid #C5A059;
 	border-top-color: #C5A059;
 	border-radius: 50%;
 	animation: opd-avatar-spin 0.7s linear infinite;
 }
 
 @keyframes opd-avatar-spin {
-	to { transform: rotate(360deg); }
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 .opd-avatar-loading-text {
@@ -261,8 +268,8 @@
 
 .opd-card {
 	background: rgba(20, 20, 20, 0.85);
-	border: 1px solid rgba(197, 160, 89, 0.15);
-	border-radius: 16px;
+	border: 2px solid #C5A059;
+	border-radius: 5px;
 	padding: 28px 32px;
 }
 
@@ -343,7 +350,7 @@
 
 .opd-reservation-card {
 	border: 1px solid rgba(197, 160, 89, 0.25);
-	border-radius: 12px;
+	border-radius: 5px;
 	padding: 20px 24px;
 	text-align: center;
 	margin-bottom: 16px;
@@ -586,8 +593,8 @@ body.opd-modal-open {
 	max-height: 85vh;
 	overflow-y: auto;
 	background: #141414;
-	border: 1px solid rgba(197, 160, 89, 0.25);
-	border-radius: 16px;
+	border: 2px solid #C5A059;
+	border-radius: 5px;
 	padding: 36px 32px 32px;
 	z-index: 1;
 }
@@ -718,7 +725,9 @@ body.opd-modal-open {
 }
 
 @keyframes opd-spin {
-	to { transform: rotate(360deg); }
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 /* Messages */
@@ -808,9 +817,18 @@ body.opd-modal-open {
 }
 
 /* Scrollbar styling */
-.opd-txn-list::-webkit-scrollbar { width: 4px; }
-.opd-txn-list::-webkit-scrollbar-track { background: transparent; }
-.opd-txn-list::-webkit-scrollbar-thumb { background: rgba(197, 160, 89, 0.3); border-radius: 4px; }
+.opd-txn-list::-webkit-scrollbar {
+	width: 4px;
+}
+
+.opd-txn-list::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.opd-txn-list::-webkit-scrollbar-thumb {
+	background: rgba(197, 160, 89, 0.3);
+	border-radius: 4px;
+}
 
 /* Per-transaction card */
 .opd-txn-card {
@@ -871,10 +889,21 @@ body.opd-modal-open {
 	color: #C5A059;
 }
 
-.opd-txn-status--completed { background: rgba(80, 200, 120, 0.12); color: #6fcf97; }
+.opd-txn-status--completed {
+	background: rgba(80, 200, 120, 0.12);
+	color: #6fcf97;
+}
+
 .opd-txn-status--cancelled,
-.opd-txn-status--denied { background: rgba(255, 68, 68, 0.1); color: #ff6b6b; }
-.opd-txn-status--paid { background: rgba(80, 200, 120, 0.12); color: #6fcf97; }
+.opd-txn-status--denied {
+	background: rgba(255, 68, 68, 0.1);
+	color: #ff6b6b;
+}
+
+.opd-txn-status--paid {
+	background: rgba(80, 200, 120, 0.12);
+	color: #6fcf97;
+}
 
 /* Right: car image card */
 .opd-txn-img-wrap {
