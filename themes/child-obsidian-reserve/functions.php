@@ -307,8 +307,26 @@ function obsidian_reserve_user_menu_shortcode() {
 
 	if ( is_user_logged_in() ) {
 		$current_user = wp_get_current_user();
-		$display_name = esc_html( $current_user->display_name );
+		$user_id      = $current_user->ID;
+		$display_name = $current_user->display_name ?: $current_user->user_login;
+		$username     = $current_user->user_login;
+		$first_name   = $current_user->first_name;
+		$last_name    = $current_user->last_name;
+		$full_name    = trim( $first_name . ' ' . $last_name ) ?: $display_name;
+		$email        = $current_user->user_email;
+		$phone        = get_user_meta( $user_id, '_obsidian_phone', true );
+		$license      = get_user_meta( $user_id, '_obsidian_license', true );
 		$logout_url   = wp_logout_url( home_url( '/' ) );
+		$profile_url  = home_url( '/profile/' );
+
+		/* Custom avatar or Gravatar */
+		$avatar_url    = get_avatar_url( $user_id, array( 'size' => 200 ) );
+		$custom_avatar = get_user_meta( $user_id, '_obsidian_avatar', true );
+		if ( $custom_avatar ) {
+			$avatar_url = $custom_avatar;
+		}
+
+		$tier = 'Platinum';
 		?>
 		<div class="obsidian-dropdown obsidian-user-menu" data-auth="logged-in">
 			<button class="obsidian-dropdown-toggle" aria-label="User Menu">
@@ -317,8 +335,49 @@ function obsidian_reserve_user_menu_shortcode() {
 				</svg>
 				<svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
 			</button>
-			<ul class="obsidian-dropdown-menu user-dropdown-menu">
-				<li class="user-name"><?php echo $display_name; ?></li>
+
+			<!-- Desktop mega profile card -->
+			<div class="obsidian-dropdown-menu obsidian-user-card">
+				<div class="ouc-header">
+					<a href="#" class="ouc-back" aria-label="Close Menu">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+					</a>
+					<a href="<?php echo esc_url( $logout_url ); ?>" class="ouc-logout">Log Out</a>
+				</div>
+
+				<div class="ouc-avatar">
+					<img src="<?php echo esc_url( $avatar_url ); ?>" alt="<?php echo esc_attr( $full_name ); ?>" />
+				</div>
+
+				<span class="ouc-tier"><?php echo esc_html( $tier ); ?></span>
+
+				<h3 class="ouc-name"><?php echo esc_html( $full_name ); ?></h3>
+
+				<div class="ouc-details">
+					<div class="ouc-detail-row">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+						<span>Email : <a href="mailto:<?php echo esc_attr( $email ); ?>"><?php echo esc_html( $email ); ?></a></span>
+					</div>
+					<?php if ( $phone ) : ?>
+					<div class="ouc-detail-row">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C5A059" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+						<span>Mobile Number : <a href="tel:<?php echo esc_attr( $phone ); ?>"><?php echo esc_html( $phone ); ?></a></span>
+					</div>
+					<?php endif; ?>
+					<?php if ( $license ) : ?>
+					<div class="ouc-detail-row">
+						<span class="ouc-license-label">Driver License Status : <a href="#"><?php echo esc_html( $license ); ?></a></span>
+					</div>
+					<?php endif; ?>
+				</div>
+
+				<a href="<?php echo esc_url( $profile_url ); ?>" class="ouc-view-profile">View Profile</a>
+			</div>
+
+			<!-- Mobile simple items (inside the drawer) -->
+			<ul class="obsidian-dropdown-menu user-dropdown-menu obsidian-user-mobile-menu">
+				<li class="user-name"><?php echo esc_html( $display_name ); ?></li>
+				<li><a href="<?php echo esc_url( $profile_url ); ?>">View Profile <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a></li>
 				<li><a href="<?php echo esc_url( $logout_url ); ?>">Log Out <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a></li>
 			</ul>
 		</div>

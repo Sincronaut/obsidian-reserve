@@ -96,6 +96,16 @@
                 }
             });
 
+            // Close user profile card via back button
+            document.addEventListener('click', (e) => {
+                const backBtn = e.target.closest('.ouc-back');
+                if (backBtn) {
+                    e.preventDefault();
+                    const parent = backBtn.closest('.obsidian-dropdown');
+                    if (parent) parent.classList.remove('is-active');
+                }
+            });
+
             // Prevent CSS transition flashes on window resize
             let resizeTimer;
             window.addEventListener('resize', () => {
