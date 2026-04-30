@@ -82,11 +82,6 @@ $all_bookings_query = get_posts(array(
 			'key' => '_booking_user_id',
 			'value' => $user_id,
 		),
-		array(
-			'key' => '_booking_status',
-			'value' => array('awaiting_payment', 'pending_review'),
-			'compare' => 'NOT IN',
-		),
 	),
 	'orderby' => 'date',
 	'order' => 'DESC',
@@ -383,11 +378,13 @@ $logout_url = wp_logout_url(home_url('/'));
 							<?php endif; ?>
 						</div>
 
-						<?php if ($first_res['status'] === 'awaiting_payment' && !empty($first_res['payment_url'])): ?>
-							<a href="<?php echo esc_url($first_res['payment_url']); ?>" class="opd-btn" style="background:#C5A059; color:#0b0b0b; border-color:#C5A059; margin-bottom: 8px; font-weight:600;">Proceed to Payment</a>
-						<?php endif; ?>
+						<div class="opd-reservation-actions">
+							<?php if ($first_res['status'] === 'awaiting_payment' && !empty($first_res['payment_url'])): ?>
+								<a href="<?php echo esc_url($first_res['payment_url']); ?>" class="opd-btn opd-btn-payment">Proceed to Payment</a>
+							<?php endif; ?>
 
-						<a href="#" class="opd-btn opd-btn-agreement">View Rental Agreement</a>
+							<a href="#" class="opd-btn opd-btn-outline opd-btn-agreement">View Rental Agreement</a>
+						</div>
 					</div>
 
 					<?php if (count($upcoming_reservations) > 1): ?>
@@ -581,7 +578,7 @@ $logout_url = wp_logout_url(home_url('/'));
 								<span
 									class="opd-txn-status opd-txn-status--<?php echo esc_attr($txn['status']); ?>"><?php echo esc_html($txn['status_label']); ?></span>
 								<?php if ($txn['status'] === 'awaiting_payment' && !empty($txn['payment_url'])): ?>
-									<a href="<?php echo esc_url($txn['payment_url']); ?>" class="opd-btn" style="background:#C5A059; color:#0b0b0b; border-color:#C5A059; padding:5px 14px; font-size:12px; font-weight:600; margin-top:8px; display:inline-block; border-radius:4px; text-decoration:none;">Proceed to Payment</a>
+									<a href="<?php echo esc_url($txn['payment_url']); ?>" class="opd-btn opd-btn-small" style="margin-top:8px;">Proceed to Payment</a>
 								<?php endif; ?>
 							</div>
 							<?php if ($txn['car_image']): ?>

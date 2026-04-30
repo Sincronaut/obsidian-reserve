@@ -16,12 +16,36 @@
    var pickupFP, dropoffFP;
    var currentCar = null;
    var selectedColor = null;
+   var initialColor = null;
 
    /* ── Phase 11.13: pickup-branch picker ── */
    var branchEl, branchNameEl, branchChangeBtn, branchSelectEl;
    var selectedLocationId = 0;          // current scope (0 = "All Locations" — picker mode)
    var branchLocked = false;            // true when ?location/?region pre-scoped the modal
    var branchesCache = null;            // [{id,name,region_name,status,...}, ...]
+
+   /**
+    * Smoothly update the main hero image with a fade transition.
+    */
+   function updateHeroImage(url) {
+      if (!heroImg) return;
+      if (heroImg.src === url) return;
+
+      heroImg.style.opacity = '0';
+      
+      setTimeout(function() {
+         heroImg.src = url;
+         heroImg.alt = currentCar ? currentCar.name : '';
+         
+         if (url) {
+            heroImg.onload = function() {
+               heroImg.style.opacity = '1';
+            };
+         } else {
+            heroImg.style.opacity = '1';
+         }
+      }, 200);
+   }
 
    function init() {
       modal = document.getElementById('obsidian-booking-modal');
@@ -64,7 +88,8 @@
          var btn = e.target.closest('.car-book-btn[data-car-id]');
          if (btn) {
             e.preventDefault();
-            openModal(parseInt(btn.getAttribute('data-car-id'), 10));
+            var preColor = btn.getAttribute('data-color') || null;
+            openModal(parseInt(btn.getAttribute('data-car-id'), 10), preColor);
          }
       });
 
@@ -104,7 +129,7 @@
       return r.json();
    }
 
-   function openModal(carId) {
+   function openModal(carId, preColor) {
       modal.setAttribute('aria-hidden', 'false');
       document.body.classList.add('obsidian-modal-open');
       document.documentElement.classList.add('obsidian-modal-open');
@@ -123,6 +148,7 @@
       // Reset state from any prior open.
       currentCar           = null;
       selectedColor        = null;
+      initialColor         = preColor || null;
       selectedLocationId   = 0;
       branchLocked         = false;
 
@@ -411,14 +437,23 @@
 
       // Gallery + colors
       if (car.color_variants && car.color_variants.length > 0) {
-         selectedColor = car.color_variants[0].color;
-         buildGallery(car.color_variants[0].gallery || [], car.image);
+         var variantToSelect = car.color_variants[0];
+         if (initialColor) {
+            for (var i = 0; i < car.color_variants.length; i++) {
+               if (car.color_variants[i].color === initialColor) {
+                  variantToSelect = car.color_variants[i];
+                  break;
+               }
+            }
+         }
+         selectedColor = variantToSelect.color;
+         buildGallery(variantToSelect.gallery || [], car.image);
       } else {
          selectedColor = null;
          buildGallery([], car.image);
       }
 
-      buildColors(car.color_variants || [], car.image);
+      buildColors(car.color_variants || [], car.image, selectedColor);
    }
 
    function buildGallery(galleryUrls, fallbackImg) {
@@ -427,12 +462,12 @@
       var all = galleryUrls.length > 0 ? galleryUrls : (fallbackImg ? [fallbackImg] : []);
 
       if (all.length === 0) {
-         heroImg.src = '';
+         updateHeroImage('');
          return;
       }
 
-      heroImg.src = all[0];
-      heroImg.alt = currentCar ? currentCar.name : '';
+      updateHeroImage(all[0]);
+      // Alt text is handled inside updateHeroImage
 
       // Thumbnails = images 2–6 (indices 1+)
       var modalImages = all.length > 1 ? all.slice(1) : all;
@@ -448,7 +483,7 @@
          btn.appendChild(img);
 
          btn.addEventListener('click', function () {
-            heroImg.src = url;
+            updateHeroImage(url);
             thumbsContainer.querySelectorAll('.obsidian-modal-thumb').forEach(function (t) {
                t.classList.remove('active');
             });
@@ -459,7 +494,7 @@
       });
    }
 
-   function buildColors(variants, fallbackImg) {
+   function buildColors(variants, fallbackImg, preSelectedColor) {
       colorsContainer.innerHTML = '';
 
       if (!variants.length) {
@@ -469,15 +504,16 @@
       colorsContainer.style.display = '';
 
       variants.forEach(function (v, idx) {
+         var isSelected = preSelectedColor ? v.color === preSelectedColor : idx === 0;
          var label = document.createElement('label');
-         label.className = 'obsidian-modal-color-option' + (idx === 0 ? ' active' : '');
+         label.className = 'obsidian-modal-color-option' + (isSelected ? ' active' : '');
 
          var radio = document.createElement('input');
          radio.type = 'radio';
          radio.name = 'obsidian_modal_color';
          radio.value = v.color;
          radio.className = 'obsidian-modal-color-radio';
-         if (idx === 0) radio.checked = true;
+         if (isSelected) radio.checked = true;
 
          var swatch = document.createElement('span');
          swatch.className = 'obsidian-modal-color-dot';

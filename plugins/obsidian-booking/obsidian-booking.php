@@ -70,6 +70,7 @@ if (is_admin()) {
    require_once OBSIDIAN_BOOKING_DIR . 'admin/booking-columns.php';
    require_once OBSIDIAN_BOOKING_DIR . 'admin/dashboard-widget.php';
    require_once OBSIDIAN_BOOKING_DIR . 'admin/branch-utilization-widget.php';
+   require_once OBSIDIAN_BOOKING_DIR . 'admin/location-map-picker.php';
 }
 
 /* ──────────────────────────────────────────────
@@ -400,6 +401,56 @@ function obsidian_booking_render_text_modal()
    <?php
 }
 add_action('wp_footer', 'obsidian_booking_render_text_modal');
+
+
+/* ──────────────────────────────────────────────
+   ACF Title Synchronization
+   Allows editing the Car/Location name directly from the meta box.
+   ────────────────────────────────────────────── */
+
+/**
+ * Sync ACF name field to the WP Post Title when saved.
+ */
+function obsidian_sync_acf_to_post_title( $value, $post_id, $field ) {
+   if ( ! $value ) {
+      return $value;
+   }
+
+   // Update the post title directly in the DB
+   // We use wp_update_post to ensure standard WP logic (sluggification, etc.) runs.
+   // We remove the filter temporarily to avoid an infinite loop if we were
+   // listening to save_post, but here we are in acf/update_value which is fine.
+   global $wpdb;
+   $wpdb->update(
+      $wpdb->posts,
+      array( 'post_title' => $value ),
+      array( 'ID' => $post_id )
+   );
+
+   // Clear the cache for this post
+   clean_post_cache( $post_id );
+
+   return $value;
+}
+add_filter( 'acf/update_value/name=location_name', 'obsidian_sync_acf_to_post_title', 10, 3 );
+add_filter( 'acf/update_value/name=car_name', 'obsidian_sync_acf_to_post_title', 10, 3 );
+
+/**
+ * Sync WP Post Title back to the ACF name field when loaded.
+ */
+function obsidian_sync_post_title_to_acf( $value, $post_id, $field ) {
+   // If the post exists, use its actual title
+   $post = get_post( $post_id );
+   if ( $post && ( $post->post_type === 'car' || $post->post_type === 'location' ) ) {
+      // Don't override if the title is "Auto Draft" (new post)
+      if ( $post->post_title !== 'Auto Draft' && ! empty( $post->post_title ) ) {
+         return $post->post_title;
+      }
+   }
+   return $value;
+}
+add_filter( 'acf/load_value/name=location_name', 'obsidian_sync_post_title_to_acf', 10, 3 );
+add_filter( 'acf/load_value/name=car_name', 'obsidian_sync_post_title_to_acf', 10, 3 );
 
 /* ──────────────────────────────────────────────
    Activation / Deactivation

@@ -427,16 +427,24 @@ $build_scope_data = function ( $car_id ) {
 
 				var img     = card.querySelector('.car-card-img');
 				var unitsEl = card.querySelector('.units-text');
+				var bookBtn = card.querySelector('.car-book-btn');
 				var newImg  = firstVisible.getAttribute('data-image');
 				var newU    = firstVisible.getAttribute('data-units');
+				var newC    = firstVisible.getAttribute('data-color');
 				if (img && newImg) { swipeImage(img, newImg); }
 				if (unitsEl)       { unitsEl.textContent = newU + ' available'; }
+				if (bookBtn && newC) { bookBtn.setAttribute('data-color', newC); }
 			} else {
 				var activeSwatch = card.querySelector('.color-swatch.active');
 				if (activeSwatch) {
 					var unitsEl2 = card.querySelector('.units-text');
+					var bookBtn2 = card.querySelector('.car-book-btn');
+					var actColor = activeSwatch.getAttribute('data-color');
 					if (unitsEl2) {
 						unitsEl2.textContent = activeSwatch.getAttribute('data-units') + ' available';
+					}
+					if (bookBtn2 && actColor) {
+						bookBtn2.setAttribute('data-color', actColor);
 					}
 				}
 			}
@@ -525,8 +533,10 @@ $build_scope_data = function ( $car_id ) {
 			var card     = swatch.closest('.car-card');
 			var img      = card.querySelector('.car-card-img');
 			var unitsEl  = card.querySelector('.units-text');
+			var bookBtn  = card.querySelector('.car-book-btn');
 			var newImage = swatch.getAttribute('data-image');
 			var newUnits = swatch.getAttribute('data-units');
+			var newColor = swatch.getAttribute('data-color');
 
 			card.querySelectorAll('.color-swatch').forEach(function(s) {
 				s.classList.remove('active');
@@ -535,6 +545,7 @@ $build_scope_data = function ( $car_id ) {
 
 			if (img && newImage) { swipeImage(img, newImage); }
 			if (unitsEl)         { unitsEl.textContent = newUnits + ' available'; }
+			if (bookBtn && newColor) { bookBtn.setAttribute('data-color', newColor); }
 		});
 
 		/* ── Initial pass — handles direct loads of the page where the

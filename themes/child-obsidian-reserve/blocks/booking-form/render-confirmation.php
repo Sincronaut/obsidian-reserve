@@ -49,6 +49,7 @@ $deposit_amt   = (float) get_post_meta( $booking_id, '_booking_deposit_amount', 
 if ( ! $deposit_amt ) {
 	$deposit_amt = max( 10000, $total * 0.40 );
 }
+$need_chauffeur = get_post_meta( $booking_id, '_booking_need_chauffeur', true );
 
 // Car specs
 $car_specs = '';
@@ -230,6 +231,12 @@ if ( $birth_date ) {
 			<span>Security Deposit</span>
 			<span>₱<?php echo esc_html( number_format( $deposit_amt, 2 ) ); ?></span>
 		</div>
+		<?php if ( $need_chauffeur === 'yes' ) : ?>
+		<div class="obc-totals-row">
+			<span>Chauffeur Booked</span>
+			<span>2000/day</span>
+		</div>
+		<?php endif; ?>
 		<div class="obc-info-divider"></div>
 
 		<p class="obc-info-heading text-gold italic">Please Confirm the Information is right and correct</p>

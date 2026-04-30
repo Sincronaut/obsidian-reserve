@@ -25,6 +25,9 @@ body.obsidian-admin {
 }
 
 /* ── Global Wrapper ── */
+html:has(body.obsidian-admin) { background: #111318; }
+body.obsidian-admin, 
+body.obsidian-admin #wpwrap, 
 body.obsidian-admin #wpcontent { background: var(--ob-bg); }
 body.obsidian-admin #wpbody-content { padding-bottom: 40px; }
 body.obsidian-admin .wrap { font-family: var(--ob-font); }
@@ -127,7 +130,9 @@ body.obsidian-admin .postbox .postbox-header {
   border-radius: var(--ob-radius) var(--ob-radius) 0 0;
 }
 body.obsidian-admin .postbox .postbox-header h2,
-body.obsidian-admin .postbox .hndle { color: var(--ob-text); font-family: var(--ob-font); font-size: 13px; font-weight: 600; }
+body.obsidian-admin .postbox .postbox-header h2.hndle,
+body.obsidian-admin .postbox .hndle,
+body.obsidian-admin .postbox .hndle span { color: var(--ob-gold) !important; font-family: var(--ob-font); font-size: 13px; font-weight: 600; }
 body.obsidian-admin .postbox .inside { color: var(--ob-text); }
 body.obsidian-admin .postbox .handle-actions button { color: var(--ob-text-2); }
 
@@ -460,7 +465,7 @@ body.obsidian-dashboard #dashboard-widgets .postbox .postbox-header {
   border-radius: var(--ob-radius) var(--ob-radius) 0 0;
 }
 body.obsidian-dashboard #dashboard-widgets .postbox .postbox-header h2 {
-  color: var(--ob-text); font-family: var(--ob-font);
+  color: var(--ob-gold); font-family: var(--ob-font);
 }
 body.obsidian-dashboard #dashboard-widgets .postbox .inside {
   color: var(--ob-text); font-family: var(--ob-font);

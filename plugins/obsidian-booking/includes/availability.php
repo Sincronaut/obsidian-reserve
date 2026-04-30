@@ -544,7 +544,7 @@ function obsidian_get_available_units( $car_id, $start_date, $end_date, $exclude
 		array(
 			'key'     => '_booking_end_date',
 			'value'   => $start_date,
-			'compare' => '>',
+			'compare' => '>=',
 			'type'    => 'DATE',
 		),
 	);
@@ -625,7 +625,7 @@ function obsidian_get_available_units_by_color( $car_id, $color, $start_date, $e
 		array(
 			'key'     => '_booking_end_date',
 			'value'   => $start_date,
-			'compare' => '>',
+			'compare' => '>=',
 			'type'    => 'DATE',
 		),
 	);
