@@ -24,15 +24,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$title       = $attributes['title'] ?? __( 'Visit Us', 'child-obsidian-reserve' );
+$map_title   = $attributes['title'] ?? __( 'Visit Us', 'child-obsidian-reserve' );
 $description = $attributes['description'] ?? '';
 
-/* ── Lazy-load Leaflet (only on pages that contain this block) ─────────
-   wp_enqueue_script() inside a dynamic block's render callback is the
-   official way to ship dependencies on demand — WP de-duplicates and
-   skips re-enqueueing if the block appears more than once on a page.
-   Leaflet is pinned to 1.9.4 (the current stable). SRI hashes match
-   the official release on https://leafletjs.com/download.html. */
+/*
+── Lazy-load Leaflet (only on pages that contain this block) ─────────
+	wp_enqueue_script() inside a dynamic block's render callback is the
+	official way to ship dependencies on demand — WP de-duplicates and
+	skips re-enqueueing if the block appears more than once on a page.
+	Leaflet is pinned to 1.9.4 (the current stable). SRI hashes match
+	the official release on https://leafletjs.com/download.html.
+*/
 wp_enqueue_style(
 	'leaflet',
 	'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
@@ -47,53 +49,66 @@ wp_enqueue_script(
 	true
 );
 
-/* ── Server-rendered SEO/fallback list ─────────────────────────────────
-   We query regions then their branches directly so this section works
-   without JavaScript (search bots, screen readers in degraded mode, etc).
-   "Closed" branches are filtered out; "Coming Soon" branches are marked
-   so the visual fallback matches the map UI. */
-$regions = get_terms( array(
-	'taxonomy'   => 'region',
-	'hide_empty' => false,
-	'orderby'    => 'name',
-	'order'      => 'ASC',
-) );
+/*
+── Server-rendered SEO/fallback list ─────────────────────────────────
+	We query regions then their branches directly so this section works
+	without JavaScript (search bots, screen readers in degraded mode, etc).
+	"Closed" branches are filtered out; "Coming Soon" branches are marked
+	so the visual fallback matches the map UI.
+*/
+$regions = get_terms(
+	array(
+		'taxonomy'   => 'region',
+		'hide_empty' => false,
+		'orderby'    => 'name',
+		'order'      => 'ASC',
+	)
+);
 
 // Manual Sort: Luzon -> Visayas -> Mindanao.
 if ( ! is_wp_error( $regions ) && ! empty( $regions ) ) {
-	usort( $regions, function( $a, $b ) {
-		$order = array( 'Luzon' => 1, 'Visayas' => 2, 'Mindanao' => 3 );
-		$val_a = $order[ $a->name ] ?? 999;
-		$val_b = $order[ $b->name ] ?? 999;
-		return $val_a <=> $val_b;
-	} );
+	usort(
+		$regions,
+		function ( $a, $b ) {
+			$order = array(
+				'Luzon'    => 1,
+				'Visayas'  => 2,
+				'Mindanao' => 3,
+			);
+			$val_a = $order[ $a->name ] ?? 999;
+			$val_b = $order[ $b->name ] ?? 999;
+			return $val_a <=> $val_b;
+		}
+	);
 }
 
 $grouped = array();
 if ( ! is_wp_error( $regions ) ) {
 	foreach ( $regions as $region ) {
-		$branch_ids = get_posts( array(
-			'post_type'      => 'location',
-			'post_status'    => 'publish',
-			'posts_per_page' => -1,
-			'fields'         => 'ids',
-			'orderby'        => 'title',
-			'order'          => 'ASC',
-			'tax_query'      => array(
-				array(
-					'taxonomy' => 'region',
-					'field'    => 'term_id',
-					'terms'    => $region->term_id,
+		$branch_ids = get_posts(
+			array(
+				'post_type'      => 'location',
+				'post_status'    => 'publish',
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+				'tax_query'      => array(
+					array(
+						'taxonomy' => 'region',
+						'field'    => 'term_id',
+						'terms'    => $region->term_id,
+					),
 				),
-			),
-			'meta_query'     => array(
-				array(
-					'key'     => 'location_status',
-					'value'   => 'closed',
-					'compare' => '!=',
+				'meta_query'     => array(
+					array(
+						'key'     => 'location_status',
+						'value'   => 'closed',
+						'compare' => '!=',
+					),
 				),
-			),
-		) );
+			)
+		);
 
 		if ( empty( $branch_ids ) ) {
 			continue;
@@ -101,11 +116,12 @@ if ( ! is_wp_error( $regions ) ) {
 
 		$branches = array();
 		foreach ( $branch_ids as $bid ) {
-			$branches[] = array(
-				'id'      => (int) $bid,
-				'name'    => get_the_title( $bid ),
-				'slug'    => get_post_field( 'post_name', $bid ),
-				'status'  => get_post_meta( $bid, 'location_status', true ) ?: 'active',
+			$meta_status = get_post_meta( $bid, 'location_status', true );
+			$branches[]  = array(
+				'id'     => (int) $bid,
+				'name'   => get_the_title( $bid ),
+				'slug'   => get_post_field( 'post_name', $bid ),
+				'status' => $meta_status ? $meta_status : 'active',
 			);
 		}
 
@@ -120,14 +136,14 @@ if ( ! is_wp_error( $regions ) ) {
 $rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 ?>
 
-<section <?php echo get_block_wrapper_attributes( array( 'class' => 'obsidian-locations-map' ) ); ?>
-		 data-rest-url="<?php echo esc_attr( $rest_url ); ?>">
+<section <?php echo get_block_wrapper_attributes( array( 'class' => 'obsidian-locations-map' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		data-rest-url="<?php echo esc_attr( $rest_url ); ?>">
 
 	<div class="locations-map-container">
 
 		<header class="locations-map-header">
-			<?php if ( $title ) : ?>
-				<h2 class="locations-map-title"><?php echo wp_kses_post( $title ); ?></h2>
+			<?php if ( $map_title ) : ?>
+				<h2 class="locations-map-title"><?php echo wp_kses_post( $map_title ); ?></h2>
 			<?php endif; ?>
 			<?php if ( $description ) : ?>
 				<p class="locations-map-description"><?php echo wp_kses_post( $description ); ?></p>
@@ -137,7 +153,7 @@ $rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 		<div class="locations-map-row">
 
 			<!-- Map canvas — Leaflet mounts here. Aria-hidden because the
-				 grouped list below already conveys the same content to AT. -->
+				grouped list below already conveys the same content to AT. -->
 			<div class="locations-map-canvas-wrap">
 				<div id="ob-locations-map" class="locations-map-canvas" aria-hidden="true">
 					<noscript>
@@ -150,7 +166,7 @@ $rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 			</div>
 
 			<!-- Side info card — populated on pin click. Renders an empty
-				 placeholder by default so the column doesn't collapse. -->
+				placeholder by default so the column doesn't collapse. -->
 			<aside class="locations-map-info" aria-live="polite">
 				<div class="locations-map-info-empty">
 					<span class="info-empty-icon" aria-hidden="true">📍</span>
@@ -179,13 +195,13 @@ $rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 					</dl>
 					<div class="info-card-actions">
 						<a class="info-card-cta info-card-cta--secondary"
-						   data-action="map-url"
-						   href="#" target="_blank" rel="noopener">
+							data-action="map-url"
+							href="#" target="_blank" rel="noopener">
 							<?php esc_html_e( 'View on Google Maps', 'child-obsidian-reserve' ); ?>
 						</a>
 						<a class="info-card-cta info-card-cta--primary"
-						   data-action="see-cars"
-						   href="#">
+							data-action="see-cars"
+							href="#">
 							<?php esc_html_e( 'See cars at this branch', 'child-obsidian-reserve' ); ?>
 						</a>
 					</div>
@@ -196,20 +212,22 @@ $rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 
 		<?php if ( ! empty( $grouped ) ) : ?>
 		<!-- Grouped fallback / SEO list — visible to everyone, doubles as
-			 the no-JS experience and as crawlable address content. -->
+			the no-JS experience and as crawlable address content. -->
 		<div class="locations-map-list">
-			<?php foreach ( $grouped as $entry ) :
+			<?php
+			foreach ( $grouped as $entry ) :
 				$region   = $entry['region'];
 				$branches = $entry['branches'];
-			?>
+				?>
 				<div class="locations-map-region">
 					<h3 class="locations-map-region-name">
 						<?php echo esc_html( $region->name ); ?>
 					</h3>
 					<ul class="locations-map-region-branches">
-						<?php foreach ( $branches as $branch ) :
-							$is_coming = $branch['status'] === 'coming_soon';
-						?>
+						<?php
+						foreach ( $branches as $branch ) :
+							$is_coming = 'coming_soon' === $branch['status'];
+							?>
 							<li class="locations-map-region-branch<?php echo $is_coming ? ' is-coming-soon' : ''; ?>">
 								<a href="<?php echo esc_url( home_url( '/fleet/?location=' . $branch['slug'] ) ); ?>" data-slug="<?php echo esc_attr( $branch['slug'] ); ?>" class="branch-link">
 									<?php echo esc_html( $branch['name'] ); ?>

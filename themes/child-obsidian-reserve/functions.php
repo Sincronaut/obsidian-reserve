@@ -50,7 +50,7 @@ function obsidian_reserve_enqueue_styles() {
 		wp_get_theme()->get( 'Version' )
 	);
 
-	// TML styles — always loaded, scoped via body.tml-action class
+	// TML styles — always loaded, scoped via body.tml-action class.
 	if ( class_exists( 'Theme_My_Login' ) ) {
 		wp_enqueue_style(
 			'obsidian-reserve-tml',
@@ -60,7 +60,7 @@ function obsidian_reserve_enqueue_styles() {
 		);
 	}
 
-	// Single Blog Post styles
+	// Single Blog Post styles.
 	if ( is_single() && 'post' === get_post_type() ) {
 		wp_enqueue_style(
 			'obsidian-reserve-single',
@@ -90,7 +90,12 @@ add_action( 'wp_enqueue_scripts', 'obsidian_reserve_enqueue_styles' );
  *    - User passwords enabled   → adds Password + Confirm Password fields
  *    - Auto-login enabled       → logs user in immediately after registration
  */
-add_filter( 'tml_get_registration_type', function() { return 'email'; } );
+add_filter(
+	'tml_get_registration_type',
+	function () {
+		return 'email';
+	}
+);
 add_filter( 'tml_allow_user_passwords', '__return_true' );
 add_filter( 'tml_allow_auto_login', '__return_true' );
 
@@ -103,17 +108,21 @@ function obsidian_reserve_customize_tml_register_form() {
 		return;
 	}
 
-	// Add Full Name field (priority 12 = after hidden user_login at 10, before email at 15)
-	tml_add_form_field( 'register', 'full_name', array(
-		'type'     => 'text',
-		'label'    => __( 'Full Name' ),
-		'value'    => tml_get_request_value( 'full_name', 'post' ),
-		'id'       => 'full_name',
-		'attributes' => array(
-			'autocomplete' => 'name',
-		),
-		'priority' => 12,
-	) );
+	// Add Full Name field (priority 12 = after hidden user_login at 10, before email at 15).
+	tml_add_form_field(
+		'register',
+		'full_name',
+		array(
+			'type'       => 'text',
+			'label'      => __( 'Full Name' ),
+			'value'      => tml_get_request_value( 'full_name', 'post' ),
+			'id'         => 'full_name',
+			'attributes' => array(
+				'autocomplete' => 'name',
+			),
+			'priority'   => 12,
+		)
+	);
 }
 add_action( 'init', 'obsidian_reserve_customize_tml_register_form', 20 );
 
@@ -121,8 +130,15 @@ add_action( 'init', 'obsidian_reserve_customize_tml_register_form', 20 );
  * 3. Validate the Full Name field on registration.
  *    NOTE: Password validation is handled natively by TML
  *    (tml_validate_new_user_password) — do NOT duplicate it here.
+ *
+ * @param WP_Error $errors               The error object.
+ * @param string   $sanitized_user_login The sanitized username.
+ * @param string   $user_email           The user email.
+ * @return WP_Error
  */
-function obsidian_reserve_register_validate( $errors, $sanitized_user_login, $user_email ) {
+function obsidian_reserve_register_validate( $errors, $sanitized_user_login, $user_email ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
+	// Nonce is verified by TML/WordPress core during registration.
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing
 	if ( empty( $_POST['full_name'] ) || strlen( trim( $_POST['full_name'] ) ) < 2 ) {
 		$errors->add( 'full_name_error', '<strong>ERROR</strong>: Please enter your full name.' );
 	}
@@ -134,17 +150,23 @@ add_filter( 'registration_errors', 'obsidian_reserve_register_validate', 10, 3 )
  * 4. After user is created, save Full Name as display_name + first/last name.
  *    NOTE: Password saving is handled natively by TML
  *    (tml_set_new_user_password) — do NOT duplicate it here.
+ *
+ * @param int $user_id The user ID.
  */
 function obsidian_reserve_register_save_user( $user_id ) {
+	// Nonce is verified by TML/WordPress core during registration.
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing
 	if ( ! empty( $_POST['full_name'] ) ) {
-		$full_name = sanitize_text_field( $_POST['full_name'] );
+		$full_name = sanitize_text_field( wp_unslash( $_POST['full_name'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$parts     = explode( ' ', $full_name, 2 );
-		wp_update_user( array(
-			'ID'           => $user_id,
-			'display_name' => $full_name,
-			'first_name'   => $parts[0],
-			'last_name'    => isset( $parts[1] ) ? $parts[1] : '',
-		) );
+		wp_update_user(
+			array(
+				'ID'           => $user_id,
+				'display_name' => $full_name,
+				'first_name'   => $parts[0],
+				'last_name'    => isset( $parts[1] ) ? $parts[1] : '',
+			)
+		);
 	}
 }
 add_action( 'user_register', 'obsidian_reserve_register_save_user' );
@@ -197,15 +219,19 @@ add_action( 'admin_init', 'obsidian_reserve_editor_styles' );
  * --------------------------------------------------------------------------
  * 3. PRECONNECT TO GOOGLE FONTS
  * --------------------------------------------------------------------------
+ *
+ * @param array  $urls          The resource hint URLs.
+ * @param string $relation_type The relation type.
+ * @return array
  */
 function obsidian_reserve_preconnect_google_fonts( $urls, $relation_type ) {
 	if ( 'preconnect' === $relation_type ) {
 		$urls[] = array(
-			'href' => 'https://fonts.googleapis.com',
+			'href'        => 'https://fonts.googleapis.com',
 			'crossorigin' => 'anonymous',
 		);
 		$urls[] = array(
-			'href' => 'https://fonts.gstatic.com',
+			'href'        => 'https://fonts.gstatic.com',
 			'crossorigin' => 'anonymous',
 		);
 	}
@@ -272,6 +298,11 @@ add_filter( 'show_admin_bar', '__return_false' );
  * --------------------------------------------------------------------------
  * Non-admin users go to the homepage after login.
  * Block non-admin users from accessing wp-admin.
+ *
+ * @param string  $redirect_to The redirect URL.
+ * @param string  $request     The requested URL.
+ * @param WP_User $user        The user object.
+ * @return string
  */
 function obsidian_reserve_login_redirect( $redirect_to, $request, $user ) {
 	if ( isset( $user->roles ) && ! in_array( 'administrator', (array) $user->roles, true ) ) {
@@ -281,11 +312,20 @@ function obsidian_reserve_login_redirect( $redirect_to, $request, $user ) {
 }
 add_filter( 'login_redirect', 'obsidian_reserve_login_redirect', 10, 3 );
 
-function obsidian_reserve_registration_redirect( $redirect_to ) {
+/**
+ * Redirects user after registration.
+ *
+ * @param string $redirect_to The redirect URL.
+ * @return string
+ */
+function obsidian_reserve_registration_redirect( $redirect_to ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 	return home_url( '/' );
 }
 add_filter( 'registration_redirect', 'obsidian_reserve_registration_redirect' );
 
+/**
+ * Blocks admin access for non-admin users.
+ */
 function obsidian_reserve_block_admin_access() {
 	if ( is_admin() && ! current_user_can( 'edit_posts' ) && ! wp_doing_ajax() ) {
 		wp_safe_redirect( home_url( '/' ) );
@@ -308,11 +348,11 @@ function obsidian_reserve_user_menu_shortcode() {
 	if ( is_user_logged_in() ) {
 		$current_user = wp_get_current_user();
 		$user_id      = $current_user->ID;
-		$display_name = $current_user->display_name ?: $current_user->user_login;
+		$display_name = $current_user->display_name ? $current_user->display_name : $current_user->user_login;
 		$username     = $current_user->user_login;
 		$first_name   = $current_user->first_name;
 		$last_name    = $current_user->last_name;
-		$full_name    = trim( $first_name . ' ' . $last_name ) ?: $display_name;
+		$full_name    = trim( $first_name . ' ' . $last_name ) ? trim( $first_name . ' ' . $last_name ) : $display_name;
 		$email        = $current_user->user_email;
 		$phone        = get_user_meta( $user_id, '_obsidian_phone', true );
 		$license      = get_user_meta( $user_id, '_obsidian_license', true );
@@ -383,7 +423,7 @@ function obsidian_reserve_user_menu_shortcode() {
 		</div>
 		<?php
 	} else {
-		// Use Theme My Login slugs — default: /login/ and /register/
+		// Use Theme My Login slugs — default: /login/ and /register/.
 		$login_url    = home_url( '/login/' );
 		$register_url = home_url( '/register/' );
 		?>
@@ -413,13 +453,17 @@ add_shortcode( 'obsidian_user_menu', 'obsidian_reserve_user_menu_shortcode' );
  * Block themes render core/html blocks as raw output, so embedded
  * shortcodes like [obsidian_user_menu] won't fire automatically.
  * This filter intercepts HTML block output and runs do_shortcode().
+ *
+ * @param string $block_content The block content.
+ * @param array  $block         The block details.
+ * @return string
  */
 function obsidian_reserve_html_block_shortcodes( $block_content, $block ) {
 	if ( 'core/html' !== $block['blockName'] ) {
 		return $block_content;
 	}
 
-	// Whitelist of plugin-provided shortcodes that may appear inside core/html
+	// Whitelist of plugin-provided shortcodes that may appear inside core/html.
 	// blocks in templates. Add new entries here when introducing more.
 	$shortcodes = array( 'obsidian_user_menu', 'obsidian_locations_menu' );
 

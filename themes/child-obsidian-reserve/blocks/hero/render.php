@@ -9,73 +9,84 @@
  * @package child-obsidian-reserve
  */
 
-$title = $attributes['title'] ?? '';
-$description = $attributes['description'] ?? '';
-$button_text = $attributes['buttonText'] ?? 'Explore Cars';
-$button_url = ( empty( $attributes['buttonUrl'] ) || '#' === $attributes['buttonUrl'] ) ? home_url( '/fleet/' ) : $attributes['buttonUrl'];
-$image_url = $attributes['imageUrl'] ?? '';
+$hero_title     = $attributes['title'] ?? '';
+$description    = $attributes['description'] ?? '';
+$button_text    = $attributes['buttonText'] ?? 'Explore Cars';
+$button_url     = ( empty( $attributes['buttonUrl'] ) || '#' === $attributes['buttonUrl'] ) ? home_url( '/fleet/' ) : $attributes['buttonUrl'];
+$image_url      = $attributes['imageUrl'] ?? '';
 $location_label = $attributes['locationLabel'] ?? 'Location';
-$date_label = $attributes['dateLabel'] ?? 'Pick-up / Drop-off Dates';
+$date_label     = $attributes['dateLabel'] ?? 'Pick-up / Drop-off Dates';
 
-// Handle theme-relative paths (starting with /assets/)
-if ( ! empty( $image_url ) && strpos( $image_url, '/assets/' ) === 0 ) {
+// Handle theme-relative paths (starting with /assets/).
+if ( ! empty( $image_url ) && 0 === strpos( $image_url, '/assets/' ) ) {
 	$image_url = get_stylesheet_directory_uri() . $image_url;
 }
 
-// Default fallback image if none provided
+// Default fallback image if none provided.
 if ( empty( $image_url ) ) {
 	$image_url = get_stylesheet_directory_uri() . '/assets/images/placeholder-car.png';
 }
 
-// Fetch Regions & Branches for the dynamic dropdown (same logic as fleet-filters)
-$regions = get_terms( array(
-	'taxonomy'   => 'region',
-	'hide_empty' => false,
-	'orderby'    => 'name',
-	'order'      => 'ASC',
-) );
+// Fetch Regions & Branches for the dynamic dropdown (same logic as fleet-filters).
+$regions = get_terms(
+	array(
+		'taxonomy'   => 'region',
+		'hide_empty' => false,
+		'orderby'    => 'name',
+		'order'      => 'ASC',
+	)
+);
 
 // Manual Sort: Luzon -> Visayas -> Mindanao.
 if ( ! is_wp_error( $regions ) && ! empty( $regions ) ) {
-	usort( $regions, function( $a, $b ) {
-		$order = array( 'Luzon' => 1, 'Visayas' => 2, 'Mindanao' => 3 );
-		$val_a = $order[ $a->name ] ?? 999;
-		$val_b = $order[ $b->name ] ?? 999;
-		return $val_a <=> $val_b;
-	} );
+	usort(
+		$regions,
+		function ( $a, $b ) {
+			$order = array(
+				'Luzon'    => 1,
+				'Visayas'  => 2,
+				'Mindanao' => 3,
+			);
+			$val_a = $order[ $a->name ] ?? 999;
+			$val_b = $order[ $b->name ] ?? 999;
+			return $val_a <=> $val_b;
+		}
+	);
 }
 
 $regions_with_branches = array();
 
 if ( ! is_wp_error( $regions ) ) {
 	foreach ( $regions as $region ) {
-		$branch_ids = get_posts( array(
-			'post_type'      => 'location',
-			'post_status'    => 'publish',
-			'posts_per_page' => -1,
-			'fields'         => 'ids',
-			'orderby'        => 'title',
-			'order'          => 'ASC',
-			'tax_query'      => array(
-				array(
-					'taxonomy' => 'region',
-					'field'    => 'term_id',
-					'terms'    => $region->term_id,
+		$branch_ids = get_posts(
+			array(
+				'post_type'      => 'location',
+				'post_status'    => 'publish',
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+				'tax_query'      => array(
+					array(
+						'taxonomy' => 'region',
+						'field'    => 'term_id',
+						'terms'    => $region->term_id,
+					),
 				),
-			),
-			'meta_query'     => array(
-				'relation' => 'OR',
-				array(
-					'key'     => 'location_status',
-					'value'   => 'active',
-					'compare' => '=',
+				'meta_query'     => array(
+					'relation' => 'OR',
+					array(
+						'key'     => 'location_status',
+						'value'   => 'active',
+						'compare' => '=',
+					),
+					array(
+						'key'     => 'location_status',
+						'compare' => 'NOT EXISTS',
+					),
 				),
-				array(
-					'key'     => 'location_status',
-					'compare' => 'NOT EXISTS',
-				),
-			),
-		) );
+			)
+		);
 
 		if ( empty( $branch_ids ) ) {
 			continue;
@@ -100,12 +111,12 @@ if ( ! is_wp_error( $regions ) ) {
 $wrapper_attributes = get_block_wrapper_attributes( array( 'class' => 'obsidian-hero' ) );
 ?>
 
-<section <?php echo $wrapper_attributes; ?>>
+<section <?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	<div class="hero-container">
 		
 		<!-- Left Side: Content & Form -->
 		<div class="hero-content">
-			<h1 class="hero-title"><?php echo wp_kses_post( $title ); ?></h1>
+			<h1 class="hero-title"><?php echo wp_kses_post( $hero_title ); ?></h1>
 			<p class="hero-description"><?php echo esc_html( $description ); ?></p>
 
 			<div class="hero-booking-form">
@@ -122,13 +133,17 @@ $wrapper_attributes = get_block_wrapper_attributes( array( 'class' => 'obsidian-
 					<div class="select-arrow"></div>
 					<ul class="dropdown-list">
 						<li data-value="all"><?php esc_html_e( 'All Locations', 'child-obsidian-reserve' ); ?></li>
-						<?php foreach ( $regions_with_branches as $entry ) :
+						<?php
+						foreach ( $regions_with_branches as $entry ) :
 							$region   = $entry['region'];
 							$branches = $entry['branches'];
-						?>
+							?>
 							<li class="dropdown-optgroup"><?php echo esc_html( $region->name ); ?></li>
 							<li data-value="region_<?php echo esc_attr( $region->slug ); ?>" class="dropdown-region-option">
-								<?php printf( esc_html__( 'All in %s', 'child-obsidian-reserve' ), esc_html( $region->name ) ); ?>
+								<?php
+								/* translators: %s: region name */
+								printf( esc_html__( 'All in %s', 'child-obsidian-reserve' ), esc_html( $region->name ) );
+								?>
 							</li>
 							<?php foreach ( $branches as $branch ) : ?>
 								<li data-value="location_<?php echo esc_attr( $branch['slug'] ); ?>" class="dropdown-branch-option">

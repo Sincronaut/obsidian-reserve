@@ -23,25 +23,29 @@
  * @package child-obsidian-reserve
  */
 
-$title                 = $attributes['title'] ?? '';
+$section_title         = $attributes['title'] ?? '';
 $description           = $attributes['description'] ?? '';
 $show_internal_filters = ! isset( $attributes['showInternalFilters'] ) || $attributes['showInternalFilters'];
 $show_header           = ! isset( $attributes['showHeader'] ) || $attributes['showHeader'];
 $logged_in             = is_user_logged_in();
 $login_url             = wp_login_url( get_permalink() );
 
-$cars = get_posts( array(
-	'post_type'      => 'car',
-	'post_status'    => 'publish',
-	'posts_per_page' => -1,
-	'orderby'        => 'title',
-	'order'          => 'ASC',
-) );
+$cars = get_posts(
+	array(
+		'post_type'      => 'car',
+		'post_status'    => 'publish',
+		'posts_per_page' => -1,
+		'orderby'        => 'title',
+		'order'          => 'ASC',
+	)
+);
 
-$car_classes = get_terms( array(
-	'taxonomy'   => 'car_class',
-	'hide_empty' => true,
-) );
+$car_classes = get_terms(
+	array(
+		'taxonomy'   => 'car_class',
+		'hide_empty' => true,
+	)
+);
 
 /**
  * Build the per-color "units by scope" map used by the JS to flip numbers
@@ -60,10 +64,10 @@ $car_classes = get_terms( array(
 $build_scope_data = function ( $car_id ) {
 
 	$result = array(
-		'colors'   => array(),
-		'branches' => array(),
-		'regions'  => array(),
-		'branch_names' => array(), // id => name (for the badge)
+		'colors'       => array(),
+		'branches'     => array(),
+		'regions'      => array(),
+		'branch_names' => array(), // id => name (for the badge).
 	);
 
 	// Aggregated (default scope) — units summed across every active branch.
@@ -115,14 +119,14 @@ $build_scope_data = function ( $car_id ) {
 };
 ?>
 
-<section <?php echo get_block_wrapper_attributes( array( 'class' => 'obsidian-car-grid' ) ); ?>>
+<section <?php echo get_block_wrapper_attributes( array( 'class' => 'obsidian-car-grid' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 
 	<div class="car-grid-container">
 
-		<?php if ( $show_header && ( $title || $description ) ) : ?>
+		<?php if ( $show_header && ( $section_title || $description ) ) : ?>
 		<header class="car-grid-header">
-			<?php if ( $title ) : ?>
-				<h2 class="car-grid-title"><?php echo wp_kses_post( $title ); ?></h2>
+			<?php if ( $section_title ) : ?>
+				<h2 class="car-grid-title"><?php echo wp_kses_post( $section_title ); ?></h2>
 			<?php endif; ?>
 			<?php if ( $description ) : ?>
 				<p class="car-grid-description"><?php echo wp_kses_post( $description ); ?></p>
@@ -133,9 +137,9 @@ $build_scope_data = function ( $car_id ) {
 		<?php if ( $show_internal_filters && ! empty( $car_classes ) && ! is_wp_error( $car_classes ) ) : ?>
 		<nav class="car-grid-filters" aria-label="Filter by car class">
 			<button class="filter-btn active" data-filter="all">All</button>
-			<?php foreach ( $car_classes as $term ) : ?>
-				<button class="filter-btn" data-filter="<?php echo esc_attr( $term->slug ); ?>">
-					<?php echo esc_html( $term->name ); ?>
+			<?php foreach ( $car_classes as $car_class_term ) : ?>
+				<button class="filter-btn" data-filter="<?php echo esc_attr( $car_class_term->slug ); ?>">
+					<?php echo esc_html( $car_class_term->name ); ?>
 				</button>
 			<?php endforeach; ?>
 		</nav>
@@ -143,13 +147,17 @@ $build_scope_data = function ( $car_id ) {
 
 		<?php if ( ! empty( $cars ) ) : ?>
 		<div class="car-cards">
-			<?php foreach ( $cars as $car ) :
+			<?php
+			foreach ( $cars as $car ) :
 				$car_id     = $car->ID;
-				$make       = get_field( 'car_make', $car_id ) ?: '';
-				$model      = get_field( 'car_model', $car_id ) ?: '';
-				$year       = (int) get_field( 'car_year', $car_id );
+				$make_val   = get_field( 'car_make', $car_id );
+				$make       = $make_val ? $make_val : '';
+				$model_val  = get_field( 'car_model', $car_id );
+				$model      = $model_val ? $model_val : '';
+				$car_year   = (int) get_field( 'car_year', $car_id );
 				$daily_rate = (float) get_field( 'car_daily_rate', $car_id );
-				$status     = get_field( 'car_status', $car_id ) ?: 'available';
+				$status_val = get_field( 'car_status', $car_id );
+				$car_status = $status_val ? $status_val : 'available';
 				$thumb      = get_the_post_thumbnail_url( $car_id, 'large' );
 
 				$terms      = wp_get_post_terms( $car_id, 'car_class', array( 'fields' => 'all' ) );
@@ -160,7 +168,7 @@ $build_scope_data = function ( $car_id ) {
 					$class_slug = $terms[0]->slug;
 				}
 
-				if ( $status !== 'available' ) {
+				if ( 'available' !== $car_status ) {
 					continue;
 				}
 
@@ -171,11 +179,11 @@ $build_scope_data = function ( $car_id ) {
 				$default_img = $thumb;
 
 				// Phase 11: scope map for branches/regions and the "Available at" badge.
-				$scope_data = $build_scope_data( $car_id );
+				$scope_data   = $build_scope_data( $car_id );
 				$branches_csv = implode( ',', $scope_data['branches'] );
 				$regions_csv  = implode( ',', $scope_data['regions'] );
 
-				// Determine the first color's image for the default card display
+				// Determine the first color's image for the default card display.
 				if ( ! empty( $variants ) ) {
 					$first_variant = reset( $variants );
 					$first_images  = isset( $first_variant['images'] ) && is_array( $first_variant['images'] ) ? $first_variant['images'] : array();
@@ -187,12 +195,12 @@ $build_scope_data = function ( $car_id ) {
 						}
 					}
 				}
-			?>
+				?>
 			<article class="car-card"
-					 data-car-id="<?php echo esc_attr( $car_id ); ?>"
-					 data-class="<?php echo esc_attr( $class_slug ); ?>"
-					 data-branches="<?php echo esc_attr( $branches_csv ); ?>"
-					 data-regions="<?php echo esc_attr( $regions_csv ); ?>">
+					data-car-id="<?php echo esc_attr( $car_id ); ?>"
+					data-class="<?php echo esc_attr( $class_slug ); ?>"
+					data-branches="<?php echo esc_attr( $branches_csv ); ?>"
+					data-regions="<?php echo esc_attr( $regions_csv ); ?>">
 
 				<div class="car-card-top-bar">
 					<?php if ( $class_name ) : ?>
@@ -208,9 +216,9 @@ $build_scope_data = function ( $car_id ) {
 				<div class="car-card-image">
 					<?php if ( $default_img ) : ?>
 						<img src="<?php echo esc_url( $default_img ); ?>"
-							 alt="<?php echo esc_attr( get_the_title( $car_id ) ); ?>"
-							 loading="lazy"
-							 class="car-card-img" />
+							alt="<?php echo esc_attr( get_the_title( $car_id ) ); ?>"
+							loading="lazy"
+							class="car-card-img" />
 					<?php else : ?>
 						<div class="car-card-placeholder"></div>
 					<?php endif; ?>
@@ -222,29 +230,30 @@ $build_scope_data = function ( $car_id ) {
 					<div class="car-colors-units-wrap">
 						<?php if ( ! empty( $variants ) ) : ?>
 						<div class="car-color-swatches">
-						<?php foreach ( $variants as $color_name => $data ) :
-							$hex        = obsidian_get_color_hex( $color_name );
-							$units      = (int) ( $data['units'] ?? 0 );
-							$color_imgs = isset( $data['images'] ) && is_array( $data['images'] ) ? $data['images'] : array();
-							$card_img_id = (int) ( $color_imgs[0] ?? 0 );
-							$img_url    = $card_img_id > 0 ? wp_get_attachment_image_url( $card_img_id, 'large' ) : $thumb;
-							$is_first   = $first_color;
-							$first_color = false;
+							<?php
+							foreach ( $variants as $color_name => $data ) :
+								$hex         = obsidian_get_color_hex( $color_name );
+								$units       = (int) ( $data['units'] ?? 0 );
+								$color_imgs  = isset( $data['images'] ) && is_array( $data['images'] ) ? $data['images'] : array();
+								$card_img_id = (int) ( $color_imgs[0] ?? 0 );
+								$img_url     = $card_img_id > 0 ? wp_get_attachment_image_url( $card_img_id, 'large' ) : $thumb;
+								$is_first    = $first_color;
+								$first_color = false;
 
-							$scope_units = isset( $scope_data['colors'][ $color_name ] )
+								$scope_units = isset( $scope_data['colors'][ $color_name ] )
 								? $scope_data['colors'][ $color_name ]
 								: array( 'all' => $units );
-						?>
+								?>
 								<button class="color-swatch<?php echo $is_first ? ' active' : ''; ?>"
 										data-color="<?php echo esc_attr( $color_name ); ?>"
-										data-image="<?php echo esc_url( $img_url ?: $thumb ); ?>"
+										data-image="<?php echo esc_url( $img_url ? $img_url : $thumb ); ?>"
 										data-units="<?php echo esc_attr( $units ); ?>"
 										data-units-by-scope='<?php echo esc_attr( wp_json_encode( $scope_units ) ); ?>'
 										style="background-color: <?php echo esc_attr( $hex ); ?>;"
 										aria-label="<?php echo esc_attr( ucfirst( $color_name ) ); ?>"
 										title="<?php echo esc_attr( ucfirst( $color_name ) . ' — ' . $units . ' available' ); ?>">
 								</button>
-							<?php endforeach; ?>
+								<?php endforeach; ?>
 						</div>
 						<?php endif; ?>
 
@@ -258,7 +267,8 @@ $build_scope_data = function ( $car_id ) {
 								} else {
 									echo esc_html( $total_units );
 								}
-								?> available
+								?>
+								available
 							</span>
 						</div>
 					</div>
@@ -266,7 +276,11 @@ $build_scope_data = function ( $car_id ) {
 					<div class="car-card-actions">
 						<?php if ( $logged_in ) : ?>
 							<button class="car-book-btn" data-car-id="<?php echo esc_attr( $car_id ); ?>">
-								Book <?php $make_word = strtok(get_the_title( $car_id ), ' '); echo esc_html( $make_word ); ?>
+								Book 
+								<?php
+								$make_word = strtok( get_the_title( $car_id ), ' ' );
+								echo esc_html( $make_word );
+								?>
 							</button>
 						<?php else : ?>
 							<a class="car-book-btn car-book-btn--login" href="<?php echo esc_url( $login_url ); ?>">
@@ -307,7 +321,7 @@ $build_scope_data = function ( $car_id ) {
 		var noResults  = grid.querySelector('.car-grid-no-results');
 
 		/* ── Local state, mirrored from either the internal class buttons or
-		     the external Fleet Filters block. ── */
+			the external Fleet Filters block. ── */
 		var state = {
 			classes: [],     // multi-select; empty = all
 			scope: 'all',    // 'all' | 'branch_<id>' | 'region_<slug>'
@@ -397,7 +411,7 @@ $build_scope_data = function ( $car_id ) {
 				try { map = JSON.parse(raw); } catch (e) { return; }
 
 				var isScopedFilter = (state.scope.indexOf('branch_') === 0
-				                   || state.scope.indexOf('region_') === 0);
+									|| state.scope.indexOf('region_') === 0);
 				var hasScopeKey    = (typeof map[state.scope] !== 'undefined');
 
 				if (isScopedFilter && !hasScopeKey) {
@@ -549,8 +563,8 @@ $build_scope_data = function ( $car_id ) {
 		});
 
 		/* ── Initial pass — handles direct loads of the page where the
-		     fleet-filters block hasn't dispatched yet (and pages that don't
-		     even include the sidebar). ── */
+			fleet-filters block hasn't dispatched yet (and pages that don't
+			even include the sidebar). ── */
 		applyFilters();
 	});
 

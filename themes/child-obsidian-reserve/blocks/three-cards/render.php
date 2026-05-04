@@ -2,27 +2,39 @@
 /**
  * Three Cards Block Template.
  *
- * @param array $attributes The block attributes.
- * @param string $content The block default content.
- * @param WP_Block $block The block instance.
+ * @param array    $attributes The block attributes.
+ * @param string   $content    The block default content.
+ * @param WP_Block $block      The block instance.
+ *
+ * @package child-obsidian-reserve
  */
 
-$title       = $attributes['title'] ?? '';
-$description = $attributes['description'] ?? '';
-$cards       = $attributes['cards'] ?? [];
+$section_title = $attributes['title'] ?? '';
+$description   = $attributes['description'] ?? '';
+$cards         = $attributes['cards'] ?? array();
 
 $theme_uri = get_stylesheet_directory_uri();
 $block_id  = 'three-cards-' . wp_unique_id();
 ?>
 
-<section <?php echo get_block_wrapper_attributes(['class' => 'obsidian-three-cards', 'id' => $block_id]); ?>>
+<section 
+<?php
+// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+echo get_block_wrapper_attributes(
+	array(
+		'class' => 'obsidian-three-cards',
+		'id'    => $block_id,
+	)
+);
+?>
+>
 	<div class="smudge smudge-top-right"></div>
 	<div class="smudge smudge-bot-left"></div>
 
 	<div class="three-cards-container">
 		<header class="three-cards-header">
-			<?php if ( $title ) : ?>
-				<h2 class="three-cards-title"><?php echo wp_kses_post( $title ); ?></h2>
+			<?php if ( $section_title ) : ?>
+				<h2 class="three-cards-title"><?php echo wp_kses_post( $section_title ); ?></h2>
 			<?php endif; ?>
 
 			<?php if ( $description ) : ?>
@@ -31,11 +43,12 @@ $block_id  = 'three-cards-' . wp_unique_id();
 		</header>
 
 		<div class="cards-grid">
-			<?php foreach ( $cards as $index => $card ) :
-				$card_icon = strpos($card['iconUrl'], 'http') === 0 ? $card['iconUrl'] : $theme_uri . $card['iconUrl'];
-				$img_pos = ($index % 2 === 0) ? 'img-left' : 'img-right';
-			?>
-				<div class="card-item <?php echo esc_attr($img_pos); ?>">
+			<?php
+			foreach ( $cards as $index => $card ) :
+				$card_icon = ( 0 === strpos( $card['iconUrl'], 'http' ) ) ? $card['iconUrl'] : $theme_uri . $card['iconUrl'];
+				$img_pos   = ( 0 === $index % 2 ) ? 'img-left' : 'img-right';
+				?>
+				<div class="card-item <?php echo esc_attr( $img_pos ); ?>">
 					<div class="card-image-column">
 						<img src="<?php echo esc_url( $card_icon ); ?>" alt="" class="card-icon">
 					</div>
@@ -50,7 +63,7 @@ $block_id  = 'three-cards-' . wp_unique_id();
 		<?php if ( ! empty( $cards ) ) : ?>
 		<div class="cards-dots">
 			<?php foreach ( $cards as $i => $card ) : ?>
-				<button class="cards-dot<?php echo $i === 0 ? ' active' : ''; ?>" data-index="<?php echo $i; ?>" aria-label="Go to slide <?php echo $i + 1; ?>"></button>
+				<button class="cards-dot<?php echo ( 0 === $i ) ? ' active' : ''; ?>" data-index="<?php echo esc_attr( $i ); ?>" aria-label="Go to slide <?php echo esc_attr( $i + 1 ); ?>"></button>
 			<?php endforeach; ?>
 		</div>
 		<?php endif; ?>

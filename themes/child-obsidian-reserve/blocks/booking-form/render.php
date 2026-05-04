@@ -16,25 +16,31 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $ob_step = get_query_var( 'ob_step', '' );
 
-/* ═══════════════════════════════════════════════════════════
-   STEP: PAYMENT
-   ═══════════════════════════════════════════════════════════ */
-if ( $ob_step === 'payment' ) {
+/*
+ * ═══════════════════════════════════════════════════════════
+ * STEP: PAYMENT
+ * ═══════════════════════════════════════════════════════════
+ */
+if ( 'payment' === $ob_step ) {
 	require __DIR__ . '/render-payment.php';
 	return;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   STEP: CONFIRMATION
-   ═══════════════════════════════════════════════════════════ */
-if ( $ob_step === 'confirmation' ) {
+/*
+ * ═══════════════════════════════════════════════════════════
+ * STEP: CONFIRMATION
+ * ═══════════════════════════════════════════════════════════
+ */
+if ( 'confirmation' === $ob_step ) {
 	require __DIR__ . '/render-confirmation.php';
 	return;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   STEP: BOOKING FORM (default)
-   ═══════════════════════════════════════════════════════════ */
+/*
+ * ═══════════════════════════════════════════════════════════
+ * STEP: BOOKING FORM (default)
+ * ═══════════════════════════════════════════════════════════
+ */
 
 if ( ! is_user_logged_in() ) {
 	printf(
@@ -44,41 +50,43 @@ if ( ! is_user_logged_in() ) {
 	return;
 }
 
-// Read URL params
-$car_id        = isset( $_GET['car_id'] ) ? (int) $_GET['car_id'] : 0;
-$start_date    = isset( $_GET['start'] ) ? sanitize_text_field( $_GET['start'] ) : '';
-$end_date      = isset( $_GET['end'] ) ? sanitize_text_field( $_GET['end'] ) : '';
-$color         = isset( $_GET['color'] ) ? sanitize_text_field( $_GET['color'] ) : '';
-$customer_type = isset( $_GET['customer_type'] ) ? sanitize_text_field( $_GET['customer_type'] ) : 'local';
-$location_id   = isset( $_GET['location_id'] ) ? (int) $_GET['location_id'] : 0;
+// Read URL params.
+$car_id        = isset( $_GET['car_id'] ) ? (int) $_GET['car_id'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$start_date    = isset( $_GET['start'] ) ? sanitize_text_field( wp_unslash( $_GET['start'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$end_date      = isset( $_GET['end'] ) ? sanitize_text_field( wp_unslash( $_GET['end'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$color         = isset( $_GET['color'] ) ? sanitize_text_field( wp_unslash( $_GET['color'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$customer_type = isset( $_GET['customer_type'] ) ? sanitize_text_field( wp_unslash( $_GET['customer_type'] ) ) : 'local'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$location_id   = isset( $_GET['location_id'] ) ? (int) $_GET['location_id'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-$is_international = ( $customer_type === 'international' );
+$is_international = ( 'international' === $customer_type );
 
-// Validate car
+// Validate car.
 $car = $car_id ? get_post( $car_id ) : null;
-if ( ! $car || $car->post_type !== 'car' || $car->post_status !== 'publish' ) {
+if ( ! $car || 'car' !== $car->post_type || 'publish' !== $car->post_status ) {
 	echo '<section class="obsidian-booking-form-section"><div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">Invalid vehicle. Please go back to the <a href="' . esc_url( home_url( '/fleet/' ) ) . '">fleet page</a> and try again.</p></div></section>';
 	return;
 }
 
-// Get car data
+// Get car data.
 $car_name   = get_the_title( $car_id );
 $daily_rate = (float) get_field( 'car_daily_rate', $car_id );
-$make       = get_field( 'car_make', $car_id ) ?: '';
-$model      = get_field( 'car_model', $car_id ) ?: '';
+$make_val   = get_field( 'car_make', $car_id );
+$make       = $make_val ? $make_val : '';
+$model_val  = get_field( 'car_model', $car_id );
+$model      = $model_val ? $model_val : '';
 
-// Calculate booking summary
-$start_dt  = DateTime::createFromFormat( 'Y-m-d', $start_date );
-$end_dt    = DateTime::createFromFormat( 'Y-m-d', $end_date );
-$num_days  = ( $start_dt && $end_dt ) ? $start_dt->diff( $end_dt )->days : 0;
-$total     = $daily_rate * $num_days;
+// Calculate booking summary.
+$start_dt      = DateTime::createFromFormat( 'Y-m-d', $start_date );
+$end_dt        = DateTime::createFromFormat( 'Y-m-d', $end_date );
+$num_days      = ( $start_dt && $end_dt ) ? $start_dt->diff( $end_dt )->days : 0;
+$total         = $daily_rate * $num_days;
 $color_display = ucfirst( $color );
 
-// Format dates for display
+// Format dates for display.
 $start_display = $start_dt ? $start_dt->format( 'M j, Y' ) : $start_date;
 $end_display   = $end_dt ? $end_dt->format( 'M j, Y' ) : $end_date;
 
-// Get color variant image for the summary
+// Get color variant image for the summary.
 $variant_img = '';
 if ( $color && function_exists( 'obsidian_get_color_variants' ) ) {
 	$variants = obsidian_get_color_variants( $car_id );
@@ -88,41 +96,44 @@ if ( $color && function_exists( 'obsidian_get_color_variants' ) ) {
 	}
 }
 if ( ! $variant_img ) {
-	$variant_img = get_the_post_thumbnail_url( $car_id, 'medium' ) ?: '';
+	$thumbnail_url = get_the_post_thumbnail_url( $car_id, 'medium' );
+	$variant_img   = $thumbnail_url ? $thumbnail_url : '';
 }
 
-// Government ID options for local renters
+// Government ID options for local renters.
 $gov_id_options = array(
-	''                       => 'Select Government ID',
-	'philippine_passport'    => 'Philippine Passport',
-	'drivers_license'        => "Driver's License",
-	'sss_id'                 => 'SSS ID',
-	'gsis_id'                => 'GSIS ID',
-	'umid'                   => 'UMID',
-	'philhealth'             => 'PhilHealth ID',
-	'voters_id'              => "Voter's ID",
-	'prc_id'                 => 'PRC ID',
-	'postal_id'              => 'Postal ID',
-	'national_id'            => 'Philippine National ID (PhilSys)',
+	''                    => 'Select Government ID',
+	'philippine_passport' => 'Philippine Passport',
+	'drivers_license'     => "Driver's License",
+	'sss_id'              => 'SSS ID',
+	'gsis_id'             => 'GSIS ID',
+	'umid'                => 'UMID',
+	'philhealth'          => 'PhilHealth ID',
+	'voters_id'           => "Voter's ID",
+	'prc_id'              => 'PRC ID',
+	'postal_id'           => 'Postal ID',
+	'national_id'         => 'Philippine National ID (PhilSys)',
 );
 
-/* ───────────────────────────────────────────────────────────
-   Phase 11.14 — Pickup branches (dynamic, grouped by region)
-   The legacy hard-coded $locations array (Main Office / Airport /
-   Hotel) is gone. Branches now come from the `location` CPT, only
-   `active` ones, grouped by their `region` taxonomy term so the
-   <select> can render <optgroup>s.
-
-   When a `location_id` was passed in the URL (from the modal) we
-   render the field as read-only with a "Change location" link that
-   goes back to the modal so the user can re-pick.
-   ─────────────────────────────────────────────────────────── */
+/*
+ * ───────────────────────────────────────────────────────────
+ * Phase 11.14 — Pickup branches (dynamic, grouped by region)
+ * The legacy hard-coded $locations array (Main Office / Airport /
+ * Hotel) is gone. Branches now come from the `location` CPT, only
+ * `active` ones, grouped by their `region` taxonomy term so the
+ * <select> can render <optgroup>s.
+ *
+ * When a `location_id` was passed in the URL (from the modal) we
+ * render the field as read-only with a "Change location" link that
+ * goes back to the modal so the user can re-pick.
+ * ───────────────────────────────────────────────────────────
+ */
 
 $branches_by_region = array();
 $branch_lookup      = array();
 
-// Only get branches where this specific car is available
-$car_branches = function_exists('obsidian_get_car_branches') ? obsidian_get_car_branches( $car_id ) : array();
+// Only get branches where this specific car is available.
+$car_branches = function_exists( 'obsidian_get_car_branches' ) ? obsidian_get_car_branches( $car_id ) : array();
 
 $query_args = array(
 	'post_type'      => 'location',
@@ -142,8 +153,8 @@ $query_args = array(
 if ( ! empty( $car_branches ) ) {
 	$query_args['post__in'] = $car_branches;
 } else {
-	// If no branches have this car, force empty result
-	$query_args['post__in'] = array(0);
+	// If no branches have this car, force empty result.
+	$query_args['post__in'] = array( 0 );
 }
 
 $branch_query = new WP_Query( $query_args );
@@ -162,7 +173,7 @@ if ( $branch_query->have_posts() ) {
 			);
 		}
 		$branches_by_region[ $rkey ]['branches'][] = $b;
-		$branch_lookup[ $b->ID ] = array(
+		$branch_lookup[ $b->ID ]                   = array(
 			'name'   => $b->post_title,
 			'region' => $rlabel,
 		);
@@ -173,10 +184,10 @@ if ( $branch_query->have_posts() ) {
 $preselected_branch = ( $location_id && isset( $branch_lookup[ $location_id ] ) )
 	? $branch_lookup[ $location_id ]
 	: null;
-$location_locked    = ( $preselected_branch !== null );
+$location_locked    = ( null !== $preselected_branch );
 
-// Build a "Change location" link that re-opens the modal with the
-// car & dates intact but without `location_id`, so the modal's branch
+// Build a "Change location" link that re-opens the modal with the.
+// car & dates intact but without `location_id`, so the modal's branch.
 // picker comes back up.
 $change_location_url = add_query_arg(
 	array(
@@ -232,8 +243,15 @@ $change_location_url = add_query_arg(
 			<img src="<?php echo esc_url( $variant_img ); ?>" alt="<?php echo esc_attr( $car_name ); ?>" class="obsidian-bf-summary-img" />
 		<?php endif; ?>
 		<div class="obsidian-bf-summary-info">
-			<strong><?php echo esc_html( $car_name ); ?> <?php if ( $color_display ) echo '— ' . esc_html( $color_display ); ?></strong>
-			<span><?php echo esc_html( $start_display . ' – ' . $end_display ); ?> (<?php echo esc_html( $num_days ); ?> day<?php echo $num_days !== 1 ? 's' : ''; ?>)</span>
+			<strong><?php echo esc_html( $car_name ); ?>
+			<?php
+			if ( $color_display ) {
+				echo '— ' . esc_html( $color_display );
+			}
+			?>
+			</strong>
+			<span><?php echo esc_html( $start_display . ' – ' . $end_display ); ?> (<?php echo esc_html( $num_days ); ?> day<?php echo 1 !== $num_days ? 's' : ''; ?>)</span>
+
 			<span class="obsidian-bf-summary-total">₱<?php echo esc_html( number_format( $total ) ); ?></span>
 		</div>
 	</div>
@@ -242,8 +260,8 @@ $change_location_url = add_query_arg(
 	<form id="obsidian-booking-form" class="obsidian-bf-form" novalidate>
 
 		<!-- ═══════════════════════════════════════════════
-		     SUB-STEP 1A: RENTER FORM
-		     ═══════════════════════════════════════════════ -->
+			SUB-STEP 1A: RENTER FORM
+			═══════════════════════════════════════════════ -->
 		<div id="obf-step-renter">
 
 			<!-- View Documents Requirements -->
@@ -377,10 +395,10 @@ $change_location_url = add_query_arg(
 				</div>
 
 				<!-- Two distinct gov IDs (NOT front/back of one ID). The
-				     `data-mirror-from` attribute tells the JS which gov-id
-				     <select> drives the upload zone's label text — when the
-				     user picks "SSS ID" in the dropdown, the upload zone's
-				     "Upload ID" caption becomes "Upload SSS ID". -->
+					`data-mirror-from` attribute tells the JS which gov-id
+					<select> drives the upload zone's label text — when the
+					user picks "SSS ID" in the dropdown, the upload zone's
+					"Upload ID" caption becomes "Upload SSS ID". -->
 				<div class="obsidian-bf-upload-row">
 					<div class="obsidian-bf-upload-group">
 						<div class="obsidian-bf-upload-zone" data-doc-key="gov_id_1" data-mirror-from="obf-gov-id-type">
@@ -414,7 +432,7 @@ $change_location_url = add_query_arg(
 			</div><!-- .obsidian-bf-fields-group -->
 
 			<!-- UX status hint — explains *why* the Next button is disabled
-			     (e.g. "Missing: Last Name"). Filled in by validateRenter(). -->
+				(e.g. "Missing: Last Name"). Filled in by validateRenter(). -->
 			<div class="obsidian-bf-status" id="obf-renter-status" hidden>
 				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
 				<span class="obf-status-text" id="obf-renter-status-text"></span>
@@ -430,14 +448,14 @@ $change_location_url = add_query_arg(
 		</div><!-- #obf-step-renter -->
 
 		<!-- ═══════════════════════════════════════════════
-		     SUB-STEP 1B: DELIVERY FORM
-		     ═══════════════════════════════════════════════ -->
+			SUB-STEP 1B: DELIVERY FORM
+			═══════════════════════════════════════════════ -->
 		<div id="obf-step-delivery" style="display:none;">
 
 			<div class="obsidian-bf-fields-group">
 
 				<!-- ── Phase 11.14: Pickup Branch ──
-				     Now a dynamic dropdown of branches where this car is available. -->
+					Now a dynamic dropdown of branches where this car is available. -->
 				<div class="obsidian-bf-field obsidian-bf-location-field">
 					<label for="obf-pickup-location">Available Branch</label>
 					<select id="obf-pickup-location" name="pickup_location" required>
@@ -509,9 +527,9 @@ $change_location_url = add_query_arg(
 				</div>
 
 				<!-- ── Return Date and Time (auto-set) ──
-				     Return date = booking end date, return time mirrors the
-				     delivery time the user just picked. Displayed read-only;
-				     hidden inputs carry the values to the API. -->
+					Return date = booking end date, return time mirrors the
+					delivery time the user just picked. Displayed read-only;
+					hidden inputs carry the values to the API. -->
 				<div class="obsidian-bf-field obsidian-bf-return-schedule">
 					<label>Return Schedule</label>
 					<div class="obsidian-bf-return-card">
