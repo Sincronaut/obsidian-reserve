@@ -452,6 +452,47 @@ function obsidian_sync_post_title_to_acf( $value, $post_id, $field ) {
 add_filter( 'acf/load_value/name=location_name', 'obsidian_sync_post_title_to_acf', 10, 3 );
 add_filter( 'acf/load_value/name=car_name', 'obsidian_sync_post_title_to_acf', 10, 3 );
 
+/**
+ * Admin JS to sync the ACF fields with the WP post title in real-time.
+ * This solves the issue of not being able to save a new post because the title is "empty".
+ */
+function obsidian_sync_acf_title_js() {
+   $screen = get_current_screen();
+   if ( ! $screen || ! in_array( $screen->post_type, array( 'location', 'car' ), true ) ) {
+      return;
+   }
+   ?>
+   <script>
+   jQuery(document).ready(function($) {
+      // Find the ACF inputs for location_name or car_name
+      var $acfInput = $('.acf-field[data-name="location_name"] input[type="text"], .acf-field[data-name="car_name"] input[type="text"]');
+
+      if ( $acfInput.length ) {
+         $acfInput.on('input', function() {
+            var val = $(this).val();
+            
+            // Classic Editor Sync
+            var $titleClassic = $('#title');
+            if ( $titleClassic.length ) {
+               $titleClassic.val(val).trigger('change');
+               if(val) {
+                  $('#title-prompt-text').addClass('screen-reader-text');
+               } else {
+                  $('#title-prompt-text').removeClass('screen-reader-text');
+               }
+            }
+            
+            // Gutenberg Editor Sync
+            if ( typeof wp !== 'undefined' && wp.data && wp.data.dispatch && wp.data.dispatch('core/editor') ) {
+               wp.data.dispatch('core/editor').editPost({ title: val });
+            }
+         });
+      }
+   });
+   </script>
+   <?php
+}
+add_action( 'admin_footer', 'obsidian_sync_acf_title_js' );
 /* ──────────────────────────────────────────────
    Activation / Deactivation
    ────────────────────────────────────────────── */

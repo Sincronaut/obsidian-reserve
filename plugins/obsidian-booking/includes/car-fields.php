@@ -87,6 +87,22 @@ function obsidian_register_car_acf_fields() {
 				'instructions' => __( 'The display name of this vehicle (e.g. "Nissan GTR R35"). Updates the main post title automatically.', 'obsidian-booking' ),
 				'required'     => 1,
 			),
+			array(
+				'key'           => 'field_obsidian_car_class_taxonomy',
+				'label'         => __( 'Car Class', 'obsidian-booking' ),
+				'name'          => 'car_class',
+				'type'          => 'taxonomy',
+				'taxonomy'      => 'car_class',
+				'field_type'    => 'select',
+				'allow_null'    => 0,
+				'add_term'      => 0,
+				'save_terms'    => 1,
+				'load_terms'    => 1,
+				'return_format' => 'id',
+				'multiple'      => 0,
+				'instructions'  => __( 'Select the vehicle class (e.g. Exotic, Executive).', 'obsidian-booking' ),
+				'required'      => 1,
+			),
 
 			/* ── Identification ───────────────────────────────────────────── */
 			array(
