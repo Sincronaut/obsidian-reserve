@@ -26,30 +26,41 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$title = $attributes['title'] ?? __( 'Filters', 'child-obsidian-reserve' );
+$filters_title = $attributes['title'] ?? __( 'Filters', 'child-obsidian-reserve' );
 
-$car_classes = get_terms( array(
-	'taxonomy'   => 'car_class',
-	'hide_empty' => true,
-	'orderby'    => 'name',
-	'order'      => 'ASC',
-) );
+$car_classes = get_terms(
+	array(
+		'taxonomy'   => 'car_class',
+		'hide_empty' => true,
+		'orderby'    => 'name',
+		'order'      => 'ASC',
+	)
+);
 
-$regions = get_terms( array(
-	'taxonomy'   => 'region',
-	'hide_empty' => false,
-	'orderby'    => 'name',
-	'order'      => 'ASC',
-) );
+$regions = get_terms(
+	array(
+		'taxonomy'   => 'region',
+		'hide_empty' => false,
+		'orderby'    => 'name',
+		'order'      => 'ASC',
+	)
+);
 
 // Manual Sort: Luzon -> Visayas -> Mindanao.
 if ( ! is_wp_error( $regions ) && ! empty( $regions ) ) {
-	usort( $regions, function( $a, $b ) {
-		$order = array( 'Luzon' => 1, 'Visayas' => 2, 'Mindanao' => 3 );
-		$val_a = $order[ $a->name ] ?? 999;
-		$val_b = $order[ $b->name ] ?? 999;
-		return $val_a <=> $val_b;
-	} );
+	usort(
+		$regions,
+		function ( $a, $b ) {
+			$order = array(
+				'Luzon'    => 1,
+				'Visayas'  => 2,
+				'Mindanao' => 3,
+			);
+			$val_a = $order[ $a->name ] ?? 999;
+			$val_b = $order[ $b->name ] ?? 999;
+			return $val_a <=> $val_b;
+		}
+	);
 }
 
 // Per-region branch lookup so we can render collapsible groups.
@@ -57,33 +68,35 @@ $regions_with_branches = array();
 
 if ( ! is_wp_error( $regions ) ) {
 	foreach ( $regions as $region ) {
-		$branch_ids = get_posts( array(
-			'post_type'      => 'location',
-			'post_status'    => 'publish',
-			'posts_per_page' => -1,
-			'fields'         => 'ids',
-			'orderby'        => 'title',
-			'order'          => 'ASC',
-			'tax_query'      => array(
-				array(
-					'taxonomy' => 'region',
-					'field'    => 'term_id',
-					'terms'    => $region->term_id,
+		$branch_ids = get_posts(
+			array(
+				'post_type'      => 'location',
+				'post_status'    => 'publish',
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+				'tax_query'      => array(
+					array(
+						'taxonomy' => 'region',
+						'field'    => 'term_id',
+						'terms'    => $region->term_id,
+					),
 				),
-			),
-			'meta_query'     => array(
-				'relation' => 'OR',
-				array(
-					'key'     => 'location_status',
-					'value'   => 'active',
-					'compare' => '=',
+				'meta_query'     => array(
+					'relation' => 'OR',
+					array(
+						'key'     => 'location_status',
+						'value'   => 'active',
+						'compare' => '=',
+					),
+					array(
+						'key'     => 'location_status',
+						'compare' => 'NOT EXISTS',
+					),
 				),
-				array(
-					'key'     => 'location_status',
-					'compare' => 'NOT EXISTS',
-				),
-			),
-		) );
+			)
+		);
 
 		if ( empty( $branch_ids ) ) {
 			continue;
@@ -106,7 +119,7 @@ if ( ! is_wp_error( $regions ) ) {
 }
 ?>
 
-<aside <?php echo get_block_wrapper_attributes( array( 'class' => 'obsidian-fleet-filters' ) ); ?>>
+<aside <?php echo get_block_wrapper_attributes( array( 'class' => 'obsidian-fleet-filters' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 
 	<!-- Mobile Floating Trigger (Stays visible) -->
 	<button type="button" class="fleet-filter-mobile-trigger">
@@ -119,7 +132,7 @@ if ( ! is_wp_error( $regions ) ) {
 		<div class="fleet-filters-inner">
 
 			<header class="fleet-filters-header">
-				<h2 class="fleet-filters-title"><?php echo esc_html( $title ); ?></h2>
+				<h2 class="fleet-filters-title"><?php echo esc_html( $filters_title ); ?></h2>
 				
 				<div class="fleet-filters-header-actions">
 					<button type="button" class="fleet-filters-clear" data-action="clear">
@@ -131,20 +144,20 @@ if ( ! is_wp_error( $regions ) ) {
 				</div>
 			</header>
 			
-			<?php // Start of actual filter content ?>
+			<?php // Start of actual filter content. ?>
 
 		<?php if ( ! empty( $car_classes ) && ! is_wp_error( $car_classes ) ) : ?>
 		<section class="fleet-filter-group" data-group="class">
 			<h3 class="fleet-filter-group-title"><?php esc_html_e( 'Car Class', 'child-obsidian-reserve' ); ?></h3>
 			<ul class="fleet-filter-list">
-				<?php foreach ( $car_classes as $term ) : ?>
+				<?php foreach ( $car_classes as $car_class_term ) : ?>
 					<li class="fleet-filter-item">
 						<label>
 							<input type="checkbox"
-								   class="fleet-filter-class"
-								   name="fleet-class"
-								   value="<?php echo esc_attr( $term->slug ); ?>" />
-							<span class="fleet-filter-label"><?php echo esc_html( $term->name ); ?></span>
+									class="fleet-filter-class"
+									name="fleet-class"
+									value="<?php echo esc_attr( $car_class_term->slug ); ?>" />
+							<span class="fleet-filter-label"><?php echo esc_html( $car_class_term->name ); ?></span>
 						</label>
 					</li>
 				<?php endforeach; ?>
@@ -160,18 +173,19 @@ if ( ! is_wp_error( $regions ) ) {
 				<li class="fleet-filter-item">
 					<label>
 						<input type="radio"
-							   class="fleet-filter-scope"
-							   name="fleet-scope"
-							   value="all"
-							   checked />
+								class="fleet-filter-scope"
+								name="fleet-scope"
+								value="all"
+								checked />
 						<span class="fleet-filter-label"><?php esc_html_e( 'All Locations', 'child-obsidian-reserve' ); ?></span>
 					</label>
 				</li>
 
-				<?php foreach ( $regions_with_branches as $entry ) :
+				<?php
+				foreach ( $regions_with_branches as $entry ) :
 					$region   = $entry['region'];
 					$branches = $entry['branches'];
-				?>
+					?>
 				<li class="fleet-filter-region" data-region="<?php echo esc_attr( $region->slug ); ?>">
 					<button type="button" class="fleet-filter-region-toggle" aria-expanded="true">
 						<span class="region-caret" aria-hidden="true">▾</span>
@@ -182,9 +196,9 @@ if ( ! is_wp_error( $regions ) ) {
 						<li class="fleet-filter-item fleet-filter-item--region">
 							<label>
 								<input type="radio"
-									   class="fleet-filter-scope"
-									   name="fleet-scope"
-									   value="region_<?php echo esc_attr( $region->slug ); ?>" />
+										class="fleet-filter-scope"
+										name="fleet-scope"
+										value="region_<?php echo esc_attr( $region->slug ); ?>" />
 								<span class="fleet-filter-label">
 									<?php
 									printf(
@@ -200,10 +214,10 @@ if ( ! is_wp_error( $regions ) ) {
 						<li class="fleet-filter-item fleet-filter-item--branch">
 							<label>
 								<input type="radio"
-									   class="fleet-filter-scope"
-									   name="fleet-scope"
-									   value="branch_<?php echo esc_attr( $branch['id'] ); ?>"
-									   data-slug="<?php echo esc_attr( $branch['slug'] ); ?>" />
+										class="fleet-filter-scope"
+										name="fleet-scope"
+										value="branch_<?php echo esc_attr( $branch['id'] ); ?>"
+										data-slug="<?php echo esc_attr( $branch['slug'] ); ?>" />
 								<span class="fleet-filter-label"><?php echo esc_html( $branch['name'] ); ?></span>
 							</label>
 						</li>
@@ -233,12 +247,12 @@ if ( ! is_wp_error( $regions ) ) {
 		}
 
 		/* ── Read filters from the URL ───────────────────────────
-		   Supported params:
-		     ?class=exotic,sport
-		     ?location=<branch-slug>     (one branch)
-		     ?region=<region-slug>       (whole region)
-		   `location` wins over `region` if both are present.
-		   ──────────────────────────────────────────────────────── */
+			Supported params:
+			?class=exotic,sport
+			?location=<branch-slug>     (one branch)
+			?region=<region-slug>       (whole region)
+			`location` wins over `region` if both are present.
+			──────────────────────────────────────────────────────── */
 		function readUrl() {
 			var params      = new URLSearchParams(window.location.search);
 			var classes     = (params.get('class') || '').split(',').filter(Boolean);
@@ -372,7 +386,7 @@ if ( ! is_wp_error( $regions ) ) {
 		}
 
 		/* ── Initialise from URL on load and broadcast immediately so the
-		     car-grid renders the correct subset on first paint. ── */
+			car-grid renders the correct subset on first paint. ── */
 		var initialState = readUrl();
 		applyState(initialState);
 		// Defer the publish so the grid's listener has time to attach.

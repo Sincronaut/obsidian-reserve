@@ -19,37 +19,37 @@ if ( ! is_user_logged_in() ) {
 	return;
 }
 
-$booking_id = isset( $_GET['booking_id'] ) ? (int) $_GET['booking_id'] : 0;
-$token      = isset( $_GET['token'] ) ? sanitize_text_field( $_GET['token'] ) : '';
+$booking_id = isset( $_GET['booking_id'] ) ? (int) $_GET['booking_id'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$token      = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-// Validate
-$error = '';
+// Validate.
+$booking_error = '';
 if ( ! $booking_id || ! get_post( $booking_id ) ) {
-	$error = 'Invalid booking. Please check your payment link.';
+	$booking_error = 'Invalid booking. Please check your payment link.';
 } elseif ( ! function_exists( 'obsidian_verify_payment_token' ) || ! obsidian_verify_payment_token( $booking_id, $token ) ) {
-	$error = 'Invalid or expired payment link. Please contact support.';
+	$booking_error = 'Invalid or expired payment link. Please contact support.';
 } else {
-	$status = get_post_meta( $booking_id, '_booking_status', true );
-	if ( $status !== 'awaiting_payment' ) {
-		if ( in_array( $status, array( 'paid', 'confirmed', 'active', 'completed' ), true ) ) {
-			$error = 'This booking has already been paid.';
+	$booking_status = get_post_meta( $booking_id, '_booking_status', true );
+	if ( 'awaiting_payment' !== $booking_status ) {
+		if ( in_array( $booking_status, array( 'paid', 'confirmed', 'active', 'completed' ), true ) ) {
+			$booking_error = 'This booking has already been paid.';
 		} else {
-			$error = 'This booking is not ready for payment. Current status: ' . esc_html( ucwords( str_replace( '_', ' ', $status ) ) );
+			$booking_error = 'This booking is not ready for payment. Current status: ' . esc_html( ucwords( str_replace( '_', ' ', $booking_status ) ) );
 		}
 	}
 
 	$booking_user = (int) get_post_meta( $booking_id, '_booking_user_id', true );
-	if ( ! $error && $booking_user !== get_current_user_id() ) {
-		$error = 'You do not have permission to pay for this booking.';
+	if ( ! $booking_error && get_current_user_id() !== $booking_user ) {
+		$booking_error = 'You do not have permission to pay for this booking.';
 	}
 }
 
-if ( $error ) {
-	echo '<section class="obsidian-booking-form-section"><div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">' . esc_html( $error ) . ' <a href="' . esc_url( home_url( '/fleet/' ) ) . '">Back to Fleet</a></p></div></section>';
+if ( $booking_error ) {
+	echo '<section class="obsidian-booking-form-section"><div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">' . esc_html( $booking_error ) . ' <a href="' . esc_url( home_url( '/fleet/' ) ) . '">Back to Fleet</a></p></div></section>';
 	return;
 }
 
-// Booking data
+// Booking data.
 $car_id     = (int) get_post_meta( $booking_id, '_booking_car_id', true );
 $car_name   = get_the_title( $car_id );
 $color      = get_post_meta( $booking_id, '_booking_color', true );
@@ -65,15 +65,15 @@ $num_days = ( $start_dt && $end_dt ) ? $start_dt->diff( $end_dt )->days : 0;
 $start_display = $start_dt ? $start_dt->format( 'M j, Y' ) : $start_date;
 $end_display   = $end_dt ? $end_dt->format( 'M j, Y' ) : $end_date;
 
-// Payment calculations
-$deposit_rate  = 0.40;
-$min_deposit   = 10000;
-$deposit       = max( $min_deposit, $total * $deposit_rate );
-$half_payment  = round( $total * 0.50 );
-$charge_total  = $total + $deposit;
-$charge_half   = $half_payment + $deposit;
+// Payment calculations.
+$deposit_rate = 0.40;
+$min_deposit  = 10000;
+$deposit      = max( $min_deposit, $total * $deposit_rate );
+$half_payment = round( $total * 0.50 );
+$charge_total = $total + $deposit;
+$charge_half  = $half_payment + $deposit;
 
-// Color variant image
+// Color variant image.
 $variant_img = '';
 if ( $color && function_exists( 'obsidian_get_color_variants' ) ) {
 	$variants = obsidian_get_color_variants( $car_id );
@@ -83,7 +83,8 @@ if ( $color && function_exists( 'obsidian_get_color_variants' ) ) {
 	}
 }
 if ( ! $variant_img ) {
-	$variant_img = get_the_post_thumbnail_url( $car_id, 'medium' ) ?: '';
+	$thumbnail_url = get_the_post_thumbnail_url( $car_id, 'medium' );
+	$variant_img   = $thumbnail_url ? $thumbnail_url : '';
 }
 
 $color_display = ucfirst( $color );
@@ -119,11 +120,11 @@ $color_display = ucfirst( $color );
 
 	<!-- Vehicle Showcase -->
 	<?php
-	// Parse car specs — extract only Engine, Power, Performance
-	$car_specs_raw   = function_exists( 'get_field' ) ? get_field( 'car_specs', $car_id ) : '';
-	$specs_lines     = $car_specs_raw ? array_filter( array_map( 'trim', explode( "\n", $car_specs_raw ) ) ) : array();
-	$showcase_specs  = array();
-	$spec_keys       = array( 'engine', 'power', 'performance' );
+	// Parse car specs — extract only Engine, Power, Performance.
+	$car_specs_raw  = function_exists( 'get_field' ) ? get_field( 'car_specs', $car_id ) : '';
+	$specs_lines    = $car_specs_raw ? array_filter( array_map( 'trim', explode( "\n", $car_specs_raw ) ) ) : array();
+	$showcase_specs = array();
+	$spec_keys      = array( 'engine', 'power', 'performance' );
 
 	foreach ( $specs_lines as $line ) {
 		$parts = explode( ':', $line, 2 );
@@ -138,7 +139,7 @@ $color_display = ucfirst( $color );
 		}
 	}
 
-	// Use a larger image for the showcase
+	// Use a larger image for the showcase.
 	$showcase_img = '';
 	if ( $color && function_exists( 'obsidian_get_color_variants' ) ) {
 		$variants = obsidian_get_color_variants( $car_id );
@@ -148,9 +149,11 @@ $color_display = ucfirst( $color );
 		}
 	}
 	if ( ! $showcase_img ) {
-		$showcase_img = get_the_post_thumbnail_url( $car_id, 'large' ) ?: '';
+		$large_thumbnail_url = get_the_post_thumbnail_url( $car_id, 'large' );
+		$showcase_img        = $large_thumbnail_url ? $large_thumbnail_url : '';
 	}
 	?>
+
 	<div class="obp-vehicle-showcase">
 		<div class="obp-showcase-hero">
 			<?php if ( $showcase_img ) : ?>

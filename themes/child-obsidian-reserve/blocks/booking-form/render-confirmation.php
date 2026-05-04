@@ -18,47 +18,45 @@ if ( ! is_user_logged_in() ) {
 		esc_url( wp_login_url( home_url( $_SERVER['REQUEST_URI'] ) ) )
 	);
 	return;
-}
+}$booking_id = isset( $_GET['booking_id'] ) ? (int) $_GET['booking_id'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$booking     = $booking_id ? get_post( $booking_id ) : null;
 
-$booking_id = isset( $_GET['booking_id'] ) ? (int) $_GET['booking_id'] : 0;
-$booking    = $booking_id ? get_post( $booking_id ) : null;
-
-if ( ! $booking || $booking->post_type !== 'booking' ) {
+if ( ! $booking || 'booking' !== $booking->post_type ) {
 	echo '<section class="obsidian-booking-form-section"><div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">Booking not found. <a href="' . esc_url( home_url( '/fleet/' ) ) . '">Back to Fleet</a></p></div></section>';
 	return;
 }
 
 $booking_user = (int) get_post_meta( $booking_id, '_booking_user_id', true );
-if ( $booking_user !== get_current_user_id() ) {
+if ( get_current_user_id() !== $booking_user ) {
 	echo '<section class="obsidian-booking-form-section"><div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">You do not have permission to view this booking.</p></div></section>';
 	return;
 }
 
-$status = get_post_meta( $booking_id, '_booking_status', true );
-$is_paid = in_array( $status, array( 'paid', 'confirmed', 'active', 'completed' ), true );
+$booking_status = get_post_meta( $booking_id, '_booking_status', true );
+$is_paid        = in_array( $booking_status, array( 'paid', 'confirmed', 'active', 'completed' ), true );
 
-// Booking data
-$car_id        = (int) get_post_meta( $booking_id, '_booking_car_id', true );
-$car_name      = get_the_title( $car_id );
-$color         = get_post_meta( $booking_id, '_booking_color', true );
-$start_date    = get_post_meta( $booking_id, '_booking_start_date', true );
-$end_date      = get_post_meta( $booking_id, '_booking_end_date', true );
-$total         = (float) get_post_meta( $booking_id, '_booking_total_price', true );
-$daily_rate    = (float) get_field( 'car_daily_rate', $car_id );
-$deposit_amt   = (float) get_post_meta( $booking_id, '_booking_deposit_amount', true );
+// Booking data.
+$car_id      = (int) get_post_meta( $booking_id, '_booking_car_id', true );
+$car_name    = get_the_title( $car_id );
+$color       = get_post_meta( $booking_id, '_booking_color', true );
+$start_date  = get_post_meta( $booking_id, '_booking_start_date', true );
+$end_date    = get_post_meta( $booking_id, '_booking_end_date', true );
+$total       = (float) get_post_meta( $booking_id, '_booking_total_price', true );
+$daily_rate  = (float) get_field( 'car_daily_rate', $car_id );
+$deposit_amt = (float) get_post_meta( $booking_id, '_booking_deposit_amount', true );
 if ( ! $deposit_amt ) {
 	$deposit_amt = max( 10000, $total * 0.40 );
 }
 $need_chauffeur = get_post_meta( $booking_id, '_booking_need_chauffeur', true );
 
-// Car specs
+// Car specs.
 $car_specs = '';
 if ( function_exists( 'get_field' ) ) {
 	$car_specs = get_field( 'car_specs', $car_id );
 }
 $specs_lines = $car_specs ? array_filter( array_map( 'trim', explode( "\n", $car_specs ) ) ) : array();
 
-// Match the payment page showcase specs (engine, power, performance only)
+// Match the payment page showcase specs (engine, power, performance only).
 $showcase_specs = array();
 $spec_keys      = array( 'engine', 'power', 'performance' );
 foreach ( $specs_lines as $line ) {
@@ -74,7 +72,7 @@ foreach ( $specs_lines as $line ) {
 	}
 }
 
-// Car image
+// Car image.
 $variant_img = '';
 if ( $color && function_exists( 'obsidian_get_color_variants' ) ) {
 	$variants = obsidian_get_color_variants( $car_id );
@@ -84,10 +82,11 @@ if ( $color && function_exists( 'obsidian_get_color_variants' ) ) {
 	}
 }
 if ( ! $variant_img ) {
-	$variant_img = get_the_post_thumbnail_url( $car_id, 'medium_large' ) ?: '';
+	$thumbnail_url = get_the_post_thumbnail_url( $car_id, 'medium_large' );
+	$variant_img   = $thumbnail_url ? $thumbnail_url : '';
 }
 
-// Use a larger image for the confirmation car card (match payment page)
+// Use a larger image for the confirmation car card (match payment page).
 $showcase_img = '';
 if ( $color && function_exists( 'obsidian_get_color_variants' ) ) {
 	$variants = obsidian_get_color_variants( $car_id );
@@ -97,12 +96,13 @@ if ( $color && function_exists( 'obsidian_get_color_variants' ) ) {
 	}
 }
 if ( ! $showcase_img ) {
-	$showcase_img = get_the_post_thumbnail_url( $car_id, 'large' ) ?: '';
+	$large_thumbnail_url = get_the_post_thumbnail_url( $car_id, 'large' );
+	$showcase_img        = $large_thumbnail_url ? $large_thumbnail_url : '';
 }
 
 $color_display = ucfirst( $color );
 
-// ── If already paid, show the "Reserved" success page ──
+// ── If already paid, show the "Reserved" success page. ──
 if ( $is_paid ) : ?>
 
 <section class="obsidian-booking-form-section">
@@ -140,15 +140,17 @@ if ( $is_paid ) : ?>
 </div>
 </section>
 
-<?php return; endif;
+	<?php
+	return;
+endif;
 
 // ── Pre-payment: confirmation / review page (Step 3) ──
 
-$first_name    = get_post_meta( $booking_id, '_booking_first_name', true );
-$last_name     = get_post_meta( $booking_id, '_booking_last_name', true );
-$address       = get_post_meta( $booking_id, '_booking_address', true );
-$birth_date    = get_post_meta( $booking_id, '_booking_birth_date', true );
-$license_no    = get_post_meta( $booking_id, '_booking_license_number', true );
+$first_name = get_post_meta( $booking_id, '_booking_first_name', true );
+$last_name  = get_post_meta( $booking_id, '_booking_last_name', true );
+$address    = get_post_meta( $booking_id, '_booking_address', true );
+$birth_date = get_post_meta( $booking_id, '_booking_birth_date', true );
+$license_no = get_post_meta( $booking_id, '_booking_license_number', true );
 
 $age = '';
 if ( $birth_date ) {
@@ -231,7 +233,7 @@ if ( $birth_date ) {
 			<span>Security Deposit</span>
 			<span>₱<?php echo esc_html( number_format( $deposit_amt, 2 ) ); ?></span>
 		</div>
-		<?php if ( $need_chauffeur === 'yes' ) : ?>
+		<?php if ( 'yes' === $need_chauffeur ) : ?>
 		<div class="obc-totals-row">
 			<span>Chauffeur Booked</span>
 			<span>2000/day</span>
@@ -261,7 +263,6 @@ if ( $birth_date ) {
 			<span class="obc-info-label">Driver License No:</span>
 			<span class="obc-info-value"><?php echo esc_html( $license_no ); ?></span>
 		</div>
-
 		<p class="obc-info-subheading italic">Payment Information</p>
 		<div id="obc-payment-info">
 			<!-- Filled by confirmation.js from sessionStorage -->

@@ -1,27 +1,38 @@
 <?php
 /**
  * Render template for the Top Reads Journal block (Posts 6-8).
+ *
+ * @package child-obsidian-reserve
  */
 
-$section_title  = isset( $attributes['sectionTitle'] ) ? $attributes['sectionTitle'] : 'Top Reads from the Journal.';
+$section_title = isset( $attributes['sectionTitle'] ) ? $attributes['sectionTitle'] : 'Top Reads from the Journal.';
 
-// Fetch top 3 blogs, skipping the first 5 (which are in the trending block)
+// Fetch top 3 blogs, skipping the first 5 (which are in the trending block).
 $top_reads_query = function_exists( 'obsidian_reserve_get_top_blogs' ) ? obsidian_reserve_get_top_blogs( 3, 5 ) : null;
 
-$wrapper_attributes = get_block_wrapper_attributes( array(
-	'class' => 'obsidian-top-reads-block alignwide',
-) );
+$wrapper_attributes = get_block_wrapper_attributes(
+	array(
+		'class' => 'obsidian-top-reads-block alignwide',
+	)
+);
 
 if ( ! $top_reads_query || ! $top_reads_query->have_posts() ) {
-	// If no posts are found, silently return or show a message in editor
-	if ( defined('REST_REQUEST') && REST_REQUEST ) {
-		echo '<div ' . $wrapper_attributes . '><p>No additional top reads found.</p></div>';
+	// If no posts are found, silently return or show a message in editor.
+	if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+		echo '<div ' . $wrapper_attributes . '><p>No additional top reads found.</p></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 	return;
 }
 
-// Helper to get image
+// Helper to get image.
 if ( ! function_exists( 'obsidian_get_top_reads_image' ) ) {
+	/**
+	 * Gets the post thumbnail URL or a fallback.
+	 *
+	 * @param int    $post_id The post ID.
+	 * @param string $size    The image size.
+	 * @return string
+	 */
 	function obsidian_get_top_reads_image( $post_id, $size = 'large' ) {
 		if ( has_post_thumbnail( $post_id ) ) {
 			return get_the_post_thumbnail_url( $post_id, $size );
@@ -30,8 +41,14 @@ if ( ! function_exists( 'obsidian_get_top_reads_image' ) ) {
 	}
 }
 
-// Helper to get excerpt
+// Helper to get excerpt.
 if ( ! function_exists( 'obsidian_get_top_reads_excerpt' ) ) {
+	/**
+	 * Gets a trimmed excerpt for the post.
+	 *
+	 * @param WP_Post $post The post object.
+	 * @return string
+	 */
 	function obsidian_get_top_reads_excerpt( $post ) {
 		$excerpt = get_the_excerpt( $post->ID );
 		if ( empty( $excerpt ) ) {
@@ -42,7 +59,7 @@ if ( ! function_exists( 'obsidian_get_top_reads_excerpt' ) ) {
 }
 ?>
 
-<div <?php echo $wrapper_attributes; ?>>
+<div <?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	
 	<div class="top-reads-header">
 		<?php if ( $section_title ) : ?>
@@ -51,7 +68,10 @@ if ( ! function_exists( 'obsidian_get_top_reads_excerpt' ) ) {
 	</div>
 
 	<div class="top-reads-grid">
-		<?php while ( $top_reads_query->have_posts() ) : $top_reads_query->the_post(); ?>
+		<?php
+		while ( $top_reads_query->have_posts() ) :
+			$top_reads_query->the_post();
+			?>
 			<a href="<?php echo esc_url( get_permalink() ); ?>" class="top-reads-card">
 				
 				<div class="top-reads-img-wrap">
@@ -60,7 +80,7 @@ if ( ! function_exists( 'obsidian_get_top_reads_excerpt' ) ) {
 
 				<div class="top-reads-content">
 					<h3 class="top-reads-title"><?php echo esc_html( get_the_title() ); ?></h3>
-					<p class="top-reads-excerpt"><?php echo obsidian_get_top_reads_excerpt( get_post() ); ?></p>
+					<p class="top-reads-excerpt"><?php echo obsidian_get_top_reads_excerpt( get_post() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
 					
 					<div class="top-reads-meta">
 						<div class="meta-author">
@@ -78,7 +98,10 @@ if ( ! function_exists( 'obsidian_get_top_reads_excerpt' ) ) {
 				</div>
 
 			</a>
-		<?php endwhile; wp_reset_postdata(); ?>
+			<?php
+		endwhile;
+		wp_reset_postdata();
+		?>
 	</div>
 
 </div>
