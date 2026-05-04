@@ -35,7 +35,7 @@ function obsidian_resolve_logo_url( $url ) {
 ?>
 
 <section <?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-	<div class="logo-slider-container">
+	<div class="logo-slider-container reveal fade-in">
 		<!-- We duplicate the logo track twice to create a seamless CSS infinite scroll loop -->
 		<div class="logo-slider-track">
 			

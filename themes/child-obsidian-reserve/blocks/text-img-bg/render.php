@@ -41,7 +41,7 @@ if ( $bg_image ) {
 	<?php endif; ?>
 	
 	<div class="cta-container">
-		<div class="cta-content">
+		<div class="cta-content reveal slide-up">
 			<?php if ( $cta_title ) : ?>
 				<<?php echo esc_attr( $title_tag ); ?> class="cta-title"><?php echo wp_kses_post( $cta_title ); ?></<?php echo esc_attr( $title_tag ); ?>>
 			<?php endif; ?>

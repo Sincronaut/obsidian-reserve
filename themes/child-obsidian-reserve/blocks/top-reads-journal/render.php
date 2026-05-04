@@ -61,13 +61,13 @@ if ( ! function_exists( 'obsidian_get_top_reads_excerpt' ) ) {
 
 <div <?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	
-	<div class="top-reads-header">
+	<div class="top-reads-header reveal slide-up">
 		<?php if ( $section_title ) : ?>
 			<h2 class="top-reads-section-title"><?php echo esc_html( $section_title ); ?></h2>
 		<?php endif; ?>
 	</div>
 
-	<div class="top-reads-grid">
+	<div class="top-reads-grid reveal-stagger">
 		<?php
 		while ( $top_reads_query->have_posts() ) :
 			$top_reads_query->the_post();

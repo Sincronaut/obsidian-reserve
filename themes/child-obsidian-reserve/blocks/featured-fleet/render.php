@@ -21,7 +21,7 @@ $header_html = '';
 if ( $main_title || $main_description || $main_button_text ) {
 	ob_start();
 	?>
-	<div class="fleet-main-header">
+	<div class="fleet-main-header reveal slide-up">
 		<div class="fleet-main-text">
 			<?php if ( $main_title ) : ?>
 				<h2 class="fleet-main-title"><?php echo wp_kses_post( $main_title ); ?></h2>
@@ -55,7 +55,7 @@ if ( $main_title || $main_description || $main_button_text ) {
 		<?php endif; ?>
 
 		<!-- Main Feature Card -->
-		<div class="fleet-main-card">
+		<div class="fleet-main-card reveal fade-in">
 			<?php if ( 'standard' === $variant ) : ?>
 				<?php echo $header_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			<?php endif; ?>
@@ -69,7 +69,7 @@ if ( $main_title || $main_description || $main_button_text ) {
 
 		<!-- Grid of Secondary Cards -->
 		<?php if ( ! empty( $grid_items ) ) : ?>
-			<div class="fleet-grid">
+			<div class="fleet-grid reveal-stagger">
 				<?php
 				foreach ( $grid_items as $item ) :
 					$item_img = ! empty( $item['imageUrl'] ) ? ( 0 === strpos( $item['imageUrl'], 'http' ) ? $item['imageUrl'] : $theme_uri . $item['imageUrl'] ) : '';

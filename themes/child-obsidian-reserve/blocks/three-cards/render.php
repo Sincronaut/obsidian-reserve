@@ -32,7 +32,7 @@ echo get_block_wrapper_attributes(
 	<div class="smudge smudge-bot-left"></div>
 
 	<div class="three-cards-container">
-		<header class="three-cards-header">
+		<header class="three-cards-header reveal slide-up">
 			<?php if ( $section_title ) : ?>
 				<h2 class="three-cards-title"><?php echo wp_kses_post( $section_title ); ?></h2>
 			<?php endif; ?>
@@ -42,7 +42,7 @@ echo get_block_wrapper_attributes(
 			<?php endif; ?>
 		</header>
 
-		<div class="cards-grid">
+		<div class="cards-grid reveal-stagger">
 			<?php
 			foreach ( $cards as $index => $card ) :
 				$card_icon = ( 0 === strpos( $card['iconUrl'], 'http' ) ) ? $card['iconUrl'] : $theme_uri . $card['iconUrl'];

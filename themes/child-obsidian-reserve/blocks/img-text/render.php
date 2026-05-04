@@ -21,14 +21,14 @@ if ( ! empty( $image_url ) ) {
 
 <section <?php echo get_block_wrapper_attributes( array( 'class' => 'obsidian-img-text' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	
-	<div class="img-text-image-col">
+	<div class="img-text-image-col reveal slide-right">
 		<?php if ( $image_src ) : ?>
 			<img src="<?php echo esc_url( $image_src ); ?>" alt="Section Image" loading="lazy">
 		<?php endif; ?>
 	</div>
 	
 	<div class="img-text-content-col">
-		<div class="img-text-content-inner">
+		<div class="img-text-content-inner reveal slide-left">
 			<?php if ( $eyebrow ) : ?>
 				<h6 class="img-text-eyebrow text-gold"><?php echo esc_html( $eyebrow ); ?></h6>
 			<?php endif; ?>

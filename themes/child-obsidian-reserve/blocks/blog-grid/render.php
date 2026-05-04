@@ -57,7 +57,7 @@ if ( ! function_exists( 'obsidian_blog_grid_img' ) ) {
 
 <div <?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 
-	<div class="blog-grid-header">
+	<div class="blog-grid-header reveal slide-up">
 		<?php if ( $section_title ) : ?>
 			<h2 class="blog-grid-section-title"><?php echo esc_html( $section_title ); ?></h2>
 		<?php endif; ?>
@@ -100,7 +100,7 @@ if ( ! function_exists( 'obsidian_blog_grid_img' ) ) {
 		<p class="blog-grid-no-posts">No blog posts found matching this category.</p>
 	<?php else : ?>
 
-	<div class="blog-grid">
+	<div class="blog-grid reveal-stagger">
 		<?php
 		while ( $blog_query->have_posts() ) :
 			$blog_query->the_post();
