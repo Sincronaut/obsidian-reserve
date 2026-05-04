@@ -1,0 +1,60 @@
+/* ============================================================
+   GLOBAL ANIMATIONS (Intersection Observer triggered)
+   ============================================================ */
+
+/* Base class for all animatable elements */
+.reveal {
+	opacity: 0;
+	transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	will-change: transform, opacity;
+}
+
+/* 1. Fade In */
+.reveal.fade-in {
+	transform: translateY(0);
+}
+
+/* 2. Slide Up */
+.reveal.slide-up {
+	transform: translateY(30px);
+}
+
+/* 3. Slide Left (from right) */
+.reveal.slide-left {
+	transform: translateX(40px);
+}
+
+/* 4. Slide Right (from left) */
+.reveal.slide-right {
+	transform: translateX(-40px);
+}
+
+/* Trigger State: When element enters viewport */
+.reveal.is-visible {
+	opacity: 1;
+	transform: translate(0, 0) !important;
+}
+
+/* Staggering Children (Optional helper) */
+.reveal-stagger > * {
+	opacity: 0;
+	transform: translateY(20px);
+	transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.reveal-stagger.is-visible > * {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+/* Generate 10 child stagger delays (0.1s steps) */
+.reveal-stagger.is-visible > *:nth-child(1) { transition-delay: 0.1s; }
+.reveal-stagger.is-visible > *:nth-child(2) { transition-delay: 0.2s; }
+.reveal-stagger.is-visible > *:nth-child(3) { transition-delay: 0.3s; }
+.reveal-stagger.is-visible > *:nth-child(4) { transition-delay: 0.4s; }
+.reveal-stagger.is-visible > *:nth-child(5) { transition-delay: 0.5s; }
+.reveal-stagger.is-visible > *:nth-child(6) { transition-delay: 0.6s; }
+.reveal-stagger.is-visible > *:nth-child(7) { transition-delay: 0.7s; }
+.reveal-stagger.is-visible > *:nth-child(8) { transition-delay: 0.8s; }
+.reveal-stagger.is-visible > *:nth-child(9) { transition-delay: 0.9s; }
+.reveal-stagger.is-visible > *:nth-child(10) { transition-delay: 1.0s; }

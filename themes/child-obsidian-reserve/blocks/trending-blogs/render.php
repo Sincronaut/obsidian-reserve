@@ -46,13 +46,13 @@ function obsidian_get_trending_image( $post_id, $size = 'large' ) {
 <div <?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	
 	<?php if ( $section_title ) : ?>
-		<h2 class="trending-section-title"><?php echo esc_html( $section_title ); ?></h2>
+		<h2 class="trending-section-title reveal slide-up"><?php echo esc_html( $section_title ); ?></h2>
 	<?php endif; ?>
 
 	<div class="trending-columns">
 		
 		<!-- LEFT COLUMN (Top 1) -->
-		<div class="trending-col trending-col-main">
+		<div class="trending-col trending-col-main reveal slide-right">
 			<a href="<?php echo esc_url( get_permalink( $top_post->ID ) ); ?>" class="trending-main-card">
 				<div class="trending-main-img-wrap">
 					<img src="<?php echo esc_url( obsidian_get_trending_image( $top_post->ID, 'large' ) ); ?>" alt="<?php echo esc_attr( get_the_title( $top_post->ID ) ); ?>" class="trending-main-img">
@@ -79,7 +79,7 @@ function obsidian_get_trending_image( $post_id, $size = 'large' ) {
 		</div>
 
 		<!-- RIGHT COLUMN (Top 2-5) -->
-		<div class="trending-col trending-col-list">
+		<div class="trending-col trending-col-list reveal slide-left">
 			<div class="trending-list-card">
 				<?php if ( $right_panel_subtitle ) : ?>
 					<p class="trending-list-subtitle"><?php echo wp_kses_post( $right_panel_subtitle ); ?></p>

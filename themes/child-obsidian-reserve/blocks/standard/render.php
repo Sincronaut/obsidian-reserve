@@ -36,7 +36,7 @@ $cards = array(
 ?>
 
 <section <?php echo get_block_wrapper_attributes( array( 'class' => 'obsidian-standard-block' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-	<div class="standard-cards-container">
+	<div class="standard-cards-container reveal-stagger">
 		
 		<?php
 		foreach ( $cards as $card ) :

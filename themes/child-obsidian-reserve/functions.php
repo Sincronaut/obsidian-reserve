@@ -69,6 +69,14 @@ function obsidian_reserve_enqueue_styles() {
 			wp_get_theme()->get( 'Version' )
 		);
 	}
+
+	// Global Animations.
+	wp_enqueue_style(
+		'obsidian-reserve-animations',
+		get_stylesheet_directory_uri() . '/assets/css/animations.css',
+		array( 'child-obsidian-reserve-style' ),
+		wp_get_theme()->get( 'Version' )
+	);
 }
 add_action( 'wp_enqueue_scripts', 'obsidian_reserve_enqueue_styles' );
 
@@ -181,7 +189,7 @@ function obsidian_reserve_tml_script() {
 	?>
 	<script>
 	document.addEventListener('DOMContentLoaded', function() {
-		var map = {
+		const map = {
 			user_login: 'Email',
 			user_pass:  'Password',
 			user_email: 'Email',
@@ -189,8 +197,8 @@ function obsidian_reserve_tml_script() {
 			pass1:      'Password',
 			pass2:      'Confirm Password'
 		};
-		for (var id in map) {
-			var el = document.getElementById(id);
+		for (const id in map) {
+			const el = document.getElementById(id);
 			if (el) el.placeholder = map[id];
 		}
 	});
@@ -288,6 +296,20 @@ function obsidian_reserve_enqueue_cropper() {
 	);
 }
 add_action( 'wp_enqueue_scripts', 'obsidian_reserve_enqueue_cropper' );
+
+/**
+ * Enqueue Theme JavaScript.
+ */
+function obsidian_reserve_enqueue_scripts() {
+	wp_enqueue_script(
+		'obsidian-animations',
+		get_stylesheet_directory_uri() . '/assets/js/animations.js',
+		array(),
+		wp_get_theme()->get( 'Version' ),
+		true
+	);
+}
+add_action( 'wp_enqueue_scripts', 'obsidian_reserve_enqueue_scripts' );
 
 /* Disable the WordPress Admin Bar on the front-end */
 add_filter( 'show_admin_bar', '__return_false' );

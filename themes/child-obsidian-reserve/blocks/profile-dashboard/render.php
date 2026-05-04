@@ -608,16 +608,16 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 	(function () {
 		'use strict';
 
-		var modal = document.getElementById('opd-edit-modal');
-		var trigger = document.getElementById('opd-edit-profile-trigger');
-		var closeBtn = modal.querySelector('.opd-modal-close');
-		var overlay = modal.querySelector('.opd-modal-overlay');
-		var cancelBtn = document.getElementById('opd-edit-cancel');
-		var form = document.getElementById('opd-edit-form');
-		var msgEl = document.getElementById('opd-edit-message');
-		var saveBtn = document.getElementById('opd-edit-save');
-		var saveText = saveBtn.querySelector('.opd-save-text');
-		var saveSpinner = saveBtn.querySelector('.opd-save-spinner');
+		const modal = document.getElementById('opd-edit-modal');
+		const trigger = document.getElementById('opd-edit-profile-trigger');
+		const closeBtn = modal.querySelector('.opd-modal-close');
+		const overlay = modal.querySelector('.opd-modal-overlay');
+		const cancelBtn = document.getElementById('opd-edit-cancel');
+		const form = document.getElementById('opd-edit-form');
+		const msgEl = document.getElementById('opd-edit-message');
+		const saveBtn = document.getElementById('opd-edit-save');
+		const saveText = saveBtn.querySelector('.opd-save-text');
+		const saveSpinner = saveBtn.querySelector('.opd-save-spinner');
 
 		function openModal() {
 			modal.setAttribute('aria-hidden', 'false');
@@ -643,10 +643,10 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 		});
 
 		// ── Transaction History modal ──
-		var historyModal = document.getElementById('opd-history-modal');
-		var historyTrigger = document.getElementById('opd-history-trigger');
-		var historyClose = document.getElementById('opd-history-close');
-		var historyOverlay = historyModal.querySelector('.opd-modal-overlay');
+		const historyModal = document.getElementById('opd-history-modal');
+		const historyTrigger = document.getElementById('opd-history-trigger');
+		const historyClose = document.getElementById('opd-history-close');
+		const historyOverlay = historyModal.querySelector('.opd-modal-overlay');
 
 		function openHistoryModal() {
 			historyModal.setAttribute('aria-hidden', 'false');
@@ -665,10 +665,10 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 		historyOverlay.addEventListener('click', closeHistoryModal);
 
 		// ── Upcoming Reservations modal ──
-		var upcomingModal = document.getElementById('opd-upcoming-modal');
-		var upcomingTrigger = document.getElementById('opd-upcoming-trigger');
-		var upcomingClose = document.getElementById('opd-upcoming-close');
-		var upcomingOverlay = upcomingModal.querySelector('.opd-modal-overlay');
+		const upcomingModal = document.getElementById('opd-upcoming-modal');
+		const upcomingTrigger = document.getElementById('opd-upcoming-trigger');
+		const upcomingClose = document.getElementById('opd-upcoming-close');
+		const upcomingOverlay = upcomingModal.querySelector('.opd-modal-overlay');
 
 		function openUpcomingModal() {
 			upcomingModal.setAttribute('aria-hidden', 'false');
@@ -689,23 +689,23 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 		if (upcomingOverlay) upcomingOverlay.addEventListener('click', closeUpcomingModal);
 
 		// ── Avatar upload with cropper ──
-		var avatarTrigger = document.getElementById('opd-avatar-trigger');
-		var avatarInput = document.getElementById('opd-avatar-input');
-		var avatarImg = document.getElementById('opd-avatar-img');
-		var avatarLoading = document.getElementById('opd-avatar-loading');
-		var restNonce = '<?php echo wp_create_nonce( 'wp_rest' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>';
-		var restBase = '<?php echo esc_url_raw( rest_url() ); ?>';
-		var pageLeaving = false;
-		var isUploading = false;
+		const avatarTrigger = document.getElementById('opd-avatar-trigger');
+		const avatarInput = document.getElementById('opd-avatar-input');
+		const avatarImg = document.getElementById('opd-avatar-img');
+		const avatarLoading = document.getElementById('opd-avatar-loading');
+		const restNonce = '<?php echo wp_create_nonce( 'wp_rest' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>';
+		const restBase = '<?php echo esc_url_raw( rest_url() ); ?>';
+		let pageLeaving = false;
+		let isUploading = false;
 
 		// Crop modal elements
-		var cropModal = document.getElementById('opd-crop-modal');
-		var cropImage = document.getElementById('opd-crop-image');
-		var cropApply = document.getElementById('opd-crop-apply');
-		var cropCancel = document.getElementById('opd-crop-cancel');
-		var cropClose = document.getElementById('opd-crop-close');
-		var cropOverlay = cropModal.querySelector('.opd-modal-overlay');
-		var cropper = null;
+		const cropModal = document.getElementById('opd-crop-modal');
+		const cropImage = document.getElementById('opd-crop-image');
+		const cropApply = document.getElementById('opd-crop-apply');
+		const cropCancel = document.getElementById('opd-crop-cancel');
+		const cropClose = document.getElementById('opd-crop-close');
+		const cropOverlay = cropModal.querySelector('.opd-modal-overlay');
+		let cropper = null;
 
 		window.addEventListener('beforeunload', function (e) {
 			pageLeaving = true;
@@ -739,7 +739,7 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 
 		// Step 1: User picks a file → resize for performance → open crop modal
 		avatarInput.addEventListener('change', function () {
-			var file = this.files[0];
+			const file = this.files[0];
 			if (!file) return;
 
 			if (file.size > 5 * 1024 * 1024) {
@@ -748,20 +748,20 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 			}
 
 			// Downscale the image before feeding it to the cropper (max 1200px)
-			var reader = new FileReader();
+			const reader = new FileReader();
 			reader.onload = function (e) {
-				var img = new Image();
+				const img = new Image();
 				img.onload = function () {
-					var MAX = 1200;
-					var w = img.width;
-					var h = img.height;
+					const MAX = 1200;
+					let w = img.width;
+					let h = img.height;
 
 					if (w > MAX || h > MAX) {
 						if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
 						else { w = Math.round(w * MAX / h); h = MAX; }
 					}
 
-					var c = document.createElement('canvas');
+					const c = document.createElement('canvas');
 					c.width = w; c.height = h;
 					c.getContext('2d').drawImage(img, 0, 0, w, h);
 
@@ -794,7 +794,7 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 		cropApply.addEventListener('click', function () {
 			if (!cropper) return;
 
-			var canvas = cropper.getCroppedCanvas({
+			const canvas = cropper.getCroppedCanvas({
 				width: 400,
 				height: 400,
 				imageSmoothingQuality: 'high',
@@ -808,7 +808,7 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 			isUploading = true;
 
 			canvas.toBlob(function (blob) {
-				var fd = new FormData();
+				const fd = new FormData();
 				fd.append('file', blob, 'avatar.jpg');
 
 				fetch(restBase + 'wp/v2/media', {
@@ -849,11 +849,11 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 		form.addEventListener('submit', function (e) {
 			e.preventDefault();
 
-			var fullName = document.getElementById('opd-full-name').value.trim();
-			var email = document.getElementById('opd-email').value.trim();
-			var phone = document.getElementById('opd-phone').value.trim();
-			var license = document.getElementById('opd-license').value.trim();
-			var password = document.getElementById('opd-password').value;
+			const fullName = document.getElementById('opd-full-name').value.trim();
+			const email = document.getElementById('opd-email').value.trim();
+			const phone = document.getElementById('opd-phone').value.trim();
+			const license = document.getElementById('opd-license').value.trim();
+			const password = document.getElementById('opd-password').value;
 
 			// Basic validation
 			if (!fullName) {
@@ -866,9 +866,9 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 			}
 
 			// Split full name into first/last
-			var nameParts = fullName.split(/\s+/);
-			var firstName = nameParts[0];
-			var lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+			const nameParts = fullName.split(/\s+/);
+			const firstName = nameParts[0];
+			const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
 
 			// Show loading
 			saveText.style.display = 'none';
@@ -876,7 +876,7 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 			saveBtn.disabled = true;
 
 			// Build payload for WP REST API
-			var payload = {
+			const payload = {
 				first_name: firstName,
 				last_name: lastName,
 				name: fullName,

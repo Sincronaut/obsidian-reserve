@@ -313,31 +313,31 @@ $build_scope_data = function ( $car_id ) {
 
 	document.addEventListener('DOMContentLoaded', function() {
 
-		var grid       = document.querySelector('.obsidian-car-grid');
+		const grid       = document.querySelector('.obsidian-car-grid');
 		if (!grid) {
 			return;
 		}
-		var cards      = Array.prototype.slice.call(grid.querySelectorAll('.car-card'));
-		var noResults  = grid.querySelector('.car-grid-no-results');
+		const cards      = Array.prototype.slice.call(grid.querySelectorAll('.car-card'));
+		const noResults  = grid.querySelector('.car-grid-no-results');
 
 		/* ── Local state, mirrored from either the internal class buttons or
 			the external Fleet Filters block. ── */
-		var state = {
+		const state = {
 			classes: [],     // multi-select; empty = all
 			scope: 'all',    // 'all' | 'branch_<id>' | 'region_<slug>'
 			page: 1          // Pagination
 		};
 
-		var CARS_PER_PAGE = 6;
-		var paginationWrap = grid.querySelector('.car-grid-pagination');
+		const CARS_PER_PAGE = 6;
+		const paginationWrap = grid.querySelector('.car-grid-pagination');
 
 		/* ── Internal class-button row (only present if showInternalFilters) ── */
-		var internalFilters = grid.querySelectorAll('.car-grid-filters .filter-btn');
+		const internalFilters = grid.querySelectorAll('.car-grid-filters .filter-btn');
 		internalFilters.forEach(function(btn) {
 			btn.addEventListener('click', function() {
 				internalFilters.forEach(function(b) { b.classList.remove('active'); });
 				btn.classList.add('active');
-				var filter = btn.getAttribute('data-filter');
+				const filter = btn.getAttribute('data-filter');
 				state.classes = filter === 'all' ? [] : [filter];
 				state.page = 1;
 				applyFilters();
@@ -357,7 +357,7 @@ $build_scope_data = function ( $car_id ) {
 		function cardMatches(card) {
 			// Class filter — multi-select OR.
 			if (state.classes.length > 0) {
-				var cls = card.getAttribute('data-class') || '';
+				const cls = card.getAttribute('data-class') || '';
 				if (state.classes.indexOf(cls) === -1) {
 					return false;
 				}
@@ -365,14 +365,14 @@ $build_scope_data = function ( $car_id ) {
 
 			// Scope filter — single-select.
 			if (state.scope.indexOf('branch_') === 0) {
-				var branchId  = state.scope.substring('branch_'.length);
-				var branches  = (card.getAttribute('data-branches') || '').split(',').filter(Boolean);
+				const branchId  = state.scope.substring('branch_'.length);
+				const branches  = (card.getAttribute('data-branches') || '').split(',').filter(Boolean);
 				if (branches.indexOf(branchId) === -1) {
 					return false;
 				}
 			} else if (state.scope.indexOf('region_') === 0) {
-				var regionSlug = state.scope.substring('region_'.length);
-				var regions    = (card.getAttribute('data-regions') || '').split(',').filter(Boolean);
+				const regionSlug = state.scope.substring('region_'.length);
+				const regions    = (card.getAttribute('data-regions') || '').split(',').filter(Boolean);
 				if (regions.indexOf(regionSlug) === -1) {
 					return false;
 				}
@@ -400,19 +400,19 @@ $build_scope_data = function ( $car_id ) {
 
 		/* ── Update each swatch for the current scope. ── */
 		function updateScopedUnits(card) {
-			var swatches = card.querySelectorAll('.color-swatch');
-			var firstVisible = null;
-			var activeStillVisible = false;
+			const swatches = card.querySelectorAll('.color-swatch');
+			let firstVisible = null;
+			let activeStillVisible = false;
 
 			swatches.forEach(function(swatch) {
-				var raw = swatch.getAttribute('data-units-by-scope');
+				const raw = swatch.getAttribute('data-units-by-scope');
 				if (!raw) { return; }
-				var map;
+				let map;
 				try { map = JSON.parse(raw); } catch (e) { return; }
 
-				var isScopedFilter = (state.scope.indexOf('branch_') === 0
+				const isScopedFilter = (state.scope.indexOf('branch_') === 0
 									|| state.scope.indexOf('region_') === 0);
-				var hasScopeKey    = (typeof map[state.scope] !== 'undefined');
+				const hasScopeKey    = (typeof map[state.scope] !== 'undefined');
 
 				if (isScopedFilter && !hasScopeKey) {
 					swatch.hidden = true;
@@ -420,14 +420,14 @@ $build_scope_data = function ( $car_id ) {
 					return;
 				}
 
-				var u = isScopedFilter
+				const u = isScopedFilter
 					? Number(map[state.scope] || 0)
 					: Number((typeof map['all'] !== 'undefined') ? map['all'] : 0);
 
 				swatch.hidden = false;
 				swatch.setAttribute('data-units', String(u));
 
-				var color = swatch.getAttribute('data-color') || '';
+				const color = swatch.getAttribute('data-color') || '';
 				swatch.setAttribute('title',
 					color.charAt(0).toUpperCase() + color.slice(1) + ' — ' + u + ' available');
 
@@ -439,21 +439,21 @@ $build_scope_data = function ( $car_id ) {
 				swatches.forEach(function(s) { s.classList.remove('active'); });
 				firstVisible.classList.add('active');
 
-				var img     = card.querySelector('.car-card-img');
-				var unitsEl = card.querySelector('.units-text');
-				var bookBtn = card.querySelector('.car-book-btn');
-				var newImg  = firstVisible.getAttribute('data-image');
-				var newU    = firstVisible.getAttribute('data-units');
-				var newC    = firstVisible.getAttribute('data-color');
+				const img     = card.querySelector('.car-card-img');
+				const unitsEl = card.querySelector('.units-text');
+				const bookBtn = card.querySelector('.car-book-btn');
+				const newImg  = firstVisible.getAttribute('data-image');
+				const newU    = firstVisible.getAttribute('data-units');
+				const newC    = firstVisible.getAttribute('data-color');
 				if (img && newImg) { swipeImage(img, newImg); }
 				if (unitsEl)       { unitsEl.textContent = newU + ' available'; }
 				if (bookBtn && newC) { bookBtn.setAttribute('data-color', newC); }
 			} else {
-				var activeSwatch = card.querySelector('.color-swatch.active');
+				const activeSwatch = card.querySelector('.color-swatch.active');
 				if (activeSwatch) {
-					var unitsEl2 = card.querySelector('.units-text');
-					var bookBtn2 = card.querySelector('.car-book-btn');
-					var actColor = activeSwatch.getAttribute('data-color');
+					const unitsEl2 = card.querySelector('.units-text');
+					const bookBtn2 = card.querySelector('.car-book-btn');
+					const actColor = activeSwatch.getAttribute('data-color');
 					if (unitsEl2) {
 						unitsEl2.textContent = activeSwatch.getAttribute('data-units') + ' available';
 					}
@@ -466,9 +466,9 @@ $build_scope_data = function ( $car_id ) {
 
 		/* ── Apply filters: hide non-matching cards, recompute units, apply pagination. ── */
 		function applyFilters() {
-			var matchingCards = [];
+			const matchingCards = [];
 			cards.forEach(function(card) {
-				var ok = cardMatches(card);
+				const ok = cardMatches(card);
 				if (ok) {
 					updateScopedUnits(card);
 					matchingCards.push(card);
@@ -482,11 +482,11 @@ $build_scope_data = function ( $car_id ) {
 			}
 
 			// Pagination
-			var totalPages = Math.ceil(matchingCards.length / CARS_PER_PAGE);
+			const totalPages = Math.ceil(matchingCards.length / CARS_PER_PAGE);
 			if (state.page > totalPages) { state.page = Math.max(1, totalPages); }
 
-			var startIndex = (state.page - 1) * CARS_PER_PAGE;
-			var endIndex = startIndex + CARS_PER_PAGE;
+			const startIndex = (state.page - 1) * CARS_PER_PAGE;
+			const endIndex = startIndex + CARS_PER_PAGE;
 
 			matchingCards.forEach(function(card, index) {
 				if (index >= startIndex && index < endIndex) {
@@ -508,14 +508,14 @@ $build_scope_data = function ( $car_id ) {
 			}
 
 			paginationWrap.hidden = false;
-			var html = '';
+			let html = '';
 
 			if (state.page > 1) {
 				html += '<button class="pagination-btn prev-btn" data-page="' + (state.page - 1) + '">&laquo; Prev</button>';
 			}
 
-			for (var i = 1; i <= totalPages; i++) {
-				var activeClass = i === state.page ? ' active' : '';
+			for (let i = 1; i <= totalPages; i++) {
+				const activeClass = i === state.page ? ' active' : '';
 				html += '<button class="pagination-btn page-num' + activeClass + '" data-page="' + i + '">' + i + '</button>';
 			}
 
@@ -528,9 +528,9 @@ $build_scope_data = function ( $car_id ) {
 
 		if (paginationWrap) {
 			paginationWrap.addEventListener('click', function(e) {
-				var btn = e.target.closest('.pagination-btn');
+				const btn = e.target.closest('.pagination-btn');
 				if (!btn) return;
-				var newPage = parseInt(btn.getAttribute('data-page'), 10);
+				const newPage = parseInt(btn.getAttribute('data-page'), 10);
 				if (newPage && newPage !== state.page) {
 					state.page = newPage;
 					applyFilters();
@@ -541,16 +541,16 @@ $build_scope_data = function ( $car_id ) {
 
 		/* ── Color swatch clicks: swap image + update units (active swatch wins). ── */
 		grid.addEventListener('click', function(e) {
-			var swatch = e.target.closest('.color-swatch');
+			const swatch = e.target.closest('.color-swatch');
 			if (!swatch) { return; }
 
-			var card     = swatch.closest('.car-card');
-			var img      = card.querySelector('.car-card-img');
-			var unitsEl  = card.querySelector('.units-text');
-			var bookBtn  = card.querySelector('.car-book-btn');
-			var newImage = swatch.getAttribute('data-image');
-			var newUnits = swatch.getAttribute('data-units');
-			var newColor = swatch.getAttribute('data-color');
+			const card     = swatch.closest('.car-card');
+			const img      = card.querySelector('.car-card-img');
+			const unitsEl  = card.querySelector('.units-text');
+			const bookBtn  = card.querySelector('.car-book-btn');
+			const newImage = swatch.getAttribute('data-image');
+			const newUnits = swatch.getAttribute('data-units');
+			const newColor = swatch.getAttribute('data-color');
 
 			card.querySelectorAll('.color-swatch').forEach(function(s) {
 				s.classList.remove('active');

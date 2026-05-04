@@ -116,72 +116,76 @@ $wrapper_attributes = get_block_wrapper_attributes( array( 'class' => 'obsidian-
 		
 		<!-- Left Side: Content & Form -->
 		<div class="hero-content">
-			<h1 class="hero-title"><?php echo wp_kses_post( $hero_title ); ?></h1>
-			<p class="hero-description"><?php echo esc_html( $description ); ?></p>
+			<div class="reveal slide-right">
+				<h1 class="hero-title"><?php echo wp_kses_post( $hero_title ); ?></h1>
+				<p class="hero-description"><?php echo esc_html( $description ); ?></p>
 
-			<div class="hero-booking-form">
-				<!-- Location Dropdown (Custom implementation for premium feel & forced downward opening) -->
-				<div class="booking-field custom-dropdown" id="hero-location-dropdown">
-					<div class="field-icon">
-						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="currentColor"/>
-						</svg>
-					</div>
-					<div class="dropdown-selected">
-						<span class="selected-text"><?php echo esc_html( $location_label ); ?></span>
-					</div>
-					<div class="select-arrow"></div>
-					<ul class="dropdown-list">
-						<li data-value="all"><?php esc_html_e( 'All Locations', 'child-obsidian-reserve' ); ?></li>
-						<?php
-						foreach ( $regions_with_branches as $entry ) :
-							$region   = $entry['region'];
-							$branches = $entry['branches'];
-							?>
-							<li class="dropdown-optgroup"><?php echo esc_html( $region->name ); ?></li>
-							<li data-value="region_<?php echo esc_attr( $region->slug ); ?>" class="dropdown-region-option">
-								<?php
-								/* translators: %s: region name */
-								printf( esc_html__( 'All in %s', 'child-obsidian-reserve' ), esc_html( $region->name ) );
+				<div class="hero-booking-form">
+					<!-- Location Dropdown (Custom implementation for premium feel & forced downward opening) -->
+					<div class="booking-field custom-dropdown" id="hero-location-dropdown">
+						<div class="field-icon">
+							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+								<path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="currentColor"/>
+							</svg>
+						</div>
+						<div class="dropdown-selected">
+							<span class="selected-text"><?php echo esc_html( $location_label ); ?></span>
+						</div>
+						<div class="select-arrow"></div>
+						<ul class="dropdown-list">
+							<li data-value="all"><?php esc_html_e( 'All Locations', 'child-obsidian-reserve' ); ?></li>
+							<?php
+							foreach ( $regions_with_branches as $entry ) :
+								$region   = $entry['region'];
+								$branches = $entry['branches'];
 								?>
-							</li>
-							<?php foreach ( $branches as $branch ) : ?>
-								<li data-value="location_<?php echo esc_attr( $branch['slug'] ); ?>" class="dropdown-branch-option">
-									<?php echo esc_html( $branch['name'] ); ?>
+								<li class="dropdown-optgroup"><?php echo esc_html( $region->name ); ?></li>
+								<li data-value="region_<?php echo esc_attr( $region->slug ); ?>" class="dropdown-region-option">
+									<?php
+									/* translators: %s: region name */
+									printf( esc_html__( 'All in %s', 'child-obsidian-reserve' ), esc_html( $region->name ) );
+									?>
 								</li>
+								<?php foreach ( $branches as $branch ) : ?>
+									<li data-value="location_<?php echo esc_attr( $branch['slug'] ); ?>" class="dropdown-branch-option">
+										<?php echo esc_html( $branch['name'] ); ?>
+									</li>
+								<?php endforeach; ?>
 							<?php endforeach; ?>
-						<?php endforeach; ?>
-					</ul>
-					<input type="hidden" id="hero-location-value" value="">
-				</div>
-
-				<!-- Date Dropdown (Static for now) -->
-				<div class="booking-field">
-					<div class="field-icon">
-						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M19 4H18V2H16V4H8V2H6V4H5C3.89 4 3.01 4.9 3.01 6L3 20C3 21.1 3.89 22 5 22H19C20.1 22 21 21.1 21 20V6C21 4.9 20.1 4 19 4ZM19 20H5V9H19V20ZM7 11H12V16H7V11Z" fill="currentColor"/>
-						</svg>
+						</ul>
+						<input type="hidden" id="hero-location-value" value="">
 					</div>
-					<select class="booking-select">
-						<option value="" disabled selected><?php echo esc_html( $date_label ); ?></option>
-					</select>
-					<div class="select-arrow"></div>
-				</div>
 
-				<!-- Button (Inheriting Global Style) -->
-				<div class="button-wrapper wp-block-button is-style-solid-gold">
-					<a href="<?php echo esc_url( $button_url ); ?>" class="wp-block-button__link" id="hero-explore-btn">
-						<?php echo esc_html( $button_text ); ?>
-					</a>
+					<!-- Date Dropdown (Static for now) -->
+					<div class="booking-field">
+						<div class="field-icon">
+							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+								<path d="M19 4H18V2H16V4H8V2H6V4H5C3.89 4 3.01 4.9 3.01 6L3 20C3 21.1 3.89 22 5 22H19C20.1 22 21 21.1 21 20V6C21 4.9 20.1 4 19 4ZM19 20H5V9H19V20ZM7 11H12V16H7V11Z" fill="currentColor"/>
+							</svg>
+						</div>
+						<select class="booking-select">
+							<option value="" disabled selected><?php echo esc_html( $date_label ); ?></option>
+						</select>
+						<div class="select-arrow"></div>
+					</div>
+
+					<!-- Button (Inheriting Global Style) -->
+					<div class="button-wrapper wp-block-button is-style-solid-gold">
+						<a href="<?php echo esc_url( $button_url ); ?>" class="wp-block-button__link" id="hero-explore-btn">
+							<?php echo esc_html( $button_text ); ?>
+						</a>
+					</div>
 				</div>
 			</div>
 		</div>
 
 		<!-- Right Side: Image -->
 		<div class="hero-image-side">
-			<?php if ( ! empty( $image_url ) ) : ?>
-				<img src="<?php echo esc_url( $image_url ); ?>" alt="Dynamic Car Image" class="hero-image">
-			<?php endif; ?>
+			<div class="reveal slide-left">
+				<?php if ( ! empty( $image_url ) ) : ?>
+					<img src="<?php echo esc_url( $image_url ); ?>" alt="Dynamic Car Image" class="hero-image">
+				<?php endif; ?>
+			</div>
 		</div>
 
 	</div>
@@ -191,11 +195,11 @@ $wrapper_attributes = get_block_wrapper_attributes( array( 'class' => 'obsidian-
 (function() {
 	'use strict';
 	document.addEventListener('DOMContentLoaded', function() {
-		var btn = document.getElementById('hero-explore-btn');
-		var dropdown = document.getElementById('hero-location-dropdown');
-		var valInput = document.getElementById('hero-location-value');
-		var selectedText = dropdown.querySelector('.selected-text');
-		var list = dropdown.querySelector('.dropdown-list');
+		const btn = document.getElementById('hero-explore-btn');
+		const dropdown = document.getElementById('hero-location-dropdown');
+		const valInput = document.getElementById('hero-location-value');
+		const selectedText = dropdown.querySelector('.selected-text');
+		const list = dropdown.querySelector('.dropdown-list');
 		
 		if (!btn || !dropdown) return;
 
@@ -212,11 +216,11 @@ $wrapper_attributes = get_block_wrapper_attributes( array( 'class' => 'obsidian-
 
 		// Handle selection
 		list.addEventListener('click', function(e) {
-			var li = e.target.closest('li');
+			const li = e.target.closest('li');
 			if (!li || li.classList.contains('dropdown-optgroup')) return;
 
-			var val = li.getAttribute('data-value');
-			var text = li.textContent.trim();
+			const val = li.getAttribute('data-value');
+			const text = li.textContent.trim();
 
 			valInput.value = val;
 			selectedText.textContent = text;
@@ -228,12 +232,12 @@ $wrapper_attributes = get_block_wrapper_attributes( array( 'class' => 'obsidian-
 
 		// Handle "Explore Cars" button
 		btn.addEventListener('click', function(e) {
-			var val = valInput.value;
+			const val = valInput.value;
 			if (!val || val === 'all') return; // Just follow the normal link
 
 			e.preventDefault();
-			var url = btn.getAttribute('href');
-			var separator = url.indexOf('?') !== -1 ? '&' : '?';
+			let url = btn.getAttribute('href');
+			const separator = url.indexOf('?') !== -1 ? '&' : '?';
 
 			if (val.indexOf('region_') === 0) {
 				url += separator + 'region=' + encodeURIComponent(val.substring(7));

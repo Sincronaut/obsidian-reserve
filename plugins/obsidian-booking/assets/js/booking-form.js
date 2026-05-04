@@ -11,11 +11,11 @@
 (function () {
 	'use strict';
 
-	var cfg = window.obsidianBooking || {};
-	var form, nextBtn, backBtn, submitBtn, submitText, submitSpinner, messageEl;
-	var renterStep, deliveryStep, titleEl, subtitleEl;
-	var uploadedDocs = {};
-	var currentStep = 'renter';
+	const cfg = window.obsidianBooking || {};
+	let form, nextBtn, backBtn, submitBtn, submitText, submitSpinner, messageEl;
+	let renterStep, deliveryStep, titleEl, subtitleEl;
+	const uploadedDocs = {};
+	let currentStep = 'renter';
 
 	function init() {
 		form = document.getElementById('obsidian-booking-form');
@@ -57,8 +57,8 @@
 		subtitleEl.textContent = 'Land and drive. Fill in the details below.';
 
 		// Pre-fill contact number from renter phone if available
-		var phoneInput   = document.getElementById('obf-phone');
-		var contactInput = document.getElementById('obf-delivery-contact');
+		const phoneInput   = document.getElementById('obf-phone');
+		const contactInput = document.getElementById('obf-delivery-contact');
 		if (phoneInput && contactInput && phoneInput.value && !contactInput.value) {
 			contactInput.value = phoneInput.value;
 		}
@@ -75,7 +75,7 @@
 		renterStep.style.display   = '';
 		currentStep = 'renter';
 
-		var customerType = (document.getElementById('obf-customer-type') || {}).value || 'local';
+		const customerType = (document.getElementById('obf-customer-type') || {}).value || 'local';
 		if (customerType === 'international') {
 			titleEl.innerHTML    = '<span class="text-gold">International</span> Renters Form';
 			subtitleEl.textContent = 'Land and drive. Fill in the details below.';
@@ -91,10 +91,10 @@
 	/* ── Birth Date Picker (Flatpickr) ── */
 
 	function initBirthDatePicker() {
-		var birthInput = document.getElementById('obf-birth-date');
+		const birthInput = document.getElementById('obf-birth-date');
 		if (!birthInput || typeof flatpickr === 'undefined') return;
 
-		var twentyOneYearsAgo = new Date();
+		const twentyOneYearsAgo = new Date();
 		twentyOneYearsAgo.setFullYear(twentyOneYearsAgo.getFullYear() - 21);
 
 		flatpickr(birthInput, {
@@ -111,13 +111,13 @@
 
 	/* ── Delivery Date Pickers ── */
 
-	var deliveryPickersInitialized = false;
+	let deliveryPickersInitialized = false;
 
 	function initDeliveryDatePickers() {
 		if (deliveryPickersInitialized || typeof flatpickr === 'undefined') return;
 		deliveryPickersInitialized = true;
 
-		var deliveryDateInput = document.getElementById('obf-delivery-date');
+		const deliveryDateInput = document.getElementById('obf-delivery-date');
 
 		if (deliveryDateInput) {
 			flatpickr(deliveryDateInput, {
@@ -134,13 +134,13 @@
 		// We just mirror the user's delivery time into the hidden return
 		// time and update the read-only display so they can see what
 		// we'll be using.
-		var deliveryTimeInput = document.getElementById('obf-delivery-time');
-		var returnTimeHidden  = document.getElementById('obf-return-time');
-		var returnTimeDisplay = document.getElementById('obf-return-time-display');
+		const deliveryTimeInput = document.getElementById('obf-delivery-time');
+		const returnTimeHidden  = document.getElementById('obf-return-time');
+		const returnTimeDisplay = document.getElementById('obf-return-time-display');
 
 		if (deliveryTimeInput && returnTimeHidden) {
-			var syncReturnTime = function () {
-				var t = (deliveryTimeInput.value || '').trim();
+			const syncReturnTime = function () {
+				const t = (deliveryTimeInput.value || '').trim();
 				returnTimeHidden.value = t;
 				if (returnTimeDisplay) {
 					returnTimeDisplay.textContent = t || '—';
@@ -166,36 +166,36 @@
 	/* ── File Uploads ── */
 
 	function initFileUploads() {
-		var zones = form.querySelectorAll('.obsidian-bf-upload-zone');
+		const zones = form.querySelectorAll('.obsidian-bf-upload-zone');
 
 		zones.forEach(function (zone) {
-			var fileInput   = zone.querySelector('.obf-file-input');
-			var placeholder = zone.querySelector('.obf-upload-placeholder');
-			var preview     = zone.querySelector('.obf-upload-preview');
-			var previewImg  = preview ? preview.querySelector('img') : null;
-			var removeBtn   = zone.querySelector('.obf-upload-remove');
-			var docKey      = zone.getAttribute('data-doc-key');
+			const fileInput   = zone.querySelector('.obf-file-input');
+			const placeholder = zone.querySelector('.obf-upload-placeholder');
+			const preview     = zone.querySelector('.obf-upload-preview');
+			const previewImg  = preview ? preview.querySelector('img') : null;
+			const removeBtn   = zone.querySelector('.obf-upload-remove');
+			const docKey      = zone.getAttribute('data-doc-key');
 			// Remember the original placeholder caption so that:
 			//   - on Remove we restore it (was previously stuck on the file name)
 			//   - the gov-id mirror logic can rewrite this baseline as the
 			//     user changes their ID type.
-			var labelSpan   = placeholder ? placeholder.querySelector('span') : null;
+			const labelSpan   = placeholder ? placeholder.querySelector('span') : null;
 			if (labelSpan && !zone.dataset.defaultLabel) {
 				zone.dataset.defaultLabel = labelSpan.textContent;
 			}
 
 			fileInput.addEventListener('change', function () {
-				var file = fileInput.files[0];
+				const file = fileInput.files[0];
 				if (!file) return;
 
-				var maxSize = 5 * 1024 * 1024;
+				const maxSize = 5 * 1024 * 1024;
 				if (file.size > maxSize) {
 					showMessage('File must be under 5MB.', 'error');
 					fileInput.value = '';
 					return;
 				}
 
-				var allowed = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+				const allowed = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 				if (allowed.indexOf(file.type) === -1) {
 					showMessage('Only JPG, PNG, WebP, and PDF files are allowed.', 'error');
 					fileInput.value = '';
@@ -209,7 +209,7 @@
 					zone.classList.remove('obf-uploading');
 
 					if (file.type.startsWith('image/') && previewImg) {
-						var reader = new FileReader();
+						const reader = new FileReader();
 						reader.onload = function (e) {
 							previewImg.src = e.target.result;
 							placeholder.style.display = 'none';
@@ -250,7 +250,7 @@
 	}
 
 	function uploadFile(file, docKey) {
-		var formData = new FormData();
+		const formData = new FormData();
 		formData.append('document', file);
 
 		return fetch(cfg.restUrl + 'upload-document', {
@@ -275,33 +275,33 @@
 	   is also stored in `zone.dataset.defaultLabel` so the file-Remove
 	   handler restores the right caption. */
 	function initGovIdMirror() {
-		var zones = form.querySelectorAll('.obsidian-bf-upload-zone[data-mirror-from]');
+		const zones = form.querySelectorAll('.obsidian-bf-upload-zone[data-mirror-from]');
 
 		zones.forEach(function (zone) {
-			var sourceId  = zone.getAttribute('data-mirror-from');
-			var sourceSel = sourceId ? document.getElementById(sourceId) : null;
+			const sourceId  = zone.getAttribute('data-mirror-from');
+			const sourceSel = sourceId ? document.getElementById(sourceId) : null;
 			if (!sourceSel) return;
 
-			var labelSpan = zone.querySelector('.obf-upload-label')
+			const labelSpan = zone.querySelector('.obf-upload-label')
 				|| (zone.querySelector('.obf-upload-placeholder') || zone).querySelector('span');
 			if (!labelSpan) return;
 
-			var sync = function () {
-				var optText = '';
+			const sync = function () {
+				let optText = '';
 				if (sourceSel.selectedIndex >= 0) {
-					var opt = sourceSel.options[sourceSel.selectedIndex];
+					const opt = sourceSel.options[sourceSel.selectedIndex];
 					// Skip the empty "Select Government ID" placeholder option.
 					if (opt && opt.value) optText = opt.text || '';
 				}
-				var newLabel = optText ? ('Upload ' + optText) : 'Upload ID';
+				const newLabel = optText ? ('Upload ' + optText) : 'Upload ID';
 
 				// If a file is already chosen, don't stomp the file name —
 				// just rewrite the default so a future Remove restores it
 				// with the new ID type.
 				zone.dataset.defaultLabel = newLabel;
 
-				var hasFile = (zone.querySelector('.obf-upload-preview') || {}).style;
-				var fileShown = hasFile && hasFile.display !== 'none';
+				const hasFile = (zone.querySelector('.obf-upload-preview') || {}).style;
+				const fileShown = hasFile && hasFile.display !== 'none';
 				if (!fileShown) {
 					labelSpan.textContent = newLabel;
 				}
@@ -315,7 +315,7 @@
 	/* ── Renter Validation ── */
 
 	function initRenterValidation() {
-		var inputs = renterStep.querySelectorAll('input, select');
+		const inputs = renterStep.querySelectorAll('input, select');
 		inputs.forEach(function (input) {
 			input.addEventListener('change', validateRenter);
 			input.addEventListener('input', validateRenter);
@@ -324,13 +324,13 @@
 	}
 
 	function validateRenter() {
-		var customerType = (document.getElementById('obf-customer-type') || {}).value || 'local';
+		const customerType = (document.getElementById('obf-customer-type') || {}).value || 'local';
 
 		// Build an ordered checklist of every required item in the order
 		// they appear on the page. The first item that fails becomes the
 		// status hint text, so the user always knows the *next* thing to
 		// fix instead of being told nothing.
-		var checks = [
+		const checks = [
 			{ id: 'obf-first-name',     label: 'First Name' },
 			{ id: 'obf-last-name',      label: 'Last Name' },
 			{ id: 'obf-address',        label: 'Address' },
@@ -363,28 +363,28 @@
 			);
 		}
 
-		var firstMissing = null;
-		for (var i = 0; i < checks.length; i++) {
-			var c = checks[i];
+		let firstMissing = null;
+		for (let i = 0; i < checks.length; i++) {
+			const c = checks[i];
 			if (c.doc) {
 				if (!uploadedDocs[c.doc]) { firstMissing = c.label; break; }
 			} else {
-				var el = document.getElementById(c.id);
+				const el = document.getElementById(c.id);
 				if (!el) continue;
-				var v = (el.value || '').trim();
+				const v = (el.value || '').trim();
 				if (!v) { firstMissing = c.label; break; }
 			}
 		}
 
-		var valid = (firstMissing === null);
+		const valid = (firstMissing === null);
 		if (nextBtn) nextBtn.disabled = !valid;
 		updateRenterStatus(firstMissing);
 		return valid;
 	}
 
 	function updateRenterStatus(missing) {
-		var box  = document.getElementById('obf-renter-status');
-		var text = document.getElementById('obf-renter-status-text');
+		const box  = document.getElementById('obf-renter-status');
+		const text = document.getElementById('obf-renter-status-text');
 		if (!box || !text) return;
 
 		box.hidden = false;
@@ -401,7 +401,7 @@
 
 	/* ── Delivery Validation ── */
 
-	var deliveryValidationInitialized = false;
+	let deliveryValidationInitialized = false;
 	function initDeliveryValidation() {
 		if (deliveryValidationInitialized) {
 			validateDelivery();
@@ -409,7 +409,7 @@
 		}
 		deliveryValidationInitialized = true;
 
-		var inputs = deliveryStep.querySelectorAll('input, select, textarea');
+		const inputs = deliveryStep.querySelectorAll('input, select, textarea');
 		inputs.forEach(function (input) {
 			input.addEventListener('change', validateDelivery);
 			input.addEventListener('input', validateDelivery);
@@ -425,7 +425,7 @@
 		// the *first* missing item to the status hint.
 		// Return date/time are auto-set from the end date + delivery time,
 		// so they're intentionally not in this list.
-		var checks = [
+		const checks = [
 			{ id: 'obf-pickup-location',  label: 'Available Branch' },
 			{ id: 'obf-delivery-contact', label: 'Contact Number' },
 			{ id: 'obf-delivery-dropoff', label: 'Delivery Type' },
@@ -435,18 +435,18 @@
 			{ id: 'obf-return-address',   label: 'Return Pickup Address' }
 		];
 
-		var firstMissing = null;
-		for (var i = 0; i < checks.length; i++) {
-			var c  = checks[i];
-			var el = document.getElementById(c.id);
+		let firstMissing = null;
+		for (let i = 0; i < checks.length; i++) {
+			const c  = checks[i];
+			const el = document.getElementById(c.id);
 			if (!el) continue;
 			if (!(el.value || '').trim()) { firstMissing = c.label; break; }
 		}
 
 		// Agreements come last in the form so we check them after fields.
 		if (!firstMissing) {
-			var checkboxes = deliveryStep.querySelectorAll('input[type="checkbox"][required]');
-			for (var j = 0; j < checkboxes.length; j++) {
+			const checkboxes = deliveryStep.querySelectorAll('input[type="checkbox"][required]');
+			for (let j = 0; j < checkboxes.length; j++) {
 				if (!checkboxes[j].checked) {
 					firstMissing = (j === 0) ? 'Terms and Conditions agreement' : 'Privacy Policy agreement';
 					break;
@@ -454,15 +454,15 @@
 			}
 		}
 
-		var valid = (firstMissing === null);
+		const valid = (firstMissing === null);
 		if (submitBtn) submitBtn.disabled = !valid;
 		updateDeliveryStatus(firstMissing);
 		return valid;
 	}
 
 	function updateDeliveryStatus(missing) {
-		var box  = document.getElementById('obf-delivery-status');
-		var text = document.getElementById('obf-delivery-status-text');
+		const box  = document.getElementById('obf-delivery-status');
+		const text = document.getElementById('obf-delivery-status-text');
 		if (!box || !text) return;
 
 		box.hidden = false;
@@ -485,7 +485,7 @@
 		if (submitBtn.disabled) return;
 		if (!validateDelivery()) return;
 
-		var customerType = (document.getElementById('obf-customer-type') || {}).value || 'local';
+		const customerType = (document.getElementById('obf-customer-type') || {}).value || 'local';
 
 		setLoading(true);
 		hideMessage();
@@ -493,9 +493,9 @@
 		// Phase 11.14: Pull branch ID from the dropdown OR the locked
 		// hidden input. The PHP renders one or the other under the same
 		// `id="obf-pickup-location"` so this single lookup handles both.
-		var locationId = parseInt(val('obf-pickup-location') || '0', 10);
+		const locationId = parseInt(val('obf-pickup-location') || '0', 10);
 
-		var payload = {
+		const payload = {
 			car_id:         parseInt((document.getElementById('obf-car-id') || {}).value || '0', 10),
 			location_id:    locationId,
 			start_date:     (document.getElementById('obf-start-date') || {}).value || '',
@@ -570,7 +570,7 @@
 	/* ── Helpers ── */
 
 	function val(id) {
-		var el = document.getElementById(id);
+		const el = document.getElementById(id);
 		return el ? el.value.trim() : '';
 	}
 

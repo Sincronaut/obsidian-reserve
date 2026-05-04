@@ -241,7 +241,7 @@ if ( ! is_wp_error( $regions ) ) {
 
 	document.addEventListener('DOMContentLoaded', function() {
 
-		var root = document.querySelector('.obsidian-fleet-filters');
+		const root = document.querySelector('.obsidian-fleet-filters');
 		if (!root) {
 			return;
 		}
@@ -254,14 +254,14 @@ if ( ! is_wp_error( $regions ) ) {
 			`location` wins over `region` if both are present.
 			──────────────────────────────────────────────────────── */
 		function readUrl() {
-			var params      = new URLSearchParams(window.location.search);
-			var classes     = (params.get('class') || '').split(',').filter(Boolean);
-			var locationSlug = params.get('location') || '';
-			var regionSlug   = params.get('region') || '';
+			const params      = new URLSearchParams(window.location.search);
+			const classes     = (params.get('class') || '').split(',').filter(Boolean);
+			const locationSlug = params.get('location') || '';
+			const regionSlug   = params.get('region') || '';
 
-			var scope = 'all';
+			let scope = 'all';
 			if (locationSlug) {
-				var branchInput = root.querySelector('.fleet-filter-scope[data-slug="' + cssEscape(locationSlug) + '"]');
+				const branchInput = root.querySelector('.fleet-filter-scope[data-slug="' + cssEscape(locationSlug) + '"]');
 				if (branchInput) {
 					scope = branchInput.value;
 				}
@@ -285,28 +285,28 @@ if ( ! is_wp_error( $regions ) ) {
 			root.querySelectorAll('.fleet-filter-class').forEach(function(cb) {
 				cb.checked = state.classes.indexOf(cb.value) !== -1;
 			});
-			var scopeInput = root.querySelector('.fleet-filter-scope[value="' + cssEscape(state.scope) + '"]');
+			const scopeInput = root.querySelector('.fleet-filter-scope[value="' + cssEscape(state.scope) + '"]');
 			if (scopeInput) {
 				scopeInput.checked = true;
 			} else {
-				var fallback = root.querySelector('.fleet-filter-scope[value="all"]');
+				const fallback = root.querySelector('.fleet-filter-scope[value="all"]');
 				if (fallback) { fallback.checked = true; }
 			}
 		}
 
 		/* ── Read state back from the inputs ── */
 		function readState() {
-			var classes = Array.prototype.slice
+			const classes = Array.prototype.slice
 				.call(root.querySelectorAll('.fleet-filter-class:checked'))
 				.map(function(cb) { return cb.value; });
-			var scopeInput = root.querySelector('.fleet-filter-scope:checked');
-			var scope = scopeInput ? scopeInput.value : 'all';
+			const scopeInput = root.querySelector('.fleet-filter-scope:checked');
+			const scope = scopeInput ? scopeInput.value : 'all';
 			return { classes: classes, scope: scope };
 		}
 
 		/* ── Push state into the URL (replaceState — no history spam) ── */
 		function writeUrl(state) {
-			var params = new URLSearchParams(window.location.search);
+			const params = new URLSearchParams(window.location.search);
 
 			if (state.classes.length) {
 				params.set('class', state.classes.join(','));
@@ -318,15 +318,15 @@ if ( ! is_wp_error( $regions ) ) {
 			params.delete('region');
 
 			if (state.scope.indexOf('branch_') === 0) {
-				var input = root.querySelector('.fleet-filter-scope[value="' + cssEscape(state.scope) + '"]');
-				var slug  = input ? input.getAttribute('data-slug') : '';
+				const input = root.querySelector('.fleet-filter-scope[value="' + cssEscape(state.scope) + '"]');
+				const slug  = input ? input.getAttribute('data-slug') : '';
 				if (slug) { params.set('location', slug); }
 			} else if (state.scope.indexOf('region_') === 0) {
 				params.set('region', state.scope.substring('region_'.length));
 			}
 
-			var qs = params.toString();
-			var url = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+			const qs = params.toString();
+			const url = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
 			window.history.replaceState({}, '', url);
 		}
 
@@ -338,7 +338,7 @@ if ( ! is_wp_error( $regions ) ) {
 		}
 
 		function refresh() {
-			var state = readState();
+			const state = readState();
 			writeUrl(state);
 			publish(state);
 		}
@@ -360,16 +360,16 @@ if ( ! is_wp_error( $regions ) ) {
 		/* ── Region group collapse/expand ── */
 		root.querySelectorAll('.fleet-filter-region-toggle').forEach(function(btn) {
 			btn.addEventListener('click', function() {
-				var region   = btn.closest('.fleet-filter-region');
-				var expanded = btn.getAttribute('aria-expanded') === 'true';
+				const region   = btn.closest('.fleet-filter-region');
+				const expanded = btn.getAttribute('aria-expanded') === 'true';
 				btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
 				region.classList.toggle('is-collapsed', expanded);
 			});
 		});
 
 		/* ── Mobile Drawer Toggle ── */
-		var trigger = root.querySelector('.fleet-filter-mobile-trigger');
-		var closeBtn = root.querySelector('.fleet-filter-mobile-close');
+		const trigger = root.querySelector('.fleet-filter-mobile-trigger');
+		const closeBtn = root.querySelector('.fleet-filter-mobile-close');
 		
 		if (trigger) {
 			trigger.addEventListener('click', function() {
@@ -387,7 +387,7 @@ if ( ! is_wp_error( $regions ) ) {
 
 		/* ── Initialise from URL on load and broadcast immediately so the
 			car-grid renders the correct subset on first paint. ── */
-		var initialState = readUrl();
+		const initialState = readUrl();
 		applyState(initialState);
 		// Defer the publish so the grid's listener has time to attach.
 		window.requestAnimationFrame(function() {

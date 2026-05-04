@@ -25,14 +25,14 @@ $theme_uri = get_stylesheet_directory_uri();
 ?>
 
 <section <?php echo $wrapper_attributes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> style="background-color: #0B0B0B; <?php echo esc_attr( $padding_style ); ?>">
-	<div class="obsidian-slider-header">
+	<div class="obsidian-slider-header reveal slide-up">
 		<h2><?php echo wp_kses_post( $slider_title ); ?></h2>
 		<?php if ( $subtitle ) : ?>
 			<p><?php echo wp_kses_post( $subtitle ); ?></p>
 		<?php endif; ?>
 	</div>
 
-	<div class="obsidian-slider-wrapper">
+	<div class="obsidian-slider-wrapper reveal fade-in">
 		<button class="slider-nav prev-slide" aria-label="Previous slide">
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 				<polyline points="15 18 9 12 15 6"></polyline>

@@ -11,13 +11,13 @@
 		   INVENTORY META BOX (Phase 11 — tabbed by branch)
 		   ══════════════════════════════════════════════════════════ */
 
-		var $inventory = $('.obsidian-inventory');
+		const $inventory = $('.obsidian-inventory');
 
 		// Recalculate the per-branch units total in a tab's footer row.
 		// Only colors whose "stocked here?" checkbox is ticked count toward
 		// the total — an unticked row is a color this branch doesn't carry.
 		function recalcBranchTotal($panel) {
-			var sum = 0;
+			let sum = 0;
 			$panel.find('.branch-color-row.is-stocked .branch-units-input').each(function() {
 				sum += parseInt($(this).val(), 10) || 0;
 			});
@@ -27,9 +27,9 @@
 		// Sync a single row's UI to its checkbox state — toggles the
 		// .is-stocked class and the disabled attribute on the units input.
 		function syncStockedRow($row) {
-			var checked = $row.find('.branch-stocked-toggle').is(':checked');
+			const checked = $row.find('.branch-stocked-toggle').is(':checked');
 			$row.toggleClass('is-stocked', checked);
-			var $units = $row.find('.branch-units-input');
+			const $units = $row.find('.branch-units-input');
 			$units.prop('disabled', !checked);
 			if (!checked) {
 				$units.val(0);
@@ -47,14 +47,14 @@
 
 		// "Stocked here?" checkbox toggle.
 		$(document).on('change', '.branch-stocked-toggle', function() {
-			var $row = $(this).closest('.branch-color-row');
+			const $row = $(this).closest('.branch-color-row');
 			syncStockedRow($row);
 			recalcBranchTotal($row.closest('.obsidian-tab-panel'));
 		});
 
 		// Live-update the total as the admin types into a units input.
 		$(document).on('input change', '.branch-units-input', function() {
-			var $input = $(this);
+			const $input = $(this);
 			if ((parseInt($input.val(), 10) || 0) < 0) {
 				$input.val(0);
 			}
@@ -67,7 +67,7 @@
 			if ($(e.target).hasClass('tab-remove')) {
 				return;
 			}
-			var branchId = $(this).data('branch-id');
+			const branchId = $(this).data('branch-id');
 
 			$(this).siblings('.obsidian-tab')
 				.removeClass('is-active')
@@ -86,12 +86,12 @@
 		$(document).on('click', '.tab-remove', function(e) {
 			e.stopPropagation();
 
-			var $tab     = $(this).closest('.obsidian-tab');
-			var branchId = $tab.data('branch-id');
-			var $tabs    = $tab.parent();
-			var $panels  = $tab.closest('.obsidian-inventory').find('.obsidian-tab-panels');
-			var $panel   = $panels.find('.obsidian-tab-panel[data-branch-id="' + branchId + '"]');
-			var label    = $tab.find('.tab-label').text();
+			const $tab     = $(this).closest('.obsidian-tab');
+			const branchId = $tab.data('branch-id');
+			const $tabs    = $tab.parent();
+			const $panels  = $tab.closest('.obsidian-inventory').find('.obsidian-tab-panels');
+			const $panel   = $panels.find('.obsidian-tab-panel[data-branch-id="' + branchId + '"]');
+			const label    = $tab.find('.tab-label').text();
 
 			// Block removal if it's the last branch — every car needs at least one.
 			if ($tabs.find('.obsidian-tab').length <= 1) {
@@ -103,12 +103,12 @@
 				return;
 			}
 
-			var wasActive = $tab.hasClass('is-active');
+			const wasActive = $tab.hasClass('is-active');
 			$tab.remove();
 			$panel.remove();
 
 			// Put the freed branch back into the "+ Add branch" dropdown.
-			var $addSelect = $('#obsidian-add-branch');
+			const $addSelect = $('#obsidian-add-branch');
 			$addSelect.append(
 				$('<option/>', {
 					value: branchId,
@@ -125,25 +125,25 @@
 
 		// "+ Add branch" — clone the hidden template and inject a new tab + panel.
 		$(document).on('change', '#obsidian-add-branch', function() {
-			var $select  = $(this);
-			var branchId = $select.val();
+			const $select  = $(this);
+			const branchId = $select.val();
 			if (!branchId) {
 				return;
 			}
-			var $option = $select.find('option[value="' + branchId + '"]');
-			var name    = $option.data('name') || $option.text();
+			const $option = $select.find('option[value="' + branchId + '"]');
+			const name    = $option.data('name') || $option.text();
 
-			var $template = $('#obsidian-branch-panel-template');
+			const $template = $('#obsidian-branch-panel-template');
 			if (!$template.length) {
 				return;
 			}
 
 			// Clone the template and rewrite all __BRANCH_ID__ placeholders.
-			var html = $template.html().replace(/__BRANCH_ID__/g, branchId);
-			var $newPanel = $(html);
+			const html = $template.html().replace(/__BRANCH_ID__/g, branchId);
+			const $newPanel = $(html);
 
 			// Build the matching tab.
-			var $newTab = $(
+			const $newTab = $(
 				'<button type="button" class="obsidian-tab" role="tab" aria-selected="false">' +
 					'<span class="tab-label"></span>' +
 					'<span class="tab-remove" title="Remove branch" aria-label="Remove branch">&times;</span>' +
@@ -168,12 +168,12 @@
 		$(document).on('click', '.obsidian-upload-image', function(e) {
 			e.preventDefault();
 
-			var $button  = $(this);
-			var $slot    = $button.closest('.variant-image-slot');
-			var $idInput = $slot.find('.variant-image-id');
-			var $preview = $slot.find('.variant-image-preview');
+			const $button  = $(this);
+			const $slot    = $button.closest('.variant-image-slot');
+			const $idInput = $slot.find('.variant-image-id');
+			const $preview = $slot.find('.variant-image-preview');
 
-			var frame = wp.media({
+			const frame = wp.media({
 				title: 'Select Image',
 				button: { text: 'Use This Image' },
 				multiple: false,
@@ -181,8 +181,8 @@
 			});
 
 			frame.on('select', function() {
-				var attachment = frame.state().get('selection').first().toJSON();
-				var thumbUrl   = attachment.sizes && attachment.sizes.thumbnail
+				const attachment = frame.state().get('selection').first().toJSON();
+				const thumbUrl   = attachment.sizes && attachment.sizes.thumbnail
 					? attachment.sizes.thumbnail.url
 					: attachment.url;
 
@@ -203,7 +203,7 @@
 		$(document).on('click', '.obsidian-remove-image', function(e) {
 			e.preventDefault();
 
-			var $slot = $(this).closest('.variant-image-slot');
+			const $slot = $(this).closest('.variant-image-slot');
 			$slot.find('.variant-image-id').val('0');
 			$slot.find('.variant-image-preview').html('');
 			$slot.find('.obsidian-upload-image').text('Upload');
@@ -213,7 +213,7 @@
 		/* ── Booking Meta Box: Approve / Deny / Status Actions ── */
 
 		function bookingAction(action, bookingId, extraData) {
-			var data = $.extend({
+			const data = $.extend({
 				action: 'obsidian_booking_action',
 				nonce: obsidianAdmin.nonce,
 				booking_id: bookingId,
@@ -225,14 +225,14 @@
 
 		function showFeedback(msg, type) {
 			$('.obm-feedback').remove();
-			var cls = type === 'error' ? 'obm-feedback-error' : 'obm-feedback-success';
-			var $el = $('<div class="obm-feedback ' + cls + '">' + msg + '</div>');
+			const cls = type === 'error' ? 'obm-feedback-error' : 'obm-feedback-success';
+			const $el = $('<div class="obm-feedback ' + cls + '">' + msg + '</div>');
 			$('.obm-actions-section').last().append($el);
 		}
 
 		$(document).on('click', '#obm-approve', function() {
-			var $btn = $(this);
-			var bookingId = $btn.data('booking-id');
+			const $btn = $(this);
+			const bookingId = $btn.data('booking-id');
 			$btn.prop('disabled', true).html('<span class="dashicons dashicons-update ob-spin"></span> Approving...');
 
 			bookingAction('approve', bookingId).done(function(res) {
@@ -254,9 +254,9 @@
 		});
 
 		$(document).on('click', '#obm-deny', function() {
-			var $btn = $(this);
-			var bookingId = $btn.data('booking-id');
-			var reason = $('#obm-denial-reason').val().trim();
+			const $btn = $(this);
+			const bookingId = $btn.data('booking-id');
+			const reason = $('#obm-denial-reason').val().trim();
 
 			if (!reason) return;
 
@@ -277,7 +277,7 @@
 		});
 
 		$(document).on('click', '#obm-mark-active', function() {
-			var $btn = $(this);
+			const $btn = $(this);
 			$btn.prop('disabled', true).html('<span class="dashicons dashicons-update ob-spin"></span> Updating...');
 			bookingAction('mark_active', $btn.data('booking-id')).done(function(res) {
 				if (res.success) {
@@ -291,7 +291,7 @@
 		});
 
 		$(document).on('click', '#obm-mark-completed', function() {
-			var $btn = $(this);
+			const $btn = $(this);
 			$btn.prop('disabled', true).html('<span class="dashicons dashicons-update ob-spin"></span> Updating...');
 			bookingAction('mark_completed', $btn.data('booking-id')).done(function(res) {
 				if (res.success) {
@@ -305,9 +305,9 @@
 		});
 
 		$(document).on('click', '#obm-save-notes', function() {
-			var $btn = $(this);
-			var bookingId = $btn.data('booking-id');
-			var notes = $('#obm-admin-notes').val();
+			const $btn = $(this);
+			const bookingId = $btn.data('booking-id');
+			const notes = $('#obm-admin-notes').val();
 
 			$btn.prop('disabled', true).text('Saving...');
 
