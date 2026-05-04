@@ -106,7 +106,7 @@ body .wp-site-blocks>.wp-block-template-part:has(.obsidian-site-header) {
 
 .obsidian-nav ul {
     display: flex;
-    gap: 32px;
+    gap: 15px;
 }
 
 .obsidian-mobile-toggle {
@@ -268,7 +268,7 @@ body .wp-site-blocks>.wp-block-template-part:has(.obsidian-site-header) {
 
     .obsidian-nav ul {
         flex-direction: column;
-        gap: 25px;
+        gap: 15px;
     }
 
     /* Convert all dropdowns to accordion style on mobile with smooth transition */
@@ -531,170 +531,170 @@ body .wp-site-blocks>.wp-block-template-part:has(.obsidian-site-header) {
 
 /* Hide the mega card on mobile, show the simple list */
 .obsidian-user-card {
-	display: none;
+    display: none;
 }
 
 @media (min-width: 1201px) {
-	.obsidian-user-mobile-menu {
-		display: none !important;
-	}
+    .obsidian-user-mobile-menu {
+        display: none !important;
+    }
 
-	.obsidian-user-card {
-		display: flex;
-		position: absolute;
-		top: 100%;
-		right: 0;
-		margin-top: 15px;
-		width: 380px;
-		min-width: 380px;
-		background: #0B0B0B;
-		border: 2px solid #C5A059;
-		border-radius: 0;
-		padding: 24px 28px 32px !important;
-		flex-direction: column;
-		align-items: center;
-		gap: 0;
-		z-index: 100;
-		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    .obsidian-user-card {
+        display: flex;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 15px;
+        width: 380px;
+        min-width: 380px;
+        background: #0B0B0B;
+        border: 2px solid #C5A059;
+        border-radius: 0;
+        padding: 24px 28px 32px !important;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+        z-index: 100;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 
-		/* Use same animation as other dropdowns */
-		opacity: 0;
-		visibility: hidden;
-		transform: translateY(10px);
-		transition: all 0.3s ease;
-	}
+        /* Use same animation as other dropdowns */
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+    }
 
-	.obsidian-user-menu.is-active .obsidian-user-card {
-		opacity: 1;
-		visibility: visible;
-		transform: translateY(0);
-	}
+    .obsidian-user-menu.is-active .obsidian-user-card {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
 }
 
 /* Card interior */
 .ouc-header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	width: 100%;
-	margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 20px;
 }
 
 .ouc-back {
-	color: rgba(255, 255, 255, 0.5);
-	text-decoration: none;
-	transition: color 0.2s ease;
-	display: flex;
+    color: rgba(255, 255, 255, 0.5);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    display: flex;
 }
 
 .ouc-back:hover {
-	color: #C5A059;
+    color: #C5A059;
 }
 
 .ouc-logout {
-	font-size: 13px;
-	font-weight: 600;
-	color: rgba(255, 255, 255, 0.7) !important;
-	text-decoration: none !important;
-	transition: color 0.2s ease;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7) !important;
+    text-decoration: none !important;
+    transition: color 0.2s ease;
 }
 
 .ouc-logout:hover {
-	color: #ff6b6b !important;
+    color: #ff6b6b !important;
 }
 
 .ouc-avatar {
-	width: 130px;
-	height: 130px;
-	border-radius: 50%;
-	overflow: hidden;
-	border: 3px solid rgba(197, 160, 89, 0.4);
-	margin: 0 auto 16px;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid rgba(197, 160, 89, 0.4);
+    margin: 0 auto 16px;
 }
 
 .ouc-avatar img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .ouc-tier {
-	display: inline-block;
-	padding: 5px 22px;
-	border: 1px solid #C5A059;
-	border-radius: 100px;
-	font-size: 12px;
-	font-weight: 600;
-	color: #C5A059;
-	letter-spacing: 0.5px;
-	margin-bottom: 16px;
+    display: inline-block;
+    padding: 5px 22px;
+    border: 1px solid #C5A059;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #C5A059;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
 }
 
 .ouc-name {
-	font-size: 24px;
-	font-weight: 700;
-	color: #fff;
-	margin: 0 0 20px;
-	text-align: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 20px;
+    text-align: center;
 }
 
 .ouc-details {
-	width: 100%;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 10px;
-	margin-bottom: 28px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
 }
 
 .ouc-detail-row {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	font-size: 13px;
-	color: rgba(255, 255, 255, 0.7);
-	white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    white-space: nowrap;
 }
 
 .ouc-detail-row a {
-	color: #C5A059 !important;
-	text-decoration: none !important;
-	font-weight: 500;
-	display: inline !important;
-	font-size: 13px !important;
+    color: #C5A059 !important;
+    text-decoration: none !important;
+    font-weight: 500;
+    display: inline !important;
+    font-size: 13px !important;
 }
 
 .ouc-detail-row a:hover {
-	text-decoration: underline !important;
+    text-decoration: underline !important;
 }
 
 .ouc-license-label a {
-	display: inline !important;
-	font-size: 13px !important;
+    display: inline !important;
+    font-size: 13px !important;
 }
 
 .ouc-license-label {
-	font-size: 13px;
-	font-weight: 500;
-	color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .ouc-license-label a {
-	color: #C5A059 !important;
-	text-decoration: none !important;
+    color: #C5A059 !important;
+    text-decoration: none !important;
 }
 
 .ouc-view-profile {
-	display: block;
-	text-align: center;
-	font-size: 14px;
-	font-weight: 500;
-	color: rgba(255, 255, 255, 0.5) !important;
-	text-decoration: underline !important;
-	transition: color 0.2s ease;
+    display: block;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.5) !important;
+    text-decoration: underline !important;
+    transition: color 0.2s ease;
 }
 
 .ouc-view-profile:hover {
-	color: #C5A059 !important;
+    color: #C5A059 !important;
 }
