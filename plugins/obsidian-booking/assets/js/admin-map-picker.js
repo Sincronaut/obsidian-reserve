@@ -16,20 +16,20 @@
   "use strict";
 
   /* ── Constants ── */
-  var PH_CENTER = [12.8797, 121.774];
-  var DEFAULT_ZOOM = 6;
-  var PIN_ZOOM = 16;
+  const PH_CENTER = [12.8797, 121.774];
+  const DEFAULT_ZOOM = 6;
+  const PIN_ZOOM = 16;
 
   /* ── DOM references ── */
-  var wrapper, canvas, readout, clearBtn;
-  var searchInput, searchBtn, searchResults;
-  var manualLatInput, manualLngInput;
+  let wrapper, canvas, readout, clearBtn;
+  let searchInput, searchBtn, searchResults;
+  let manualLatInput, manualLngInput;
 
   /* ── Leaflet objects ── */
-  var map, marker;
+  let map, marker;
 
   /* ── ACF field inputs (resolved after DOMContentLoaded) ── */
-  var latInput, lngInput;
+  let latInput, lngInput;
 
   /* ──────────────────────────────────────────────────────────
      Initialise
@@ -61,8 +61,8 @@
       cb();
       return;
     }
-    var tries = 0;
-    var iv = setInterval(function () {
+    let tries = 0;
+    const iv = setInterval(function () {
       if (typeof window.L !== "undefined") {
         clearInterval(iv);
         cb();
@@ -77,9 +77,9 @@
      Map Setup
      ────────────────────────────────────────────────────────── */
   function initMap() {
-    var initLat = parseFloat(wrapper.dataset.lat);
-    var initLng = parseFloat(wrapper.dataset.lng);
-    var hasCoords = !isNaN(initLat) && !isNaN(initLng);
+    const initLat = parseFloat(wrapper.dataset.lat);
+    const initLng = parseFloat(wrapper.dataset.lng);
+    const hasCoords = !isNaN(initLat) && !isNaN(initLng);
 
     map = L.map(canvas, {
       center: hasCoords ? [initLat, initLng] : PH_CENTER,
@@ -122,9 +122,9 @@
     }, 300);
 
     // Also fix if the postbox is toggled
-    var postbox = canvas.closest(".postbox");
+    const postbox = canvas.closest(".postbox");
     if (postbox) {
-      var toggleBtn = postbox.querySelector(".handlediv, .postbox-header");
+      const toggleBtn = postbox.querySelector(".handlediv, .postbox-header");
       if (toggleBtn) {
         toggleBtn.addEventListener("click", function () {
           setTimeout(function () {
@@ -152,9 +152,9 @@
 
       // Drag end → update fields
       marker.on("dragend", function (e) {
-        var pos = e.target.getLatLng();
-        var rLat = roundCoord(pos.lat);
-        var rLng = roundCoord(pos.lng);
+        const pos = e.target.getLatLng();
+        const rLat = roundCoord(pos.lat);
+        const rLng = roundCoord(pos.lng);
         updateReadout(rLat, rLng);
         syncToInputs(rLat, rLng);
       });
@@ -230,14 +230,14 @@
   function bindSync() {
     resolveInputs();
 
-    var onFieldChange = debounce(function (e) {
-      var lat = manualLatInput ? parseFloat(manualLatInput.value) : (latInput ? parseFloat(latInput.value) : 0);
-      var lng = manualLngInput ? parseFloat(manualLngInput.value) : (lngInput ? parseFloat(lngInput.value) : 0);
+    const onFieldChange = debounce(function (e) {
+      const lat = manualLatInput ? parseFloat(manualLatInput.value) : (latInput ? parseFloat(latInput.value) : 0);
+      const lng = manualLngInput ? parseFloat(manualLngInput.value) : (lngInput ? parseFloat(lngInput.value) : 0);
 
       if (!isNaN(lat) && !isNaN(lng)) {
         // If the values are the same as the current marker, don't do anything
         if (marker) {
-          var curr = marker.getLatLng();
+          const curr = marker.getLatLng();
           if (roundCoord(curr.lat) === roundCoord(lat) && roundCoord(curr.lng) === roundCoord(lng)) {
             return;
           }
@@ -288,7 +288,7 @@
     searchResults.hidden = false;
 
     // Nominatim free geocoder — no API key, 1 req/s rate limit
-    var url =
+    const url =
       "https://nominatim.openstreetmap.org/search?" +
       "format=json&limit=5&countrycodes=ph&q=" +
       encodeURIComponent(query);
@@ -306,7 +306,7 @@
           return;
         }
 
-        var html = "";
+        let html = "";
         results.forEach(function (r) {
           html +=
             '<button type="button" class="obsidian-map-picker__search-item" ' +
@@ -324,8 +324,8 @@
         // Bind clicks on results
         searchResults.querySelectorAll(".obsidian-map-picker__search-item").forEach(function (item) {
           item.addEventListener("click", function () {
-            var lat = parseFloat(this.dataset.lat);
-            var lng = parseFloat(this.dataset.lng);
+            const lat = parseFloat(this.dataset.lat);
+            const lng = parseFloat(this.dataset.lng);
             placePin(lat, lng, true, true);
             searchResults.hidden = true;
             searchInput.value = "";
@@ -340,7 +340,7 @@
 
   /* ── Helpers ── */
   function debounce(fn, ms) {
-    var timer;
+    let timer;
     return function () {
       clearTimeout(timer);
       timer = setTimeout(fn, ms);
@@ -348,7 +348,7 @@
   }
 
   function escapeHTML(str) {
-    var div = document.createElement("div");
+    const div = document.createElement("div");
     div.textContent = str;
     return div.innerHTML;
   }

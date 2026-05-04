@@ -181,7 +181,7 @@ function obsidian_reserve_tml_script() {
 	?>
 	<script>
 	document.addEventListener('DOMContentLoaded', function() {
-		var map = {
+		const map = {
 			user_login: 'Email',
 			user_pass:  'Password',
 			user_email: 'Email',
@@ -189,8 +189,8 @@ function obsidian_reserve_tml_script() {
 			pass1:      'Password',
 			pass2:      'Confirm Password'
 		};
-		for (var id in map) {
-			var el = document.getElementById(id);
+		for (const id in map) {
+			const el = document.getElementById(id);
 			if (el) el.placeholder = map[id];
 		}
 	});

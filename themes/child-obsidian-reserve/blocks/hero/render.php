@@ -191,11 +191,11 @@ $wrapper_attributes = get_block_wrapper_attributes( array( 'class' => 'obsidian-
 (function() {
 	'use strict';
 	document.addEventListener('DOMContentLoaded', function() {
-		var btn = document.getElementById('hero-explore-btn');
-		var dropdown = document.getElementById('hero-location-dropdown');
-		var valInput = document.getElementById('hero-location-value');
-		var selectedText = dropdown.querySelector('.selected-text');
-		var list = dropdown.querySelector('.dropdown-list');
+		const btn = document.getElementById('hero-explore-btn');
+		const dropdown = document.getElementById('hero-location-dropdown');
+		const valInput = document.getElementById('hero-location-value');
+		const selectedText = dropdown.querySelector('.selected-text');
+		const list = dropdown.querySelector('.dropdown-list');
 		
 		if (!btn || !dropdown) return;
 
@@ -212,11 +212,11 @@ $wrapper_attributes = get_block_wrapper_attributes( array( 'class' => 'obsidian-
 
 		// Handle selection
 		list.addEventListener('click', function(e) {
-			var li = e.target.closest('li');
+			const li = e.target.closest('li');
 			if (!li || li.classList.contains('dropdown-optgroup')) return;
 
-			var val = li.getAttribute('data-value');
-			var text = li.textContent.trim();
+			const val = li.getAttribute('data-value');
+			const text = li.textContent.trim();
 
 			valInput.value = val;
 			selectedText.textContent = text;
@@ -228,12 +228,12 @@ $wrapper_attributes = get_block_wrapper_attributes( array( 'class' => 'obsidian-
 
 		// Handle "Explore Cars" button
 		btn.addEventListener('click', function(e) {
-			var val = valInput.value;
+			const val = valInput.value;
 			if (!val || val === 'all') return; // Just follow the normal link
 
 			e.preventDefault();
-			var url = btn.getAttribute('href');
-			var separator = url.indexOf('?') !== -1 ? '&' : '?';
+			let url = btn.getAttribute('href');
+			const separator = url.indexOf('?') !== -1 ? '&' : '?';
 
 			if (val.indexOf('region_') === 0) {
 				url += separator + 'region=' + encodeURIComponent(val.substring(7));

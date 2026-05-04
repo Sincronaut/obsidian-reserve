@@ -5,24 +5,24 @@
 (function () {
    'use strict';
 
-   var cfg = window.obsidianBooking || {};
+   const cfg = window.obsidianBooking || {};
 
-   var modal, overlay, loader, content;
-   var heroImg, thumbsContainer, colorsContainer;
-   var nameEl, classEl, rateEl, specsEl, ctaTextEl;
-   var pickupInput, dropoffInput, proceedBtn;
-   var totalWrap, totalValue, totalBreakdown;
-   var statusEl, statusTextEl;
-   var pickupFP, dropoffFP;
-   var currentCar = null;
-   var selectedColor = null;
-   var initialColor = null;
+   let modal, overlay, loader, content;
+   let heroImg, thumbsContainer, colorsContainer;
+   let nameEl, classEl, rateEl, specsEl, ctaTextEl;
+   let pickupInput, dropoffInput, proceedBtn;
+   let totalWrap, totalValue, totalBreakdown;
+   let statusEl, statusTextEl;
+   let pickupFP, dropoffFP;
+   let currentCar = null;
+   let selectedColor = null;
+   let initialColor = null;
 
    /* ── Phase 11.13: pickup-branch picker ── */
-   var branchEl, branchNameEl, branchChangeBtn, branchSelectEl;
-   var selectedLocationId = 0;          // current scope (0 = "All Locations" — picker mode)
-   var branchLocked = false;            // true when ?location/?region pre-scoped the modal
-   var branchesCache = null;            // [{id,name,region_name,status,...}, ...]
+   let branchEl, branchNameEl, branchChangeBtn, branchSelectEl;
+   let selectedLocationId = 0;          // current scope (0 = "All Locations" — picker mode)
+   let branchLocked = false;            // true when ?location/?region pre-scoped the modal
+   let branchesCache = null;            // [{id,name,region_name,status,...}, ...]
 
    /**
     * Smoothly update the main hero image with a fade transition.
@@ -85,10 +85,10 @@
       });
 
       document.addEventListener('click', function (e) {
-         var btn = e.target.closest('.car-book-btn[data-car-id]');
+         const btn = e.target.closest('.car-book-btn[data-car-id]');
          if (btn) {
             e.preventDefault();
-            var preColor = btn.getAttribute('data-color') || null;
+            const preColor = btn.getAttribute('data-color') || null;
             openModal(parseInt(btn.getAttribute('data-car-id'), 10), preColor);
          }
       });
@@ -108,7 +108,7 @@
          enterBranchPickMode();
       });
       branchSelectEl.addEventListener('change', function () {
-         var id = parseInt(branchSelectEl.value, 10) || 0;
+         const id = parseInt(branchSelectEl.value, 10) || 0;
          if (!id) {
             selectedLocationId = 0;
             disableFormUntilBranchPicked();
@@ -141,9 +141,9 @@
       // We support `?location=<slug>` (specific branch — locks the modal),
       // `?region=<slug>`  (group — falls through to picker scoped to that region),
       // and nothing       (full picker, no preselect).
-      var urlParams = new URLSearchParams(window.location.search);
-      var urlLocationSlug = urlParams.get('location') || '';
-      var urlRegionSlug   = urlParams.get('region') || '';
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlLocationSlug = urlParams.get('location') || '';
+      const urlRegionSlug   = urlParams.get('region') || '';
 
       // Reset state from any prior open.
       currentCar           = null;
@@ -158,9 +158,9 @@
 
          // 1. Resolve URL filter → numeric branch ID (the rest of the system
          //    works in IDs because slugs aren't unique to a single endpoint).
-         var preSelectedId = 0;
+         let preSelectedId = 0;
          if (urlLocationSlug) {
-            var match = branches.filter(function (b) { return b.slug === urlLocationSlug; })[0];
+            const match = branches.filter(function (b) { return b.slug === urlLocationSlug; })[0];
             if (match) {
                preSelectedId = match.id;
                branchLocked = true; // user picked one specific branch — lock it.
@@ -170,9 +170,9 @@
          // 2. Filter the picker options by region if `?region=` is present.
          //    If the filter wipes the list (no stocked branch in that region),
          //    fall back to the full list so the user can still book.
-         var pickerBranches = branches;
+         let pickerBranches = branches;
          if (!preSelectedId && urlRegionSlug) {
-            var regionFiltered = branches.filter(function (b) { return b.region_slug === urlRegionSlug; });
+            const regionFiltered = branches.filter(function (b) { return b.region_slug === urlRegionSlug; });
             if (regionFiltered.length > 0) {
                pickerBranches = regionFiltered;
             }
@@ -227,15 +227,15 @@
     * branch's stock — not aggregated across branches.
     */
    function loadCar(carId, locationId) {
-      var carUrl    = cfg.restUrl + 'cars/'         + carId + (locationId ? '?location_id=' + locationId : '');
-      var availUrl  = cfg.restUrl + 'availability/' + carId + (locationId ? '?location_id=' + locationId : '');
+      const carUrl    = cfg.restUrl + 'cars/'         + carId + (locationId ? '?location_id=' + locationId : '');
+      const availUrl  = cfg.restUrl + 'availability/' + carId + (locationId ? '?location_id=' + locationId : '');
 
       return Promise.all([
          fetch(carUrl,   { headers: { 'X-WP-Nonce': cfg.nonce } }).then(handleResponse),
          fetch(availUrl, { headers: { 'X-WP-Nonce': cfg.nonce } }).then(handleResponse)
       ]).then(function (results) {
-         var car   = results[0];
-         var avail = results[1];
+         const car   = results[0];
+         const avail = results[1];
 
          if (car.code) {
             throw new Error('Car API error: ' + (car.message || car.code));
@@ -266,7 +266,7 @@
       branchSelectEl.innerHTML = '<option value="">Select branch…</option>';
       branches.forEach(function (b) {
          if (b.status && b.status !== 'active') { return; } // hide coming_soon/closed
-         var opt = document.createElement('option');
+         const opt = document.createElement('option');
          opt.value = b.id;
          opt.textContent = b.region_name ? (b.name + ' — ' + b.region_name) : b.name;
          branchSelectEl.appendChild(opt);
@@ -275,7 +275,7 @@
 
    function applySelectedBranch(branchId) {
       selectedLocationId = branchId;
-      var branch = (branchesCache || []).filter(function (b) { return b.id === branchId; })[0];
+      const branch = (branchesCache || []).filter(function (b) { return b.id === branchId; })[0];
 
       // Render the locked state: name + ✏️ edit button, hide the <select>.
       branchEl.hidden = false;
@@ -315,7 +315,7 @@
       branchSelectEl.hidden = false;
       branchChangeBtn.hidden = true;
 
-      var inputs = modal.querySelectorAll(
+      const inputs = modal.querySelectorAll(
          'input[name="obsidian_customer_type"], #obsidian-pickup-date, #obsidian-dropoff-date, ' +
          '.obsidian-modal-color-radio, .obsidian-modal-field .flatpickr-input'
       );
@@ -340,7 +340,7 @@
    }
 
    function enableForm() {
-      var inputs = modal.querySelectorAll(
+      const inputs = modal.querySelectorAll(
          'input[name="obsidian_customer_type"], #obsidian-pickup-date, #obsidian-dropoff-date, ' +
          '.obsidian-modal-color-radio, .obsidian-modal-field .flatpickr-input'
       );
@@ -361,7 +361,7 @@
     * Used to explain why the swatches look unclickable.
     */
    function setColorsNote(text) {
-      var note = colorsContainer.querySelector('.obsidian-modal-colors-note');
+      let note = colorsContainer.querySelector('.obsidian-modal-colors-note');
       if (!text) {
          if (note) note.remove();
          return;
@@ -406,7 +406,7 @@
          colorsContainer.classList.remove('is-disabled');
       }
 
-      var localRadio = modal.querySelector('input[name="obsidian_customer_type"][value="local"]');
+      const localRadio = modal.querySelector('input[name="obsidian_customer_type"][value="local"]');
       if (localRadio) localRadio.checked = true;
    }
 
@@ -419,10 +419,10 @@
 
       // Specifications — textarea with one spec per line → bulleted list
       if (car.specifications) {
-         var lines = car.specifications.split(/\r?\n/).filter(function (l) { return l.trim() !== ''; });
+         const lines = car.specifications.split(/\r?\n/).filter(function (l) { return l.trim() !== ''; });
          specsEl.innerHTML = '<ul>' + lines.map(function (line) {
             // Highlight everything up to the first colon in gold
-            var formattedLine = line.trim().replace(/^([^:]+:)/, '<span style="color: #C5A059;">$1</span>');
+            const formattedLine = line.trim().replace(/^([^:]+:)/, '<span style="color: #C5A059;">$1</span>');
             return '<li>' + formattedLine + '</li>';
          }).join('') + '</ul>';
          specsEl.style.display = '';
@@ -432,14 +432,14 @@
       }
 
       // CTA text with car name
-      var shortName = car.make ? car.make + ' ' + (car.model || '') : car.name;
+      const shortName = car.make ? car.make + ' ' + (car.model || '') : car.name;
       ctaTextEl.textContent = 'Reserve ' + shortName.trim();
 
       // Gallery + colors
       if (car.color_variants && car.color_variants.length > 0) {
-         var variantToSelect = car.color_variants[0];
+         let variantToSelect = car.color_variants[0];
          if (initialColor) {
-            for (var i = 0; i < car.color_variants.length; i++) {
+            for (let i = 0; i < car.color_variants.length; i++) {
                if (car.color_variants[i].color === initialColor) {
                   variantToSelect = car.color_variants[i];
                   break;
@@ -459,7 +459,7 @@
    function buildGallery(galleryUrls, fallbackImg) {
       thumbsContainer.innerHTML = '';
 
-      var all = galleryUrls.length > 0 ? galleryUrls : (fallbackImg ? [fallbackImg] : []);
+      const all = galleryUrls.length > 0 ? galleryUrls : (fallbackImg ? [fallbackImg] : []);
 
       if (all.length === 0) {
          updateHeroImage('');
@@ -470,13 +470,13 @@
       // Alt text is handled inside updateHeroImage
 
       // Thumbnails = images 2–6 (indices 1+)
-      var modalImages = all.length > 1 ? all.slice(1) : all;
+      const modalImages = all.length > 1 ? all.slice(1) : all;
 
       modalImages.forEach(function (url, idx) {
-         var btn = document.createElement('button');
+         const btn = document.createElement('button');
          btn.className = 'obsidian-modal-thumb' + (idx === 0 ? ' active' : '');
 
-         var img = document.createElement('img');
+         const img = document.createElement('img');
          img.src = url;
          img.alt = 'Image ' + (idx + 1);
          img.loading = 'lazy';
@@ -504,26 +504,26 @@
       colorsContainer.style.display = '';
 
       variants.forEach(function (v, idx) {
-         var isSelected = preSelectedColor ? v.color === preSelectedColor : idx === 0;
-         var label = document.createElement('label');
+         const isSelected = preSelectedColor ? v.color === preSelectedColor : idx === 0;
+         const label = document.createElement('label');
          label.className = 'obsidian-modal-color-option' + (isSelected ? ' active' : '');
 
-         var radio = document.createElement('input');
+         const radio = document.createElement('input');
          radio.type = 'radio';
          radio.name = 'obsidian_modal_color';
          radio.value = v.color;
          radio.className = 'obsidian-modal-color-radio';
          if (isSelected) radio.checked = true;
 
-         var swatch = document.createElement('span');
+         const swatch = document.createElement('span');
          swatch.className = 'obsidian-modal-color-dot';
          swatch.style.backgroundColor = v.hex;
 
-         var name = document.createElement('span');
+         const name = document.createElement('span');
          name.className = 'obsidian-modal-color-name';
          name.textContent = capitalize(v.color);
 
-         var units = document.createElement('span');
+         const units = document.createElement('span');
          units.className = 'obsidian-modal-color-units';
          units.textContent = v.units + ' available';
 
@@ -559,16 +559,16 @@
    function getDisableDatesForCurrentColor() {
       if (!currentCar) return [];
 
-      var carWide = currentCar._unavailable || [];
+      const carWide = currentCar._unavailable || [];
 
       if (!selectedColor || !currentCar._unavailableByColor) {
          return carWide.slice();
       }
 
-      var colorDates = currentCar._unavailableByColor[selectedColor] || [];
+      const colorDates = currentCar._unavailableByColor[selectedColor] || [];
 
       // Use a Set for de-duplication.
-      var merged = {};
+      const merged = {};
       carWide.forEach(function (d) { merged[d] = true; });
       colorDates.forEach(function (d) { merged[d] = true; });
 
@@ -581,12 +581,12 @@
     * clear them so the user is forced to re-pick valid dates.
     */
    function applyColorDisableDates() {
-      var dates = getDisableDatesForCurrentColor();
+      const dates = getDisableDatesForCurrentColor();
 
       if (pickupFP) {
          pickupFP.set('disable', dates);
          if (pickupFP.selectedDates.length > 0) {
-            var p = pickupFP.formatDate(pickupFP.selectedDates[0], 'Y-m-d');
+            const p = pickupFP.formatDate(pickupFP.selectedDates[0], 'Y-m-d');
             if (dates.indexOf(p) !== -1) {
                pickupFP.clear();
             }
@@ -596,7 +596,7 @@
       if (dropoffFP) {
          dropoffFP.set('disable', dates);
          if (dropoffFP.selectedDates.length > 0) {
-            var d = dropoffFP.formatDate(dropoffFP.selectedDates[0], 'Y-m-d');
+            const d = dropoffFP.formatDate(dropoffFP.selectedDates[0], 'Y-m-d');
             if (dates.indexOf(d) !== -1) {
                dropoffFP.clear();
             }
@@ -608,7 +608,7 @@
    }
 
    function initFlatpickr(unavailableDates) {
-      var tomorrow = new Date();
+      const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
 
       pickupFP = flatpickr(pickupInput, {
@@ -619,7 +619,7 @@
          disable: unavailableDates,
          onChange: function (selectedDates) {
             if (selectedDates.length > 0) {
-               var nextDay = new Date(selectedDates[0]);
+               const nextDay = new Date(selectedDates[0]);
                nextDay.setDate(nextDay.getDate() + 1);
                dropoffFP.set('minDate', nextDay);
                dropoffFP.open();
@@ -647,18 +647,18 @@
    function calculateTotal() {
       if (!currentCar) return;
 
-      var start = pickupFP.selectedDates[0];
-      var end   = dropoffFP.selectedDates[0];
+      const start = pickupFP.selectedDates[0];
+      const end   = dropoffFP.selectedDates[0];
 
       if (!start || !end) {
          totalWrap.style.display = 'none';
          return;
       }
 
-      var days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+      const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
       if (days < 1) days = 1;
 
-      var total = days * currentCar.daily_rate;
+      const total = days * currentCar.daily_rate;
       totalValue.textContent = '\u20B1' + numberFormat(total);
       totalBreakdown.textContent = '(' + days + ' day' + (days > 1 ? 's' : '') + ' \u00D7 \u20B1' + numberFormat(currentCar.daily_rate) + '/day)';
       totalWrap.style.display = '';
@@ -667,14 +667,14 @@
    /* ── Validation ── */
 
    function validateForm() {
-      var hasPickup  = pickupFP && pickupFP.selectedDates.length > 0;
-      var hasDropoff = dropoffFP && dropoffFP.selectedDates.length > 0;
-      var hasColor   = selectedColor || !(currentCar && currentCar.color_variants && currentCar.color_variants.length > 0);
+      const hasPickup  = pickupFP && pickupFP.selectedDates.length > 0;
+      const hasDropoff = dropoffFP && dropoffFP.selectedDates.length > 0;
+      const hasColor   = selectedColor || !(currentCar && currentCar.color_variants && currentCar.color_variants.length > 0);
 
       // Block booking if selected color has 0 units
-      var colorAvailable = true;
+      let colorAvailable = true;
       if (selectedColor && currentCar && currentCar.color_variants) {
-         for (var i = 0; i < currentCar.color_variants.length; i++) {
+         for (let i = 0; i < currentCar.color_variants.length; i++) {
             if (currentCar.color_variants[i].color === selectedColor) {
                if (currentCar.color_variants[i].units <= 0) {
                   colorAvailable = false;
@@ -685,7 +685,7 @@
       }
 
       // Phase 11.13: also require a chosen branch.
-      var hasBranch = selectedLocationId > 0;
+      const hasBranch = selectedLocationId > 0;
 
       proceedBtn.disabled = !(hasBranch && hasPickup && hasDropoff && hasColor && colorAvailable);
 
@@ -710,8 +710,8 @@
    function updateStatusHint(state) {
       if (!statusEl || !statusTextEl) return;
 
-      var msg  = '';
-      var kind = 'info'; // 'info' | 'warn' | 'success'
+      let msg  = '';
+      let kind = 'info'; // 'info' | 'warn' | 'success'
 
       if (!state.hasBranch) {
          msg  = 'Select a pickup branch first to see colors and dates that are actually available.';
@@ -744,11 +744,11 @@
    function handleProceed() {
       if (proceedBtn.disabled || !currentCar) return;
 
-      var start        = pickupFP.selectedDates[0];
-      var end          = dropoffFP.selectedDates[0];
-      var customerType = modal.querySelector('input[name="obsidian_customer_type"]:checked');
+      const start        = pickupFP.selectedDates[0];
+      const end          = dropoffFP.selectedDates[0];
+      const customerType = modal.querySelector('input[name="obsidian_customer_type"]:checked');
 
-      var params = new URLSearchParams({
+      const params = new URLSearchParams({
          car_id:        currentCar.id,
          location_id:   selectedLocationId || '',
          start:         formatDate(start),
@@ -771,9 +771,9 @@
    }
 
    function formatDate(d) {
-      var y   = d.getFullYear();
-      var m   = ('0' + (d.getMonth() + 1)).slice(-2);
-      var day = ('0' + d.getDate()).slice(-2);
+      const y   = d.getFullYear();
+      const m   = ('0' + (d.getMonth() + 1)).slice(-2);
+      const day = ('0' + d.getDate()).slice(-2);
       return y + '-' + m + '-' + day;
    }
 
@@ -790,15 +790,15 @@
 (function () {
    'use strict';
 
-   var modal = document.getElementById('obsidian-text-modal');
+   const modal = document.getElementById('obsidian-text-modal');
    if (!modal) return;
 
-   var overlay = modal.querySelector('.obsidian-text-modal-overlay');
-   var closeBtn = modal.querySelector('.obsidian-text-modal-close');
-   var loader = document.getElementById('obsidian-text-modal-loader');
-   var contentWrap = document.getElementById('obsidian-text-modal-content');
-   var titleEl = document.getElementById('obsidian-text-modal-title');
-   var bodyEl = document.getElementById('obsidian-text-modal-body');
+   const overlay = modal.querySelector('.obsidian-text-modal-overlay');
+   const closeBtn = modal.querySelector('.obsidian-text-modal-close');
+   const loader = document.getElementById('obsidian-text-modal-loader');
+   const contentWrap = document.getElementById('obsidian-text-modal-content');
+   const titleEl = document.getElementById('obsidian-text-modal-title');
+   const bodyEl = document.getElementById('obsidian-text-modal-body');
 
    function openModal() {
       modal.setAttribute('aria-hidden', 'false');
@@ -817,11 +817,11 @@
 
    // Global event listener for any link that wants to open the modal
    document.addEventListener('click', function(e) {
-      var trigger = e.target.closest('a[data-modal="text"]');
+      const trigger = e.target.closest('a[data-modal="text"]');
       if (!trigger) return;
 
       e.preventDefault();
-      var slug = trigger.getAttribute('data-page-slug');
+      const slug = trigger.getAttribute('data-page-slug');
       if (!slug) return;
 
       openModal();
@@ -829,7 +829,7 @@
       contentWrap.style.display = 'none';
 
       // Use the native WP REST API to fetch the page content
-      var endpoint = '/wp-json/wp/v2/pages?slug=' + encodeURIComponent(slug);
+      const endpoint = '/wp-json/wp/v2/pages?slug=' + encodeURIComponent(slug);
       
       fetch(endpoint)
          .then(function(response) {
@@ -841,7 +841,7 @@
             contentWrap.style.display = '';
 
             if (pages && pages.length > 0) {
-               var page = pages[0];
+               const page = pages[0];
                titleEl.textContent = page.title.rendered || '';
                bodyEl.innerHTML = page.content.rendered || '';
             } else {

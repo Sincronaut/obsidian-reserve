@@ -253,14 +253,14 @@ $rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 
 	document.addEventListener('DOMContentLoaded', function() {
 
-		var section = document.querySelector('.obsidian-locations-map');
+		const section = document.querySelector('.obsidian-locations-map');
 		if (!section) { return; }
 
-		var canvas  = section.querySelector('#ob-locations-map');
-		var info    = section.querySelector('.locations-map-info');
-		var empty   = info.querySelector('.locations-map-info-empty');
-		var card    = info.querySelector('.locations-map-info-card');
-		var restUrl = section.getAttribute('data-rest-url');
+		const canvas  = section.querySelector('#ob-locations-map');
+		const info    = section.querySelector('.locations-map-info');
+		const empty   = info.querySelector('.locations-map-info-empty');
+		const card    = info.querySelector('.locations-map-info-card');
+		const restUrl = section.getAttribute('data-rest-url');
 
 		// Wait for Leaflet to load (CDN script is footer-enqueued, so it's
 		// usually available by DOMContentLoaded — but be defensive).
@@ -269,8 +269,8 @@ $rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 				cb();
 				return;
 			}
-			var tries = 0;
-			var iv = setInterval(function() {
+			let tries = 0;
+			const iv = setInterval(function() {
 				if (typeof window.L !== 'undefined') {
 					clearInterval(iv);
 					cb();
@@ -284,7 +284,7 @@ $rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 		whenLeafletReady(function() {
 
 			/* ── 1. Bootstrap the Leaflet map centered on the Philippines ── */
-			var map = L.map(canvas, {
+			const map = L.map(canvas, {
 				center: [12.8797, 121.7740],   // geographic center of the PH archipelago
 				zoom:   6,
 				scrollWheelZoom: false,        // don't hijack page scroll
@@ -305,7 +305,7 @@ $rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 
 			/* ── 2. Custom DivIcon pins (no image asset to host) ── */
 			function pinIcon(status) {
-				var cls = status === 'coming_soon' ? 'ob-pin ob-pin--coming' : 'ob-pin ob-pin--active';
+				const cls = status === 'coming_soon' ? 'ob-pin ob-pin--coming' : 'ob-pin ob-pin--active';
 				return L.divIcon({
 					className: cls,
 					html: '<span class="ob-pin-dot"></span>',
@@ -315,8 +315,8 @@ $rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 			}
 
 			/* ── 3. Fetch every non-closed branch and plot it ── */
-			var markersArr = [];
-			var markersBySlug = {};
+			const markersArr = [];
+			const markersBySlug = {};
 
 			fetch(restUrl + '?per_page=200')
 				.then(function(r) { return r.json(); })
@@ -326,7 +326,7 @@ $rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 						if (b.status === 'closed') { return; }
 						if (!b.latitude || !b.longitude) { return; }
 
-						var marker = L.marker([b.latitude, b.longitude], {
+						const marker = L.marker([b.latitude, b.longitude], {
 							icon: pinIcon(b.status),
 							title: b.name
 						}).addTo(map);
@@ -341,18 +341,18 @@ $rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 
 					// Auto-fit the map to whatever pins we plotted
 					if (markersArr.length > 0) {
-						var group = L.featureGroup(markersArr);
+						const group = L.featureGroup(markersArr);
 						map.fitBounds(group.getBounds().pad(0.15), { maxZoom: 11 });
 					}
 
 					// Link clicking from the list
-					var listLinks = section.querySelectorAll('.branch-link');
+					const listLinks = section.querySelectorAll('.branch-link');
 					listLinks.forEach(function(link) {
 						link.addEventListener('click', function(e) {
 							e.preventDefault();
-							var slug = this.getAttribute('data-slug');
+							const slug = this.getAttribute('data-slug');
 							if (markersBySlug[slug]) {
-								var m = markersBySlug[slug];
+								const m = markersBySlug[slug];
 								map.setView(m.marker.getLatLng(), 14); // zoom in
 								populateInfoCard(m.data);
 								canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -375,12 +375,12 @@ $rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 				card.querySelector('.info-card-name').textContent   = branch.name || '';
 				card.querySelector('.info-card-region').textContent = branch.region_name || '';
 
-				var fields = ['address', 'contact_number', 'hours'];
+				const fields = ['address', 'contact_number', 'hours'];
 				fields.forEach(function(key) {
-					var row = card.querySelector('.info-card-row[data-field="' + key + '"]');
+					const row = card.querySelector('.info-card-row[data-field="' + key + '"]');
 					if (!row) { return; }
-					var dd  = row.querySelector('dd');
-					var val = (branch[key] || '').toString().trim();
+					const dd  = row.querySelector('dd');
+					const val = (branch[key] || '').toString().trim();
 					if (val) {
 						// Address/hours come from textarea fields — they
 						// contain raw line breaks already converted to <br>.
@@ -391,7 +391,7 @@ $rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 					}
 				});
 
-				var mapLink = card.querySelector('[data-action="map-url"]');
+				const mapLink = card.querySelector('[data-action="map-url"]');
 				if (branch.map_url) {
 					mapLink.href = branch.map_url;
 					mapLink.hidden = false;
@@ -404,7 +404,7 @@ $rest_url = esc_url_raw( rest_url( 'obsidian-booking/v1/locations' ) );
 					mapLink.hidden = true;
 				}
 
-				var carsLink = card.querySelector('[data-action="see-cars"]');
+				const carsLink = card.querySelector('[data-action="see-cars"]');
 				if (branch.status === 'active' && branch.slug) {
 					carsLink.href = '/fleet/?location=' + encodeURIComponent(branch.slug);
 					carsLink.hidden = false;
