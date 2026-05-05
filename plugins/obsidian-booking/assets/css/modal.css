@@ -1011,3 +1011,92 @@ span.flatpickr-weekday {
       font-size: 22px;
    }
 }
+
+/* ============================================================
+   Global "Notification" Modals (Success, Exit, Logout)
+   Used for simple alerts and confirmations across the site.
+   ============================================================ */
+.obf-modal-overlay {
+   position: fixed;
+   inset: 0;
+   background: rgba(0, 0, 0, 0.85);
+   backdrop-filter: blur(10px);
+   z-index: 100000;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   padding: 24px;
+   animation: obf-fade-in 0.4s ease;
+}
+
+.obf-modal-content {
+   background: #141414;
+   border: 1px solid rgba(197, 160, 89, 0.4);
+   border-radius: 16px;
+   width: 100%;
+   max-width: 440px;
+   padding: 48px 32px;
+   text-align: center;
+   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(197, 160, 89, 0.1);
+   animation: obf-modal-slide 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.obf-modal-icon {
+   width: 80px;
+   height: 80px;
+   background: rgba(197, 160, 89, 0.1);
+   border: 2px solid #C5A059;
+   border-radius: 50%;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   margin: 0 auto 24px;
+   color: #C5A059;
+   box-shadow: 0 0 20px rgba(197, 160, 89, 0.2);
+}
+
+.obf-modal-title {
+   font-size: 24px;
+   font-weight: 700;
+   color: #C5A059;
+   margin: 0 0 12px;
+   font-family: var(--wp--preset--font-family--montserrat, 'Montserrat', sans-serif);
+}
+
+.obf-modal-text {
+   font-size: 15px;
+   line-height: 1.6;
+   color: rgba(255, 255, 255, 0.7);
+   margin-bottom: 32px;
+}
+
+.obf-modal-btn {
+   display: inline-block;
+   padding: 14px 28px;
+   background: #C5A059;
+   color: #0B0B0B;
+   border-radius: 8px;
+   font-weight: 700;
+   text-transform: uppercase;
+   letter-spacing: 0.5px;
+   font-size: 13px;
+   cursor: pointer;
+   border: none;
+   transition: background 0.3s ease, transform 0.2s ease;
+   text-decoration: none !important;
+}
+
+.obf-modal-btn:hover {
+   background: #D4AF6A;
+   transform: translateY(-2px);
+}
+
+@keyframes obf-fade-in {
+   from { opacity: 0; }
+   to { opacity: 1; }
+}
+
+@keyframes obf-modal-slide {
+   from { opacity: 0; transform: translateY(20px); }
+   to { opacity: 1; transform: translateY(0); }
+}

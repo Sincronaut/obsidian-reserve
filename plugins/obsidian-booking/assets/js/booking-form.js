@@ -42,6 +42,83 @@
 		if (backBtn) backBtn.addEventListener('click', goToRenter);
 
 		form.addEventListener('submit', handleSubmit);
+
+		initExitGuard();
+	}
+
+	/* ── Exit Guard (Phase 11.16) ── */
+
+	function initExitGuard() {
+		const exitModal    = document.getElementById('obf-exit-modal');
+		const stayBtn      = document.getElementById('obf-exit-stay');
+		const confirmBtn   = document.getElementById('obf-exit-confirm');
+		let pendingUrl     = null;
+		let formSubmitted  = false;
+
+		if (!exitModal) return;
+
+		// 1. Browser-level guard (Tab close / Back button)
+		window.addEventListener('beforeunload', function (e) {
+			if (formSubmitted) return;
+			e.preventDefault();
+			e.returnValue = ''; // Standard way to trigger browser warning
+		});
+
+		// 2. Internal link guard (Clicking header/footer links)
+		document.addEventListener('click', function (e) {
+			if (formSubmitted) return;
+
+			const link = e.target.closest('a');
+			if (!link) return;
+
+			// Ignore links that are just anchors, open in new tab, or are part of the form itself
+			if (
+				!link.href || 
+				link.href.includes('#') || 
+				link.target === '_blank' || 
+				link.closest('#obsidian-booking-form') || 
+				link.closest('.obf-modal-content')
+			) {
+				return;
+			}
+
+			// It's a navigation link — intercept it
+			e.preventDefault();
+			pendingUrl = link.href;
+			exitModal.style.display = 'flex';
+		});
+
+		// 3. Modal Actions
+		if (stayBtn) {
+			stayBtn.addEventListener('click', function () {
+				exitModal.style.display = 'none';
+				pendingUrl = null;
+			});
+		}
+
+		if (confirmBtn) {
+			confirmBtn.addEventListener('click', function () {
+				formSubmitted = true; // Allow navigation to proceed without second warning
+				if (pendingUrl) {
+					window.location.href = pendingUrl;
+				} else {
+					window.history.back();
+				}
+			});
+		}
+
+		// Close modal if background clicked
+		exitModal.addEventListener('click', function (e) {
+			if (e.target === exitModal) {
+				exitModal.style.display = 'none';
+				pendingUrl = null;
+			}
+		});
+
+		// Mark as submitted to disable the guard on success
+		form.addEventListener('submit', function() {
+			formSubmitted = true;
+		});
 	}
 
 	/* ── Sub-step Navigation ── */

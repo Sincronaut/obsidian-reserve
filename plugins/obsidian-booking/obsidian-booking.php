@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
 /* ──────────────────────────────────────────────
    Constants
    ────────────────────────────────────────────── */
-define('OBSIDIAN_BOOKING_VERSION', '1.0.0');
+define('OBSIDIAN_BOOKING_VERSION', '1.0.1');
 define('OBSIDIAN_BOOKING_FILE', __FILE__);
 define('OBSIDIAN_BOOKING_DIR', plugin_dir_path(__FILE__));
 define('OBSIDIAN_BOOKING_URL', plugin_dir_url(__FILE__));
@@ -402,6 +402,32 @@ function obsidian_booking_render_text_modal()
    <?php
 }
 add_action('wp_footer', 'obsidian_booking_render_text_modal');
+
+/**
+ * Global Logout Confirmation Modal (Phase 11.16)
+ */
+function obsidian_booking_render_logout_modal()
+{
+   if (is_admin() || !is_user_logged_in()) {
+      return;
+   }
+   ?>
+   <div id="obsidian-logout-modal" class="obf-modal-overlay" style="display:none;">
+      <div class="obf-modal-content">
+         <div class="obf-modal-icon" style="border-color: #C5A059; color: #C5A059; background: rgba(197, 160, 89, 0.1);">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+         </div>
+         <h2 class="obf-modal-title">Log Out?</h2>
+         <p class="obf-modal-text">Are you sure you want to log out of your Obsidian account?</p>
+         <div style="display: flex; gap: 16px; justify-content: center; width: 100%;">
+            <button type="button" id="obf-logout-cancel" class="obf-modal-btn" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); flex: 1;">Cancel</button>
+            <button type="button" id="obf-logout-confirm" class="obf-modal-btn" style="background: #C5A059; color: #0B0B0B; flex: 1;">Yes, Log Out</button>
+         </div>
+      </div>
+   </div>
+   <?php
+}
+add_action('wp_footer', 'obsidian_booking_render_logout_modal');
 
 
 /* ──────────────────────────────────────────────

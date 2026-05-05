@@ -605,5 +605,19 @@ $change_location_url = add_query_arg(
 			</div>
 		</div>
 	</div>
+	<!-- Exit Confirmation Modal (Phase 11.16) -->
+	<div id="obf-exit-modal" class="obf-modal-overlay" style="display:none;">
+		<div class="obf-modal-content">
+			<div class="obf-modal-icon" style="border-color: #C5A059; color: #C5A059; background: rgba(197, 160, 89, 0.1);">
+				<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+			</div>
+			<h2 class="obf-modal-title">Exit Booking Process?</h2>
+			<p class="obf-modal-text">Are you sure you want to leave? Your progress will be lost and you will need to start your reservation again.</p>
+			<div style="display: flex; gap: 16px; justify-content: center; width: 100%;">
+				<button type="button" id="obf-exit-confirm" class="obf-modal-btn" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); flex: 1;">Exit Process</button>
+				<button type="button" id="obf-exit-stay" class="obf-modal-btn" style="background: #C5A059; color: #0B0B0B; flex: 1;">Keep Booking</button>
+			</div>
+		</div>
+	</div>
 </div>
 </section>

@@ -1,4 +1,65 @@
 /**
+ * Obsidian Booking — Global Logout Guard (Phase 11.16)
+ * Intercepts all logout attempts to show a confirmation modal.
+ */
+(function () {
+   'use strict';
+
+   function initLogoutGuard() {
+      const modal = document.getElementById('obsidian-logout-modal');
+      if (!modal) return;
+
+      const confirmBtn = document.getElementById('obf-logout-confirm');
+      const cancelBtn = document.getElementById('obf-logout-cancel');
+
+      // Intercept any click on a logout link site-wide
+      window.addEventListener('click', function (e) {
+         const link = e.target.closest('a[href*="logout"], .ouc-logout');
+         if (!link) return;
+
+         // WP standard logout URLs contain action=logout
+         const href = link.href || '';
+         if (href.includes('action=logout') || href.includes('/logout')) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+
+            modal.style.display = 'flex';
+            document.documentElement.classList.add('obsidian-modal-open');
+
+            // Handle confirmation
+            confirmBtn.onclick = function(ev) {
+               ev.preventDefault();
+               window.location.href = href;
+            };
+         }
+      }, { capture: true });
+
+      // Handle cancellation
+      if (cancelBtn) {
+         cancelBtn.onclick = function(e) {
+            e.preventDefault();
+            modal.style.display = 'none';
+            document.documentElement.classList.remove('obsidian-modal-open');
+         };
+      }
+
+      // Close on background click
+      modal.onclick = function(e) {
+         if (e.target === modal) {
+            modal.style.display = 'none';
+            document.documentElement.classList.remove('obsidian-modal-open');
+         }
+      };
+   }
+
+   if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initLogoutGuard);
+   } else {
+      initLogoutGuard();
+   }
+})();
+
+/**
  * Obsidian Booking — Modal JS
  * Phase 5: Two-column modal with gallery, specs, customer type, and date pickers.
  */
