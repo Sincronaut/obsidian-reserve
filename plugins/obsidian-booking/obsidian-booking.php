@@ -3,7 +3,7 @@
  * Plugin Name: Obsidian Booking
  * Plugin URI:
  * Description: Custom booking and reservation system for Obsidian Reserve luxury car rentals.
- * Version: 1.0.0
+ * Version: 1.0.2
  * Author: Obsidian Reserve
  * Author URI:
  * Text Domain: obsidian-booking
@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
 /* ──────────────────────────────────────────────
    Constants
    ────────────────────────────────────────────── */
-define('OBSIDIAN_BOOKING_VERSION', '1.0.1');
+define('OBSIDIAN_BOOKING_VERSION', '1.0.2');
 define('OBSIDIAN_BOOKING_FILE', __FILE__);
 define('OBSIDIAN_BOOKING_DIR', plugin_dir_path(__FILE__));
 define('OBSIDIAN_BOOKING_URL', plugin_dir_url(__FILE__));

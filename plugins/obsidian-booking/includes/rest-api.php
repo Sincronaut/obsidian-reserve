@@ -607,7 +607,7 @@ function obsidian_api_create_booking( $request ) {
 	// Always scope to the selected branch so two customers can't race to book
 	// the last Orange GTR at the same branch.
 	if ( ! empty( $color ) ) {
-		$color_available = obsidian_get_available_units_by_color( $car_id, $color, $start_date, $end_date, $location_id );
+		$color_available = obsidian_get_available_units_by_color( $car_id, $color, $start_date, $end_date, 0, $location_id );
 		if ( $color_available <= 0 ) {
 			return new WP_Error(
 				'not_available',

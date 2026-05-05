@@ -725,8 +725,6 @@
       totalWrap.style.display = '';
    }
 
-   /* ── Validation ── */
-
    function validateForm() {
       const hasPickup  = pickupFP && pickupFP.selectedDates.length > 0;
       const hasDropoff = dropoffFP && dropoffFP.selectedDates.length > 0;
@@ -745,21 +743,34 @@
          }
       }
 
-      // Phase 11.13: also require a chosen branch.
+      // Range check: ensures no fully-booked dates are hidden inside the selection
+      let rangeValid = true;
+      if (hasPickup && hasDropoff) {
+         const disabledDates = getDisableDatesForCurrentColor();
+         const start = new Date(pickupFP.selectedDates[0]);
+         const end   = new Date(dropoffFP.selectedDates[0]);
+
+         // Check every day from start up to (but not including) end
+         let check = new Date(start);
+         while (check < end) {
+            if (disabledDates.indexOf(formatDate(check)) !== -1) {
+               rangeValid = false;
+               break;
+            }
+            check.setDate(check.getDate() + 1);
+         }
+      }
+
       const hasBranch = selectedLocationId > 0;
+      proceedBtn.disabled = !(hasBranch && hasPickup && hasDropoff && hasColor && colorAvailable && rangeValid);
 
-      proceedBtn.disabled = !(hasBranch && hasPickup && hasDropoff && hasColor && colorAvailable);
-
-      // ── UX status hint ──
-      // Surface *why* the form / Reserve button is locked. Shown above the
-      // CTA so the user doesn't have to guess. Order matters here — start
-      // with the earliest gate (branch) and walk down to the latest (dates).
       updateStatusHint({
          hasBranch:      hasBranch,
          hasColor:       hasColor,
          colorAvailable: colorAvailable,
          hasPickup:      hasPickup,
-         hasDropoff:     hasDropoff
+         hasDropoff:     hasDropoff,
+         rangeValid:     rangeValid
       });
    }
 
@@ -789,6 +800,9 @@
       } else if (!state.hasDropoff) {
          msg  = 'Pick your return date.';
          kind = 'info';
+      } else if (!state.rangeValid) {
+         msg  = 'The selected date range includes dates that are already fully booked.';
+         kind = 'warn';
       } else {
          msg  = 'Looks good — ready to reserve.';
          kind = 'success';
