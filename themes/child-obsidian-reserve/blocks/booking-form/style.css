@@ -600,6 +600,7 @@
 	font-size: 15px;
 	font-weight: 600;
 	cursor: pointer;
+	text-decoration: none;
 	transition: opacity 0.2s ease, background 0.2s ease;
 }
 
@@ -1491,4 +1492,150 @@
 
 .obsidian-bf-status.is-info svg {
 	color: #C5A059;
+}
+
+/* ── Reserved Page Styles (Phase 11.16) ── */
+.obr-header-centered {
+	text-align: center;
+	margin-bottom: 48px;
+}
+
+.obr-title-large {
+	font-size: 56px !important;
+	font-weight: 800;
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	margin: 0;
+}
+
+.centered {
+	text-align: center;
+	justify-content: center;
+}
+
+.obsidian-reserved-wrap .obp-vehicle-showcase {
+	border: none;
+	background: transparent;
+	margin-bottom: 48px;
+}
+
+.obsidian-reserved-wrap .obp-showcase-hero {
+	padding: 0 0 32px;
+	border-bottom: none;
+}
+
+.obsidian-reserved-wrap .obp-showcase-img {
+	max-width: 480px;
+	margin: 0 auto 0;
+}
+
+.obsidian-reserved-wrap .obp-showcase-name {
+	font-size: 20px;
+	font-weight: 700;
+	margin: 0 auto;
+}
+
+.obsidian-reserved-wrap .obp-showcase-bottom {
+	border-top: none;
+	padding: 0;
+	justify-content: flex-start;
+}
+
+.obsidian-reserved-wrap .obp-showcase-specs {
+	max-width: 480px;
+	margin: 0;
+	text-align: left;
+}
+
+.obr-actions {
+	display: flex;
+	justify-content: center;
+	margin-top: 16px;
+}
+
+/* ═══════════════════════════════════════════
+   Success Modal (Phase 11.16)
+   ═══════════════════════════════════════════ */
+.obf-modal-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.85);
+	backdrop-filter: blur(10px);
+	z-index: 10000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	animation: obf-fade-in 0.4s ease;
+}
+
+.obf-modal-content {
+	background: #141414;
+	border: 1px solid rgba(197, 160, 89, 0.4);
+	border-radius: 16px;
+	width: 100%;
+	max-width: 440px;
+	padding: 48px 32px;
+	text-align: center;
+	box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(197, 160, 89, 0.1);
+	animation: obf-modal-slide 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.obf-modal-icon {
+	width: 80px;
+	height: 80px;
+	background: rgba(197, 160, 89, 0.1);
+	border: 2px solid #C5A059;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0 auto 24px;
+	color: #C5A059;
+	box-shadow: 0 0 20px rgba(197, 160, 89, 0.2);
+}
+
+.obf-modal-title {
+	font-size: 24px;
+	font-weight: 700;
+	color: #fff;
+	margin: 0 0 12px;
+}
+
+.obf-modal-text {
+	font-size: 15px;
+	color: rgba(255, 255, 255, 0.7);
+	line-height: 1.6;
+	margin: 0 0 32px;
+}
+
+.obf-modal-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: #C5A059;
+	color: #0B0B0B;
+	padding: 14px 40px;
+	border-radius: 8px;
+	font-weight: 700;
+	text-decoration: none;
+	font-size: 15px;
+	transition: all 0.3s ease;
+	box-shadow: 0 4px 12px rgba(197, 160, 89, 0.2);
+}
+
+.obf-modal-btn:hover {
+	background: #d4af6a;
+	transform: translateY(-2px);
+	box-shadow: 0 6px 16px rgba(197, 160, 89, 0.3);
+}
+
+@keyframes obf-fade-in {
+	from { opacity: 0; }
+	to   { opacity: 1; }
+}
+
+@keyframes obf-modal-slide {
+	from { opacity: 0; transform: translateY(20px); }
+	to   { opacity: 1; transform: translateY(0); }
 }

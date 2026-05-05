@@ -628,7 +628,7 @@ function obsidian_api_create_booking( $request ) {
 	$num_days   = $start->diff( $end )->days;
 	$total      = $daily_rate * $num_days;
 
-	// --- Create the booking post ---
+	// --- Create the booking post (Optimized: all meta in one go) ---
 	$booking_title = sprintf(
 		'%s — %s %s (%s to %s)',
 		get_the_title( $car_id ),
@@ -638,77 +638,54 @@ function obsidian_api_create_booking( $request ) {
 		$end_date
 	);
 
+	$meta_input = array(
+		'_booking_car_id'           => $car_id,
+		'_booking_user_id'          => $user_id,
+		'_booking_start_date'       => $start_date,
+		'_booking_end_date'         => $end_date,
+		'_booking_customer_type'    => $customer_type,
+		'_booking_status'           => 'pending_review',
+		'_booking_total_price'      => $total,
+		'_booking_color'            => $color,
+		'_booking_first_name'       => $first_name,
+		'_booking_last_name'        => $last_name,
+		'_booking_email'            => $user->user_email,
+		'_booking_address'          => $address,
+		'_booking_birth_date'       => $birth_date,
+		'_booking_phone'            => $phone,
+		'_booking_license_number'   => $license_number,
+		'_booking_location_id'      => $location_id,
+		'_booking_location'         => ( $location_str !== '' ) ? $location_str : get_the_title( $location_id ),
+		'_booking_gov_id_type'      => $gov_id_type,
+		'_booking_gov_id_type_2'    => $gov_id_type_2,
+		'_booking_passport_number'  => $passport_number,
+		'_booking_documents'        => wp_json_encode( $documents ),
+		'_booking_delivery_contact' => $delivery_contact,
+		'_booking_delivery_dropoff' => $delivery_dropoff,
+		'_booking_delivery_address' => $delivery_address,
+		'_booking_delivery_date'    => $delivery_date,
+		'_booking_delivery_time'    => $delivery_time,
+		'_booking_return_address'   => $return_address,
+		'_booking_return_date'      => $return_date,
+		'_booking_return_time'      => $return_time,
+		'_booking_special_requests' => $special_requests,
+		'_booking_need_chauffeur'   => $need_chauffeur,
+		'_booking_admin_notes'      => '',
+		'_booking_denial_reason'    => '',
+		'_booking_payment_type'     => '',
+		'_booking_payment_amount'   => 0,
+		'_booking_deposit_amount'   => 0,
+		'_booking_balance_due'      => $total,
+		'_booking_payment_id'       => '',
+		'_booking_payment_status'   => 'unpaid',
+	);
+
 	$booking_id = wp_insert_post( array(
 		'post_type'   => 'booking',
 		'post_title'  => $booking_title,
 		'post_status' => 'publish',
+		'meta_input'  => $meta_input,
 	) );
-
-	if ( is_wp_error( $booking_id ) ) {
-		return new WP_Error(
-			'booking_failed',
-			__( 'Failed to create booking. Please try again.', 'obsidian-booking' ),
-			array( 'status' => 500 )
-		);
-	}
-
-	// --- Save all meta fields ---
-	update_post_meta( $booking_id, '_booking_car_id', $car_id );
-	update_post_meta( $booking_id, '_booking_user_id', $user_id );
-	update_post_meta( $booking_id, '_booking_start_date', $start_date );
-	update_post_meta( $booking_id, '_booking_end_date', $end_date );
-	update_post_meta( $booking_id, '_booking_customer_type', $customer_type );
-	update_post_meta( $booking_id, '_booking_status', 'pending_review' );
-	update_post_meta( $booking_id, '_booking_total_price', $total );
-	update_post_meta( $booking_id, '_booking_color', $color );
-
-	// Contact & identity
-	update_post_meta( $booking_id, '_booking_first_name', $first_name );
-	update_post_meta( $booking_id, '_booking_last_name', $last_name );
-	update_post_meta( $booking_id, '_booking_email', $user->user_email );
-	update_post_meta( $booking_id, '_booking_address', $address );
-	update_post_meta( $booking_id, '_booking_birth_date', $birth_date );
-	update_post_meta( $booking_id, '_booking_phone', $phone );
-	update_post_meta( $booking_id, '_booking_license_number', $license_number );
-
-	// Phase 11: canonical branch reference + legacy string for one-release compat.
-	update_post_meta( $booking_id, '_booking_location_id', $location_id );
-	if ( $location_str !== '' ) {
-		update_post_meta( $booking_id, '_booking_location', $location_str );
-	} else {
-		// Store the branch title as a human-readable fallback for old reports/UIs.
-		update_post_meta( $booking_id, '_booking_location', get_the_title( $location_id ) );
-	}
-
-	// Type-specific
-	update_post_meta( $booking_id, '_booking_gov_id_type', $gov_id_type );
-	update_post_meta( $booking_id, '_booking_gov_id_type_2', $gov_id_type_2 );
-	update_post_meta( $booking_id, '_booking_passport_number', $passport_number );
-
-	// Documents
-	update_post_meta( $booking_id, '_booking_documents', wp_json_encode( $documents ) );
-
-	// Delivery info
-	update_post_meta( $booking_id, '_booking_delivery_contact', $delivery_contact );
-	update_post_meta( $booking_id, '_booking_delivery_dropoff', $delivery_dropoff );
-	update_post_meta( $booking_id, '_booking_delivery_address', $delivery_address );
-	update_post_meta( $booking_id, '_booking_delivery_date', $delivery_date );
-	update_post_meta( $booking_id, '_booking_delivery_time', $delivery_time );
-	update_post_meta( $booking_id, '_booking_return_address', $return_address );
-	update_post_meta( $booking_id, '_booking_return_date', $return_date );
-	update_post_meta( $booking_id, '_booking_return_time', $return_time );
-	update_post_meta( $booking_id, '_booking_special_requests', $special_requests );
-	update_post_meta( $booking_id, '_booking_need_chauffeur', $need_chauffeur );
-
-	// Admin & payment defaults
-	update_post_meta( $booking_id, '_booking_admin_notes', '' );
-	update_post_meta( $booking_id, '_booking_denial_reason', '' );
-	update_post_meta( $booking_id, '_booking_payment_type', '' );
-	update_post_meta( $booking_id, '_booking_payment_amount', 0 );
-	update_post_meta( $booking_id, '_booking_deposit_amount', 0 );
-	update_post_meta( $booking_id, '_booking_balance_due', $total );
-	update_post_meta( $booking_id, '_booking_payment_id', '' );
-	update_post_meta( $booking_id, '_booking_payment_status', 'unpaid' );
 
 	do_action( 'obsidian_booking_status_changed', $booking_id, '', 'pending_review' );
 
@@ -994,8 +971,14 @@ function obsidian_format_car_data( $car_id, $location_id = 0 ) {
  * @return array
  */
 function obsidian_format_location_data( $id, $with_detail = true ) {
+	static $obsidian_location_cache = array();
+	$id = (int) $id;
+	$cache_key = $id . ( $with_detail ? '_full' : '_slim' );
 
-	$id     = (int) $id;
+	if ( isset( $obsidian_location_cache[ $cache_key ] ) ) {
+		return $obsidian_location_cache[ $cache_key ];
+	}
+
 	$region = wp_get_post_terms( $id, 'region', array( 'number' => 1 ) );
 	$region = ! is_wp_error( $region ) && ! empty( $region ) ? $region[0] : null;
 
@@ -1010,10 +993,11 @@ function obsidian_format_location_data( $id, $with_detail = true ) {
 	);
 
 	if ( ! $with_detail ) {
+		$obsidian_location_cache[ $cache_key ] = $base;
 		return $base;
 	}
 
-	return array_merge( $base, array(
+	$res = array_merge( $base, array(
 		'address'        => get_post_meta( $id, 'location_address', true ),
 		'contact_number' => get_post_meta( $id, 'location_contact_number', true ),
 		'contact_email'  => get_post_meta( $id, 'location_contact_email', true ),
@@ -1025,4 +1009,7 @@ function obsidian_format_location_data( $id, $with_detail = true ) {
 		'description'    => apply_filters( 'the_content', get_post_field( 'post_content', $id ) ),
 		'link'           => get_permalink( $id ),
 	) );
+
+	$obsidian_location_cache[ $cache_key ] = $res;
+	return $res;
 }

@@ -591,5 +591,19 @@ $change_location_url = add_query_arg(
 		<div class="obsidian-bf-message" id="obf-message" style="display:none;"></div>
 
 	</form>
+
+	<!-- Success Modal (Phase 11.16) -->
+	<div id="obf-success-modal" class="obf-modal-overlay" style="display:none;">
+		<div class="obf-modal-content">
+			<div class="obf-modal-icon">
+				<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+			</div>
+			<h2 class="obf-modal-title">Booking Sent for Review</h2>
+			<p class="obf-modal-text">Your booking has been successfully sent for review. We typically respond within an hour.</p>
+			<div class="obf-modal-actions">
+				<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="obf-modal-btn">Go Back Home</a>
+			</div>
+		</div>
+	</div>
 </div>
 </section>

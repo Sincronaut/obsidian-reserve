@@ -118,13 +118,16 @@
 		deliveryPickersInitialized = true;
 
 		const deliveryDateInput = document.getElementById('obf-delivery-date');
+		const bookingStartDate  = document.getElementById('obf-start-date') ? document.getElementById('obf-start-date').value : 'today';
+		const bookingEndDate    = document.getElementById('obf-end-date') ? document.getElementById('obf-end-date').value : null;
 
 		if (deliveryDateInput) {
 			flatpickr(deliveryDateInput, {
 				dateFormat: 'Y-m-d',
 				altInput: true,
 				altFormat: 'M j, Y',
-				minDate: 'today',
+				minDate: bookingStartDate,
+				maxDate: bookingEndDate,
 				onChange: function () { validateDelivery(); }
 			});
 		}
@@ -552,7 +555,25 @@
 		})
 		.then(function (result) {
 			setLoading(false);
-			showMessage(result.message || 'Your documents have been submitted for review!', 'success');
+			
+			const successModal = document.getElementById('obf-success-modal');
+			if (successModal) {
+				successModal.style.display = 'flex';
+				// Close modal on background click redirects home
+				successModal.addEventListener('click', function(e) {
+					if (e.target === successModal) {
+						window.location.href = cfg.homeUrl || '/';
+					}
+				});
+				// Escape key also redirects home
+				window.addEventListener('keydown', function(e) {
+					if (e.key === 'Escape' && successModal.style.display === 'flex') {
+						window.location.href = cfg.homeUrl || '/';
+					}
+				});
+			} else {
+				showMessage(result.message || 'Your documents have been submitted for review!', 'success');
+			}
 
 			submitText.textContent = 'Submitted';
 			submitBtn.disabled = true;

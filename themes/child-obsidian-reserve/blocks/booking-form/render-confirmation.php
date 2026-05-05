@@ -109,22 +109,39 @@ if ( $is_paid ) : ?>
 <div class="obsidian-booking-form-wrap obsidian-reserved-wrap" id="obsidian-confirmation-wrap">
 
 	<div class="obsidian-bf-header obr-header-centered">
-		<h1 class="obsidian-bf-title" id="obr-title"><span class="text-gold italic">Reserved</span></h1>
+		<h1 class="obsidian-bf-title obr-title-large text-gold">RESERVED</h1>
 	</div>
 
-	<!-- Car Card (same as confirmation page) -->
+	<!-- Car Card (Phase 11.16) -->
 	<div class="obp-vehicle-showcase">
 		<div class="obp-showcase-hero">
 			<?php if ( $showcase_img ) : ?>
 				<img src="<?php echo esc_url( $showcase_img ); ?>" alt="<?php echo esc_attr( $car_name ); ?>" class="obp-showcase-img" />
 			<?php endif; ?>
-			<h3 class="obp-showcase-name"><?php echo esc_html( $car_name ); ?> <span class="text-gold"><?php echo esc_html( $color_display ); ?></span></h3>
+			<h3 class="obp-showcase-name text-gold centered"><?php echo esc_html( "$car_name $color_display" ); ?></h3>
 		</div>
 		<div class="obp-showcase-bottom">
 			<div class="obp-showcase-specs">
-				<?php if ( ! empty( $showcase_specs ) ) : ?>
+				<?php
+				// Re-filter specs specifically for this view
+				$final_specs = array();
+				$wanted      = array( 'engine', 'power', 'transmission' );
+				foreach ( $specs_lines as $line ) {
+					$parts = explode( ':', $line, 2 );
+					if ( count( $parts ) === 2 ) {
+						$key = strtolower( trim( $parts[0] ) );
+						if ( in_array( $key, $wanted, true ) ) {
+							$final_specs[] = array(
+								'label' => trim( $parts[0] ),
+								'value' => trim( $parts[1] ),
+							);
+						}
+					}
+				}
+
+				if ( ! empty( $final_specs ) ) : ?>
 					<p class="obp-showcase-specs-title"><strong>Specifications</strong></p>
-					<?php foreach ( $showcase_specs as $spec ) : ?>
+					<?php foreach ( $final_specs as $spec ) : ?>
 						<p class="obp-showcase-spec-line"><strong><?php echo esc_html( $spec['label'] ); ?>:</strong> <?php echo esc_html( $spec['value'] ); ?></p>
 					<?php endforeach; ?>
 				<?php endif; ?>

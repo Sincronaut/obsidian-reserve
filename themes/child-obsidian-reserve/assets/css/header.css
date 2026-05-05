@@ -262,6 +262,20 @@ body .wp-site-blocks>.wp-block-template-part:has(.obsidian-site-header) {
         box-sizing: border-box;
     }
 
+    .header-actions {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 25px;
+        width: 100%;
+    }
+
+    .header-reserve-btn,
+    .header-reserve-btn .wp-block-button,
+    .header-reserve-btn .wp-block-button__link {
+        width: 100%;
+        text-align: center;
+    }
+
     .obsidian-nav-wrapper.is-active {
         transform: translateX(0);
     }
@@ -271,38 +285,47 @@ body .wp-site-blocks>.wp-block-template-part:has(.obsidian-site-header) {
         gap: 15px;
     }
 
-    /* Convert all dropdowns to accordion style on mobile with smooth transition */
+    /* Convert all dropdowns to floating panels on mobile (out of document flow) */
     .obsidian-dropdown-menu {
-        position: static !important;
-        display: block !important;
-        /* Block instead of none/flex to allow height animation */
-        max-height: 0;
-        overflow: hidden;
-        opacity: 1;
-        visibility: visible;
-        transform: none !important;
-        margin-top: 0 !important;
-        padding: 0 !important;
-        border: none;
-        background: transparent;
-        transition: max-height 1s cubic-bezier(0.16, 1, 0.3, 1), padding 1s ease;
+        position: absolute !important;
+        top: 40px; /* Offset from toggle */
+        left: 0;
+        width: 100%;
+        max-width: 260px;
+        background-color: #121212;
+        border: 1px solid rgba(197, 160, 89, 0.3);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        z-index: 100;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex !important;
+        flex-direction: column;
+        padding: 15px 0 !important;
     }
 
-    /* Keep the desktop mega card hidden in the mobile drawer */
+    /* Hide the complex mega card on mobile, we use the simple list instead */
     .obsidian-user-card {
         display: none !important;
     }
 
-    .obsidian-dropdown.is-active .obsidian-dropdown-menu {
-        max-height: 1000px;
-        /* Allow it to expand to content height */
-        padding: 15px 0 0 15px !important;
-        /* Add some indentation for sub-items */
+    /* Ensure user menu opens to the right to avoid left-side clipping */
+    .obsidian-user-menu .obsidian-dropdown-menu {
+        left: 0 !important;
+        right: auto !important;
     }
 
-    /* Adjust list items inside the accordion */
+    .obsidian-dropdown.is-active .obsidian-dropdown-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        max-height: none;
+    }
+
+    /* Adjust list items inside the mobile floating dropdown */
     .obsidian-dropdown-menu li {
-        padding: 8px 0 !important;
+        padding: 5px 20px !important;
     }
 
     /* Ambient background dimmer mask */
@@ -503,18 +526,17 @@ body .wp-site-blocks>.wp-block-template-part:has(.obsidian-site-header) {
    stacks dropdowns vertically; we just need to release the fixed width. */
 @media (max-width: 1024px) {
     .obsidian-dropdown.obsidian-dropdown--mega .obsidian-dropdown-menu {
-        position: static;
+        position: absolute;
+        width: 260px;
         min-width: 0;
         padding: 0 !important;
-        /* Zero padding when closed to avoid gaps */
-        transform: none;
-        left: auto;
+        transform: translateY(10px);
+        left: 0;
     }
 
     .obsidian-dropdown.obsidian-dropdown--mega.is-active .obsidian-dropdown-menu {
-        transform: none;
-        padding: 15px 24px !important;
-        /* Restore padding when active */
+        transform: translateY(0);
+        padding: 20px !important;
     }
 
     .obsidian-locations-menu__columns {
