@@ -15,8 +15,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Gather common booking data used across all email templates.
  */
 function obsidian_get_booking_email_data( $booking_id ) {
-	$car_id    = (int) get_post_meta( $booking_id, '_booking_car_id', true );
-	$user_id   = (int) get_post_meta( $booking_id, '_booking_user_id', true );
+	$all_meta = get_post_custom( $booking_id );
+	
+	// Helper to get meta value from the custom array (WP returns meta as arrays)
+	$get_meta = function( $key ) use ( $all_meta ) {
+		return isset( $all_meta[ $key ][0] ) ? $all_meta[ $key ][0] : '';
+	};
+
+	$car_id    = (int) $get_meta( '_booking_car_id' );
+	$user_id   = (int) $get_meta( '_booking_user_id' );
 	$user      = get_userdata( $user_id );
 
 	return array(
@@ -25,20 +32,20 @@ function obsidian_get_booking_email_data( $booking_id ) {
 		'car_name'         => get_the_title( $car_id ),
 		'user'             => $user,
 		'user_email'       => $user ? $user->user_email : '',
-		'first_name'       => get_post_meta( $booking_id, '_booking_first_name', true ),
-		'last_name'        => get_post_meta( $booking_id, '_booking_last_name', true ),
-		'start_date'       => get_post_meta( $booking_id, '_booking_start_date', true ),
-		'end_date'         => get_post_meta( $booking_id, '_booking_end_date', true ),
-		'color'            => get_post_meta( $booking_id, '_booking_color', true ),
-		'customer_type'    => get_post_meta( $booking_id, '_booking_customer_type', true ),
-		'total_price'      => (float) get_post_meta( $booking_id, '_booking_total_price', true ),
-		'location'         => get_post_meta( $booking_id, '_booking_location', true ),
-		'denial_reason'    => get_post_meta( $booking_id, '_booking_denial_reason', true ),
-		'payment_amount'   => (float) get_post_meta( $booking_id, '_booking_payment_amount', true ),
-		'payment_option'   => get_post_meta( $booking_id, '_booking_payment_option', true ),
-		'delivery_dropoff' => get_post_meta( $booking_id, '_booking_delivery_dropoff', true ),
-		'delivery_date'    => get_post_meta( $booking_id, '_booking_delivery_date', true ),
-		'delivery_time'    => get_post_meta( $booking_id, '_booking_delivery_time', true ),
+		'first_name'       => $get_meta( '_booking_first_name' ),
+		'last_name'        => $get_meta( '_booking_last_name' ),
+		'start_date'       => $get_meta( '_booking_start_date' ),
+		'end_date'         => $get_meta( '_booking_end_date' ),
+		'color'            => $get_meta( '_booking_color' ),
+		'customer_type'    => $get_meta( '_booking_customer_type' ),
+		'total_price'      => (float) $get_meta( '_booking_total_price' ),
+		'location'         => $get_meta( '_booking_location' ),
+		'denial_reason'    => $get_meta( '_booking_denial_reason' ),
+		'payment_amount'   => (float) $get_meta( '_booking_payment_amount' ),
+		'payment_option'   => $get_meta( '_booking_payment_option' ),
+		'delivery_dropoff' => $get_meta( '_booking_delivery_dropoff' ),
+		'delivery_date'    => $get_meta( '_booking_delivery_date' ),
+		'delivery_time'    => $get_meta( '_booking_delivery_time' ),
 		'admin_url'        => admin_url( 'post.php?post=' . $booking_id . '&action=edit' ),
 	);
 }
@@ -74,9 +81,19 @@ function obsidian_send_email( $to, $subject, $html ) {
 }
 
 /**
- * Main dispatcher — fires on every booking status change.
+ * Main dispatcher — schedules background emails so the user doesn't wait.
  */
 function obsidian_notify_on_status_change( $booking_id, $old_status, $new_status ) {
+	// Offload to a background task (Phase 11.16 optimization).
+	// This makes the API response instant because wp_mail() is synchronous.
+	wp_schedule_single_event( time(), 'obsidian_send_async_notifications', array( $booking_id, $old_status, $new_status ) );
+}
+add_action( 'obsidian_booking_status_changed', 'obsidian_notify_on_status_change', 10, 3 );
+
+/**
+ * The actual notification runner, called via WP-Cron.
+ */
+function obsidian_run_async_notifications( $booking_id, $old_status, $new_status ) {
 	$data = obsidian_get_booking_email_data( $booking_id );
 
 	if ( empty( $data['user_email'] ) ) {
@@ -109,7 +126,7 @@ function obsidian_notify_on_status_change( $booking_id, $old_status, $new_status
 			break;
 	}
 }
-add_action( 'obsidian_booking_status_changed', 'obsidian_notify_on_status_change', 10, 3 );
+add_action( 'obsidian_send_async_notifications', 'obsidian_run_async_notifications', 10, 3 );
 
 // -------------------------------------------------------------------------
 // Individual notification functions

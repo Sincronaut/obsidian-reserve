@@ -123,6 +123,7 @@ function obsidian_booking_enqueue_assets()
       'loggedIn'       => is_user_logged_in(),
       'loginUrl'       => wp_login_url(get_permalink()),
       'bookingPageUrl' => home_url('/booking/'),
+      'homeUrl'        => home_url('/'),
    ));
 
    // Booking form JS — only on the booking page

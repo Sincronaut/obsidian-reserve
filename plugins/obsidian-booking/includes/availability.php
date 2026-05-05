@@ -544,7 +544,7 @@ function obsidian_get_available_units( $car_id, $start_date, $end_date, $exclude
 		array(
 			'key'     => '_booking_end_date',
 			'value'   => $start_date,
-			'compare' => '>=',
+			'compare' => '>',
 			'type'    => 'DATE',
 		),
 	);
@@ -625,7 +625,7 @@ function obsidian_get_available_units_by_color( $car_id, $color, $start_date, $e
 		array(
 			'key'     => '_booking_end_date',
 			'value'   => $start_date,
-			'compare' => '>=',
+			'compare' => '>',
 			'type'    => 'DATE',
 		),
 	);
@@ -667,6 +667,69 @@ function obsidian_is_car_available( $car_id, $start_date, $end_date, $location_i
 }
 
 /**
+ * Internal helper to fetch all overlapping bookings for a car within a window.
+ * Optimization: Reduces hundreds of queries to a single batch lookup.
+ *
+ * @access private
+ */
+function obsidian_get_bookings_in_range_batch( $car_id, $start_date, $end_date, $location_id = 0 ) {
+	$meta_query = array(
+		'relation' => 'AND',
+		array(
+			'key'     => '_booking_car_id',
+			'value'   => $car_id,
+			'compare' => '=',
+			'type'    => 'NUMERIC',
+		),
+		array(
+			'key'     => '_booking_status',
+			'value'   => obsidian_get_blocking_statuses(),
+			'compare' => 'IN',
+		),
+		array(
+			'key'     => '_booking_start_date',
+			'value'   => $end_date,
+			'compare' => '<',
+			'type'    => 'DATE',
+		),
+		array(
+			'key'     => '_booking_end_date',
+			'value'   => $start_date,
+			'compare' => '>', 
+			'type'    => 'DATE',
+		),
+	);
+
+	if ( $location_id > 0 ) {
+		$meta_query[] = array(
+			'key'     => '_booking_location_id',
+			'value'   => $location_id,
+			'compare' => '=',
+			'type'    => 'NUMERIC',
+		);
+	}
+
+	$query = new WP_Query( array(
+		'post_type'      => 'booking',
+		'post_status'    => 'any',
+		'posts_per_page' => -1,
+		'meta_query'     => $meta_query,
+		'fields'         => 'ids',
+	) );
+
+	$results = array();
+	foreach ( $query->posts as $post_id ) {
+		$results[] = array(
+			'start' => get_post_meta( $post_id, '_booking_start_date', true ),
+			'end'   => get_post_meta( $post_id, '_booking_end_date', true ),
+			'color' => strtolower( get_post_meta( $post_id, '_booking_color', true ) ),
+		);
+	}
+
+	return $results;
+}
+
+/**
  * Get an array of fully-booked dates for a car.
  *
  * Returns dates where ALL units are booked — feeds into
@@ -679,27 +742,36 @@ function obsidian_is_car_available( $car_id, $start_date, $end_date, $location_i
  * @return array Array of 'Y-m-d' strings where all units are booked.
  */
 function obsidian_get_unavailable_dates( $car_id, $days_ahead = 90, $location_id = 0 ) {
+	$total_units = obsidian_get_total_units( $car_id, $location_id );
+	if ( $total_units <= 0 ) {
+		return array();
+	}
 
 	$unavailable = array();
 	$today       = new DateTime( 'today', wp_timezone() );
+	$future_limit = clone $today;
+	$future_limit->modify( "+{$days_ahead} days" );
+
+	$bookings = obsidian_get_bookings_in_range_batch(
+		$car_id,
+		$today->format( 'Y-m-d' ),
+		$future_limit->format( 'Y-m-d' ),
+		$location_id
+	);
 
 	for ( $i = 0; $i < $days_ahead; $i++ ) {
 		$check_date = clone $today;
 		$check_date->modify( "+{$i} days" );
 		$date_string = $check_date->format( 'Y-m-d' );
 
-		$next_day = clone $check_date;
-		$next_day->modify( '+1 day' );
+		$count = 0;
+		foreach ( $bookings as $b ) {
+			if ( $b['start'] <= $date_string && $b['end'] > $date_string ) {
+				$count++;
+			}
+		}
 
-		$available = obsidian_get_available_units(
-			$car_id,
-			$date_string,
-			$next_day->format( 'Y-m-d' ),
-			0,
-			$location_id
-		);
-
-		if ( $available <= 0 ) {
+		if ( $count >= $total_units ) {
 			$unavailable[] = $date_string;
 		}
 	}
@@ -709,22 +781,8 @@ function obsidian_get_unavailable_dates( $car_id, $days_ahead = 90, $location_id
 
 /**
  * Get fully-booked dates per color variant.
- *
- * Returns an associative array keyed by lowercase color name. Each value
- * is an array of 'Y-m-d' strings where ALL units of that color are booked.
- *
- * Used by the booking modal to disable dates in the calendar when a
- * specific color is selected (so users don't pick dates for a color that
- * is sold out, even if other colors are still available).
- *
- * @param int $car_id      The Car post ID.
- * @param int $days_ahead  How many days into the future to check (default 90).
- * @param int $location_id Optional branch ID. 0 = aggregate across branches.
- *
- * @return array e.g. [ 'orange' => [ '2026-12-10', ... ], 'black' => [...] ]
  */
 function obsidian_get_unavailable_dates_by_color( $car_id, $days_ahead = 90, $location_id = 0 ) {
-
 	$variants = obsidian_get_color_variants( $car_id, $location_id );
 	$result   = array();
 
@@ -732,40 +790,39 @@ function obsidian_get_unavailable_dates_by_color( $car_id, $days_ahead = 90, $lo
 		return $result;
 	}
 
-	$today = new DateTime( 'today', wp_timezone() );
+	$today        = new DateTime( 'today', wp_timezone() );
+	$future_limit = clone $today;
+	$future_limit->modify( "+{$days_ahead} days" );
+
+	$bookings = obsidian_get_bookings_in_range_batch(
+		$car_id,
+		$today->format( 'Y-m-d' ),
+		$future_limit->format( 'Y-m-d' ),
+		$location_id
+	);
 
 	foreach ( $variants as $color => $data ) {
 		$result[ $color ] = array();
 		$color_units      = (int) ( $data['units'] ?? 0 );
-
-		// If the color has 0 stock, every date is "unavailable" for it.
-		if ( $color_units <= 0 ) {
-			for ( $i = 0; $i < $days_ahead; $i++ ) {
-				$d = clone $today;
-				$d->modify( "+{$i} days" );
-				$result[ $color ][] = $d->format( 'Y-m-d' );
-			}
-			continue;
-		}
 
 		for ( $i = 0; $i < $days_ahead; $i++ ) {
 			$check_date = clone $today;
 			$check_date->modify( "+{$i} days" );
 			$date_string = $check_date->format( 'Y-m-d' );
 
-			$next_day = clone $check_date;
-			$next_day->modify( '+1 day' );
+			if ( $color_units <= 0 ) {
+				$result[ $color ][] = $date_string;
+				continue;
+			}
 
-			$available = obsidian_get_available_units_by_color(
-				$car_id,
-				$color,
-				$date_string,
-				$next_day->format( 'Y-m-d' ),
-				0,
-				$location_id
-			);
+			$count = 0;
+			foreach ( $bookings as $b ) {
+				if ( $b['color'] === $color && $b['start'] <= $date_string && $b['end'] > $date_string ) {
+					$count++;
+				}
+			}
 
-			if ( $available <= 0 ) {
+			if ( $count >= $color_units ) {
 				$result[ $color ][] = $date_string;
 			}
 		}
