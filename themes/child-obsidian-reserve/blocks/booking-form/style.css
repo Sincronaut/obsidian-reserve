@@ -1553,21 +1553,7 @@
 	margin-top: 16px;
 }
 
-/* ═══════════════════════════════════════════
-   Success Modal (Phase 11.16)
-   ═══════════════════════════════════════════ */
-.obf-modal-overlay {
-	position: fixed;
-	inset: 0;
-	background: rgba(0, 0, 0, 0.85);
-	backdrop-filter: blur(10px);
-	z-index: 10000;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 24px;
-	animation: obf-fade-in 0.4s ease;
-}
+/* Success Modal (Phase 11.16) styles moved to global modal.css */
 
 .obf-modal-content {
 	background: #141414;
