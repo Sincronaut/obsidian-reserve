@@ -12,9 +12,10 @@ Welcome to the **Project Obsidian Reserve** repository. This project is a premiu
 | **Parent Theme** | Twenty Twenty-Five |
 | **Child Theme** | `child-obsidian-reserve` (Block / FSE) |
 | **Booking System** | `obsidian-booking` (Custom Plugin) |
-| **Typography** | Montserrat (Google Fonts) |
+| **Typography** | Montserrat & Outfit (Google Fonts) |
+| **Interactive Map** | Leaflet.js + OpenStreetMap |
 | **Date Picker** | Flatpickr 4.6.13 (Bundled) |
-| **Car Data Fields** | Advanced Custom Fields (ACF) Free |
+| **Data Fields** | Advanced Custom Fields (ACF) Free |
 
 ---
 
@@ -66,66 +67,22 @@ Install and activate these **before** importing content to avoid errors:
 | Plugin | Purpose | Required? |
 |---|---|---|
 | **Advanced Custom Fields (ACF)** | Car data fields (specs, units, colors, daily rate) | ✅ Yes |
-| **Theme My Login** | Frontend login/registration for booking flow | Optional |
-
-> Install via **Plugins → Add New** in the WordPress Dashboard.
+| **Theme My Login** | Frontend login/registration for booking flow | ✅ Yes |
+| **Media Sync** | Syncing large media files to the library | Optional |
 
 ---
 
 ## 🚀 Syncing Content & Media
 
-Since the database and media metadata are not tracked by Git, follow these steps to see the full site content:
-
 ### 1. Import Content
+1. Go to **Tools → Import → WordPress**.
+2. Upload the latest `.xml` export file.
+3. Check **"Download and import file attachments."**
 
-1. Go to **Tools → Import**.
-2. Click **Run Importer** under the WordPress section (install it if prompted).
-3. Choose the XML export file (if provided in the repo).
-4. Upload and import. Assign content to your local admin user.
-5. Check the box to **"Download and import file attachments."**
-
-### 2. Sync Media Files
-
-If images exist in `uploads/` but don't appear in the Media Library:
-
-1. Install and activate the **[Media Sync](https://wordpress.org/plugins/jeremygreen-media-sync/)** plugin.
-2. Go to **Media → Media Sync**.
-3. Scan the `uploads/` directory.
-4. Uncheck "Dry Run", select all scanned files, and click **Import Selected**.
-
-### 3. Add Test Car Data
-
-If no XML import is available, manually create cars:
-
-1. Go to **Cars → Add New** in the Dashboard.
-2. Add test vehicles with all ACF fields filled in:
-   - **Nissan GTR Katsura Orange** — Exotic, $850/day, 3 units
-   - **Porsche 911 GTS** — Sport, $950/day, 2 units
-   - **Cadillac Escalade** — SUV, $650/day, 4 units
-3. Upload featured images and fill in all specification fields.
-
----
-
-## 📁 Repository Scope
-
-This repository is configured to be lightweight and only tracks the following:
-
-### ✅ Tracked
-
-```
-wp-content/
-├── themes/child-obsidian-reserve/    ← Custom block theme (all pages, blocks, styles)
-├── plugins/                          ← All plugins (including obsidian-booking)
-├── .gitignore
-└── index.php
-```
-
-### ❌ Not Tracked
-
-- **WordPress Core** files (`wp-admin/`, `wp-includes/`, `wp-config.php`)
-- **Uploads / Media** (`wp-content/uploads/`) — too large for Git
-- **Database** — use XML Import for content sync
-- **Cache / Upgrade** directories
+### 2. Branch & Inventory Setup
+1. Go to **Locations** and create your primary branches (e.g., Makati, Cebu).
+2. Assign **Regions** (Luzon, Visayas, Mindanao).
+3. Edit each **Car** to set branch-specific inventory (Units and Colors per branch).
 
 ---
 
@@ -136,112 +93,92 @@ wp-content/
 ```
 child-obsidian-reserve/
 ├── blocks/                  ← Custom server-rendered blocks
-│   ├── hero/                   (Hero section with booking inputs)
-│   ├── slider/                 (Car showcase + testimonial slider)
-│   ├── three-cards/            (Feature cards)
-│   ├── text-img-bg/            (CTA with background image)
-│   ├── img-text/               (Image + text layout)
-│   ├── logo-slider/            (Brand logo carousel)
-│   ├── standard/               (Standard content block)
-│   └── contact/                (Contact form block)
-├── templates/               ← Block template files
+│   ├── hero/                   (Dynamic branch selection + car search)
+│   ├── fleet-filters/          (Real-time region/class filtering)
+│   ├── car-grid/               (Live availability badges)
+│   ├── locations-map/          (Leaflet.js interactive branch picker)
+│   ├── profile-dashboard/      (User booking history + status)
+│   ├── booking-form/           (Step-by-step reservation flow)
+│   └── ... (Contact, FAQ, Logo Slider, etc.)
+├── templates/
 │   ├── front-page.html
-│   ├── page-about.html
-│   └── page-contact.html
-├── parts/                   ← Template parts
-│   ├── header.html
-│   └── footer.html
+│   ├── page-fleet.html         (Fleet catalog)
+│   ├── page-profile.html       (User dashboard)
+│   └── page-booking.html       (Main reservation page)
 ├── assets/
-│   ├── css/                    (Header & footer styles)
-│   └── images/                 (Block-specific images)
-├── functions.php            ← Enqueues, block registration
-├── style.css                ← Theme header + global styles
-└── theme.json               ← Design tokens, typography, colors
+│   ├── css/                    (Component-specific styling)
+│   └── images/                 (UI icons and luxury accents)
+├── theme.json               ← Typography, colors, and block styles
+└── functions.php            ← Enqueues, block registration, and WP hooks
 ```
 
 ### Booking Plugin (`obsidian-booking`)
 
 ```
 obsidian-booking/
-├── obsidian-booking.php     ← Plugin bootstrap
-├── uninstall.php            ← Clean data removal
 ├── includes/                ← Core PHP logic
-│   ├── post-types.php          (Car + Booking CPTs)
-│   ├── meta-fields.php         (Booking custom meta)
-│   ├── taxonomies.php          (Car Class: Exotic, SUV, etc.)
-│   ├── availability.php        (Date-overlap availability engine)
-│   ├── booking-handler.php     (Create/update bookings)
-│   ├── rest-api.php            (All REST endpoints)
-│   ├── notifications.php       (Email system)
-│   └── user-fields.php         (Extra user profile fields)
-├── admin/                   ← WP Admin customizations
-│   ├── booking-meta-box.php
-│   ├── booking-columns.php
-│   ├── car-meta-box.php
-│   └── dashboard-widget.php
-├── templates/
-│   └── emails/              ← HTML email templates
+│   ├── post-types.php          (Car, Booking, Location CPTs)
+│   ├── taxonomies.php          (Car Class, Regions)
+│   ├── availability.php        (Branch-aware range-guard engine)
+│   ├── rest-api.php            (Multi-branch REST endpoints)
+│   ├── notifications.php       (HTML Email System)
+│   └── migrations/             (V2 Inventory Migration tools)
 ├── assets/
-│   ├── css/                    (Modal + admin styles)
-│   └── js/                     (Modal + admin scripts)
-└── vendor/
-    └── flatpickr/           ← Bundled date picker library
+│   ├── js/
+│   │   ├── modal.js            (Specifications modal + Range Guard)
+│   │   ├── booking-form.js     (Multi-step logic + Exit Guard)
+│   │   └── payment-form.js     (sessionStorage payment flow)
+│   └── css/
+│       ├── modal.css           (Global luxury modal system)
+│       └── admin.css           (Custom WP Admin dashboard UI)
+└── templates/
+    └── emails/                 (Themed booking status notifications)
 ```
 
 ---
 
 ## 🔌 REST API Endpoints
 
-| Method | Endpoint | Auth | Purpose |
-|---|---|---|---|
-| `GET` | `/obsidian-booking/v1/cars` | Public | List all available cars |
-| `GET` | `/obsidian-booking/v1/cars/{id}` | Public | Single car details + specs |
-| `GET` | `/obsidian-booking/v1/availability/{car_id}` | Public | Unavailable dates for Flatpickr |
-| `POST` | `/obsidian-booking/v1/bookings` | Logged in | Create a new booking |
-| `GET` | `/obsidian-booking/v1/bookings/mine` | Logged in | User's own bookings |
-| `POST` | `/obsidian-booking/v1/upload-document` | Logged in | Upload ID/passport document |
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/v1/cars` | List available cars (filterable by branch/region) |
+| `GET` | `/v1/availability/{id}` | Unavailable dates per branch/color |
+| `GET` | `/v1/regions` | All regions with nested child branches |
+| `GET` | `/v1/locations` | Detailed branch data (coords, address, contact) |
+| `POST`| `/v1/bookings` | Create booking (includes range-guard re-check) |
 
 ---
 
-## 📋 Booking Flow
+## 🛡️ Security & UX Guards
+
+*   **Logout Confirmation:** Intercepts all logout links to show a branded Obsidian confirmation modal.
+*   **Exit Guard:** Prevents accidental data loss in the booking form by asking for confirmation before the user leaves the page.
+*   **Range Guard:** The calendar scans every middle-day of a requested range to ensure no "hidden" overlaps occur in the reservation window.
+*   **Text Modals:** Renders legal pages (T&C, Privacy) inside lightweight modals to keep the user within the booking flow.
+
+---
+
+## 📋 Modern Booking Flow
 
 ```
-Browse Cars → Click "Book Now" → Login Gate
+Fleet Page → Select Branch → Pick Car → Spec Modal
     ↓
-Modal Opens → Select Dates (Flatpickr) → Choose Local/Foreigner
+Pick Dates (Range Guard Validated) → Redirect to Booking Page
     ↓
-Upload Documents → Submit Reservation
+Step 1: Renter Details & ID Upload → Step 2: Delivery Details
     ↓
-Status: PENDING → Staff Reviews in WP Admin
+Admin Review → Approval Email → Secure Payment Link
     ↓
-Staff Approves → CONFIRMED (email sent)
-Staff Denies → DENIED (email sent with reason)
+Status: CONFIRMED (Reflected in Profile Dashboard)
 ```
-
-> **Policy:** No cancellations, no refunds. All bookings are final once submitted.
 
 ---
 
 ## 🤝 Collaboration Workflow
 
-1. **Always create a new branch** for your features:
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-2. **Commit with descriptive messages:**
-   ```bash
-   git commit -m "Add car-grid block with availability badges"
-   ```
-3. **Push your branch** and create a Pull Request on GitHub.
-4. **Never commit directly to `main`.**
-
----
-
-## 📄 License
-
-This project is licensed under the [GNU General Public License v2.0](http://www.gnu.org/licenses/gpl-2.0.html).
-
-`child-obsidian-reserve` is a child theme of [Twenty Twenty-Five](https://wordpress.org/themes/twentytwentyfive/) © the WordPress team, GPLv2 or later.
+1. **Feature Branches:** `feature/name`
+2. **Version Control:** We follow Semantic Versioning (e.g., `1.0.2`).
+3. **Asset Bumping:** Always bump the plugin version to clear CDN/Browser caches for JS/CSS changes.
 
 ---
 
