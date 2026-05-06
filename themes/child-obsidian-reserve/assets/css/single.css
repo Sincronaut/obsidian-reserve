@@ -240,6 +240,11 @@
 }
 
 @media (max-width: 960px) {
+	.obsidian-post-hero {
+		padding-left: 40px;
+		padding-right: 40px;
+	}
+
 	.obsidian-post-hero-card {
 		padding: 0;
 	}
@@ -256,10 +261,16 @@
 @media (max-width: 640px) {
 	.obsidian-post-hero {
 		padding-top: 24px;
+		padding-left: 20px;
+		padding-right: 20px;
 	}
 
 	.obsidian-post-hero-card {
 		padding: 0;
+	}
+
+	.obsidian-post-container {
+		padding: 0 20px;
 	}
 
 	.obsidian-post-title {
