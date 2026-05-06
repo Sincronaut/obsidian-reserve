@@ -2,14 +2,18 @@
 
 <main class="wp-block-group obsidian-single-post">
 
-	<!-- wp:group {"className":"obsidian-post-hero-wrap","layout":{"type":"default"}} -->
-	<div class="wp-block-group obsidian-post-hero-wrap">
-		<!-- wp:post-featured-image {"isLink":false,"align":"full","className":"obsidian-post-hero-img"} /-->
-		<div class="obsidian-post-hero-overlay"></div>
+	<!-- wp:group {"className":"obsidian-post-hero","layout":{"type":"constrained","contentSize":"1000px"}} -->
+	<div class="wp-block-group obsidian-post-hero">
+		<!-- wp:group {"className":"obsidian-post-hero-card","layout":{"type":"default"}} -->
+		<div class="wp-block-group obsidian-post-hero-card">
+			<!-- wp:post-featured-image {"isLink":false,"className":"obsidian-post-hero-img"} /-->
+			<div class="obsidian-post-hero-glow"></div>
+		</div>
+		<!-- /wp:group -->
 	</div>
 	<!-- /wp:group -->
 
-	<!-- wp:group {"className":"obsidian-post-container","layout":{"type":"constrained","contentSize":"800px"}} -->
+	<!-- wp:group {"className":"obsidian-post-container","layout":{"type":"constrained","contentSize":"1000px"}} -->
 	<div class="wp-block-group obsidian-post-container">
 		
 		<!-- wp:group {"className":"obsidian-post-header","layout":{"type":"default"}} -->
@@ -17,7 +21,7 @@
 			<!-- wp:post-terms {"term":"category","className":"obsidian-post-category"} /-->
 			<!-- wp:post-title {"level":1,"className":"obsidian-post-title"} /-->
 			
-			<!-- wp:group {"className":"obsidian-post-meta","layout":{"type":"flex","flexWrap":"nowrap","justifyContent":"center"}} -->
+			<!-- wp:group {"className":"obsidian-post-meta","layout":{"type":"flex","flexWrap":"nowrap","justifyContent":"left"}} -->
 			<div class="wp-block-group obsidian-post-meta">
 				<!-- wp:post-author-name {"className":"obsidian-post-author"} /-->
 				<span class="obsidian-meta-separator">•</span>
