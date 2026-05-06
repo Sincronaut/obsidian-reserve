@@ -47,33 +47,34 @@ body.tml-action .wp-site-blocks > .wp-block-template-part {
 
 /* ── LEFT PANEL (Dark + Logo) ── */
 body.tml-action .wp-site-blocks::before {
-	content: '';
+	content: 'obsidianreserve.com.ph';
 	display: block;
 	width: 40%;
 	min-width: 40%;
 	min-height: calc(100vh - 105px);
 	order: -1;
+	padding: 40px 24px;
 	background-color: #1a1a1a;
 	background-image: url('/wp-content/themes/child-obsidian-reserve/assets/images/logo.webp');
 	background-repeat: no-repeat;
-	background-position: center center;
-	background-size: 320px;
+	background-position: center 42%;
+	background-size: 400px;
 	flex-shrink: 0;
-}
-
-/* URL text at bottom-left */
-body.tml-action .wp-site-blocks::after {
-	content: 'obsidianreserve.com.ph';
-	position: fixed;
-	bottom: 40px;
-	left: 20%;
-	transform: translateX(-50%);
 	color: #ffffff;
 	font-size: 12px;
 	letter-spacing: 1px;
 	opacity: 0.5;
-	z-index: 10;
+	text-align: center;
+	box-sizing: border-box;
+	display: flex;
+	align-items: flex-end;
+	justify-content: center;
 	pointer-events: none;
+}
+
+/* Legacy fixed footer label removed in favor of normal-flow ::before content */
+body.tml-action .wp-site-blocks::after {
+	content: none;
 }
 
 /* ── RIGHT PANEL (Form) ── */
@@ -303,14 +304,9 @@ body.tml-action .tml *::after {
 		width: 100%;
 		min-width: 100%;
 		min-height: 35vh;
-		background-size: 220px;
-	}
-
-	body.tml-action .wp-site-blocks::after {
-		position: absolute;
-		bottom: auto;
-		top: calc(35vh + 105px - 30px);
-		left: 50%;
+		background-position: center 38%;
+		background-size: 280px;
+		padding: 24px 16px;
 	}
 
 	body.tml-action .wp-site-blocks > *:not(style):not(script):not(header):not(footer):not(.wp-block-template-part) {

@@ -18,7 +18,11 @@ if ( ! is_user_logged_in() ) {
 		esc_url( wp_login_url( home_url( $_SERVER['REQUEST_URI'] ) ) )
 	);
 	return;
-}$booking_id = isset( $_GET['booking_id'] ) ? (int) $_GET['booking_id'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+}
+
+$payment_session_id = sanitize_key( get_query_var( 'ob_payment_session', '' ) );
+$payment_session    = function_exists( 'obsidian_get_payment_session' ) ? obsidian_get_payment_session( $payment_session_id, false ) : false;
+$booking_id         = $payment_session ? (int) $payment_session['booking_id'] : 0;
 $booking     = $booking_id ? get_post( $booking_id ) : null;
 
 if ( ! $booking || 'booking' !== $booking->post_type ) {

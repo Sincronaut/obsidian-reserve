@@ -1,0 +1,37 @@
+{
+	"$schema": "https://schemas.wp.org/wp/7.0/block.json",
+	"apiVersion": 3,
+	"name": "child-obsidian-reserve/error-404",
+	"title": "404 Error",
+	"category": "theme",
+	"description": "A premium 404 error block with a luxury aesthetic.",
+	"textdomain": "child-obsidian-reserve",
+	"attributes": {
+		"title": {
+			"type": "string",
+			"default": "404"
+		},
+		"subtitle": {
+			"type": "string",
+			"default": "Page Not Found"
+		},
+		"description": {
+			"type": "string",
+			"default": "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable."
+		},
+		"buttonText": {
+			"type": "string",
+			"default": "Return to Home"
+		},
+		"buttonUrl": {
+			"type": "string",
+			"default": "/"
+		}
+	},
+	"supports": {
+		"html": false,
+		"align": [ "full" ]
+	},
+	"style": "file:./style.css",
+	"render": "file:./render.php"
+}

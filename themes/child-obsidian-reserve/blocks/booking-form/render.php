@@ -50,13 +50,21 @@ if ( ! is_user_logged_in() ) {
 	return;
 }
 
-// Read URL params.
-$car_id        = isset( $_GET['car_id'] ) ? (int) $_GET['car_id'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-$start_date    = isset( $_GET['start'] ) ? sanitize_text_field( wp_unslash( $_GET['start'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-$end_date      = isset( $_GET['end'] ) ? sanitize_text_field( wp_unslash( $_GET['end'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-$color         = isset( $_GET['color'] ) ? sanitize_text_field( wp_unslash( $_GET['color'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-$customer_type = isset( $_GET['customer_type'] ) ? sanitize_text_field( wp_unslash( $_GET['customer_type'] ) ) : 'local'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-$location_id   = isset( $_GET['location_id'] ) ? (int) $_GET['location_id'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+// Read the short-lived, server-side booking draft.
+$booking_draft_id = sanitize_key( get_query_var( 'ob_draft', '' ) );
+$booking_draft    = function_exists( 'obsidian_get_booking_draft' ) ? obsidian_get_booking_draft( $booking_draft_id ) : false;
+
+if ( ! $booking_draft ) {
+	echo '<section class="obsidian-booking-form-section"><div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">Your booking draft has expired or is invalid. Please go back to the <a href="' . esc_url( home_url( '/fleet/' ) ) . '">fleet page</a> and start again.</p></div></section>';
+	return;
+}
+
+$car_id        = (int) $booking_draft['car_id'];
+$start_date    = sanitize_text_field( $booking_draft['start_date'] );
+$end_date      = sanitize_text_field( $booking_draft['end_date'] );
+$color         = sanitize_text_field( $booking_draft['color'] );
+$customer_type = sanitize_text_field( $booking_draft['customer_type'] );
+$location_id   = (int) $booking_draft['location_id'];
 
 $is_international = ( 'international' === $customer_type );
 
@@ -123,9 +131,8 @@ $gov_id_options = array(
  * `active` ones, grouped by their `region` taxonomy term so the
  * <select> can render <optgroup>s.
  *
- * When a `location_id` was passed in the URL (from the modal) we
- * render the field as read-only with a "Change location" link that
- * goes back to the modal so the user can re-pick.
+ * The selected branch now comes from a short-lived server-side draft,
+ * not from URL params.
  * ───────────────────────────────────────────────────────────
  */
 
@@ -180,24 +187,6 @@ if ( $branch_query->have_posts() ) {
 	}
 }
 
-// Validate the URL-provided branch (must exist and be active).
-$preselected_branch = ( $location_id && isset( $branch_lookup[ $location_id ] ) )
-	? $branch_lookup[ $location_id ]
-	: null;
-$location_locked    = ( null !== $preselected_branch );
-
-// Build a "Change location" link that re-opens the modal with the.
-// car & dates intact but without `location_id`, so the modal's branch.
-// picker comes back up.
-$change_location_url = add_query_arg(
-	array(
-		'car_id' => $car_id,
-		'start'  => $start_date,
-		'end'    => $end_date,
-		'color'  => $color,
-	),
-	home_url( '/fleet/' )
-);
 ?>
 
 <section class="obsidian-booking-form-section">
@@ -210,6 +199,7 @@ $change_location_url = add_query_arg(
 	<input type="hidden" id="obf-color" value="<?php echo esc_attr( $color ); ?>" />
 	<input type="hidden" id="obf-customer-type" value="<?php echo esc_attr( $customer_type ); ?>" />
 	<input type="hidden" id="obf-location-id" value="<?php echo esc_attr( $location_id ); ?>" />
+	<input type="hidden" id="obf-booking-draft-id" value="<?php echo esc_attr( $booking_draft_id ); ?>" />
 
 	<!-- Header -->
 	<div class="obsidian-bf-header" id="obf-header">

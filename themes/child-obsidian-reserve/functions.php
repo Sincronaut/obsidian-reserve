@@ -271,6 +271,7 @@ function obsidian_reserve_register_blocks() {
 	register_block_type( get_stylesheet_directory() . '/blocks/top-reads-journal' );
 	register_block_type( get_stylesheet_directory() . '/blocks/blog-grid' );
 	register_block_type( get_stylesheet_directory() . '/blocks/profile-dashboard' );
+	register_block_type( get_stylesheet_directory() . '/blocks/error-404' );
 }
 add_action( 'init', 'obsidian_reserve_register_blocks' );
 

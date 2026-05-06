@@ -113,39 +113,7 @@
 
 	function showSuccess() {
 		sessionStorage.removeItem( 'obPayment' );
-
-		const carImgUrl = document.getElementById( 'obc-car-img-url' )?.value || '';
-		const carName   = document.getElementById( 'obc-car-name' )?.value || '';
-		const carColor  = document.getElementById( 'obc-car-color' )?.value || '';
-
-		let specsJson = [];
-		try {
-			specsJson = JSON.parse( document.getElementById( 'obc-car-specs' )?.value || '[]' );
-		} catch (e) { /* ignore */ }
-
-		let specsHtml = '';
-		if ( specsJson.length ) {
-			specsHtml += '<div class="obr-specs"><p class="obr-specs-label"><strong>Specifications</strong></p>';
-			specsJson.forEach( function( line ) {
-				const parts = line.split( ':' );
-				if ( parts.length >= 2 ) {
-					specsHtml += '<p class="obr-specs-line"><strong>' + escHtml( parts[0].trim() ) + ':</strong> ' + escHtml( parts.slice(1).join(':').trim() ) + '</p>';
-				} else {
-					specsHtml += '<p class="obr-specs-line">' + escHtml( line ) + '</p>';
-				}
-			});
-			specsHtml += '</div>';
-		}
-
-		const imgTag = carImgUrl ? '<img src="' + escHtml( carImgUrl ) + '" alt="' + escHtml( carName ) + '" class="obr-car-img" />' : '';
-
-		wrap.className = 'obsidian-booking-form-wrap obsidian-reserved-wrap';
-		wrap.innerHTML =
-			'<h1 class="obr-title">RESERVED</h1>' +
-			imgTag +
-			'<h3 class="obr-car-name">' + escHtml( carName ) + ' <span class="text-gold">' + escHtml( carColor ) + '</span></h3>' +
-			specsHtml +
-			'<div class="obr-actions"><a href="/fleet/" class="obsidian-bf-submit">Back to Fleet</a></div>';
+		window.location.reload();
 	}
 
 	/* ── Confirm payment server-side ── */
@@ -199,7 +167,7 @@
 		if ( messageEl ) messageEl.style.display = 'none';
 
 		try {
-			const returnUrl = confirmationUrl + '?booking_id=' + pd.bookingId;
+			const returnUrl = confirmationUrl + ( pd.paymentSessionId || '' ) + '/';
 
 			const attachRes = await paymongoRequest( '/payment_intents/' + pd.intentId + '/attach', {
 				data: {

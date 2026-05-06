@@ -207,7 +207,9 @@ foreach ($upcoming_query as $ub) {
 	if ('awaiting_payment' === $booking_status) {
 		$payment_token = get_post_meta($ub->ID, '_booking_payment_token', true);
 		if ($payment_token) {
-			$payment_url = home_url('/booking/payment/?booking_id=' . $ub->ID . '&token=' . $payment_token);
+			$payment_url = function_exists( 'obsidian_get_payment_url' )
+				? obsidian_get_payment_url( $ub->ID, $payment_token )
+				: home_url('/booking/payment/');
 		}
 	}
 

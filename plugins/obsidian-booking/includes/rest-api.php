@@ -104,6 +104,14 @@ function obsidian_register_rest_routes() {
 		},
 	) );
 
+	register_rest_route( $namespace, '/booking-drafts', array(
+		'methods'             => 'POST',
+		'callback'            => 'obsidian_api_create_booking_draft',
+		'permission_callback' => function () {
+			return is_user_logged_in();
+		},
+	) );
+
 	// GET /bookings/mine — Current user's bookings
 	register_rest_route( $namespace, '/bookings/mine', array(
 		'methods'             => 'GET',
@@ -123,6 +131,155 @@ function obsidian_register_rest_routes() {
 	) );
 }
 add_action( 'rest_api_init', 'obsidian_register_rest_routes' );
+
+/**
+ * Build the transient key for a booking draft.
+ *
+ * @param string $draft_id Opaque draft ID.
+ * @return string
+ */
+function obsidian_booking_draft_key( $draft_id ) {
+	return 'obsidian_booking_draft_' . $draft_id;
+}
+
+/**
+ * Return a valid draft for the current user.
+ *
+ * @param string $draft_id Opaque draft ID.
+ * @return array|false
+ */
+function obsidian_get_booking_draft( $draft_id ) {
+	$draft_id = sanitize_key( $draft_id );
+
+	if ( ! preg_match( '/^[a-z0-9]{32}$/', $draft_id ) ) {
+		return false;
+	}
+
+	$draft = get_transient( obsidian_booking_draft_key( $draft_id ) );
+
+	if ( ! is_array( $draft ) ) {
+		return false;
+	}
+
+	if ( (int) ( $draft['user_id'] ?? 0 ) !== get_current_user_id() ) {
+		return false;
+	}
+
+	return $draft;
+}
+
+/**
+ * Delete a booking draft.
+ *
+ * @param string $draft_id Opaque draft ID.
+ * @return void
+ */
+function obsidian_delete_booking_draft( $draft_id ) {
+	$draft_id = sanitize_key( $draft_id );
+
+	if ( preg_match( '/^[a-z0-9]{32}$/', $draft_id ) ) {
+		delete_transient( obsidian_booking_draft_key( $draft_id ) );
+	}
+}
+
+/**
+ * Validate the server-side draft payload.
+ *
+ * @param array $params Request params.
+ * @return array|WP_Error
+ */
+function obsidian_validate_booking_draft_params( $params ) {
+	$required = array( 'car_id', 'location_id', 'start_date', 'end_date', 'customer_type' );
+	foreach ( $required as $field ) {
+		if ( empty( $params[ $field ] ) ) {
+			return new WP_Error(
+				'missing_field',
+				sprintf( __( 'Missing required field: %s', 'obsidian-booking' ), $field ),
+				array( 'status' => 400 )
+			);
+		}
+	}
+
+	$car_id        = (int) $params['car_id'];
+	$location_id   = (int) $params['location_id'];
+	$start_date    = sanitize_text_field( $params['start_date'] );
+	$end_date      = sanitize_text_field( $params['end_date'] );
+	$customer_type = sanitize_text_field( $params['customer_type'] );
+	$color         = isset( $params['color'] ) ? sanitize_text_field( strtolower( $params['color'] ) ) : '';
+
+	$car = get_post( $car_id );
+	if ( ! $car || $car->post_type !== 'car' || $car->post_status !== 'publish' ) {
+		return new WP_Error( 'invalid_car', __( 'This car does not exist.', 'obsidian-booking' ), array( 'status' => 400 ) );
+	}
+
+	$branch = get_post( $location_id );
+	if ( ! $branch || $branch->post_type !== 'location' || $branch->post_status !== 'publish' ) {
+		return new WP_Error( 'invalid_branch', __( 'The selected branch does not exist.', 'obsidian-booking' ), array( 'status' => 400 ) );
+	}
+
+	$branch_status = get_post_meta( $location_id, 'location_status', true );
+	if ( $branch_status && $branch_status !== 'active' ) {
+		return new WP_Error( 'branch_inactive', __( 'The selected branch is not currently accepting bookings.', 'obsidian-booking' ), array( 'status' => 400 ) );
+	}
+
+	if ( ! obsidian_branch_has_car( $car_id, $location_id ) ) {
+		return new WP_Error( 'car_not_at_branch', __( 'This vehicle is not available at the selected branch.', 'obsidian-booking' ), array( 'status' => 400 ) );
+	}
+
+	$variants = obsidian_get_color_variants( $car_id, $location_id );
+	if ( ! empty( $variants ) ) {
+		if ( empty( $color ) ) {
+			return new WP_Error( 'missing_color', __( 'Please select a color variant for this vehicle.', 'obsidian-booking' ), array( 'status' => 400 ) );
+		}
+		if ( ! isset( $variants[ $color ] ) || (int) $variants[ $color ]['units'] <= 0 ) {
+			return new WP_Error( 'invalid_color', __( 'This color is not available for this vehicle at the selected branch.', 'obsidian-booking' ), array( 'status' => 400 ) );
+		}
+	}
+
+	$start = DateTime::createFromFormat( 'Y-m-d', $start_date );
+	$end   = DateTime::createFromFormat( 'Y-m-d', $end_date );
+	if ( ! $start || ! $end || $start->format( 'Y-m-d' ) !== $start_date || $end->format( 'Y-m-d' ) !== $end_date ) {
+		return new WP_Error( 'invalid_dates', __( 'Invalid date format. Use Y-m-d.', 'obsidian-booking' ), array( 'status' => 400 ) );
+	}
+
+	if ( $end <= $start ) {
+		return new WP_Error( 'invalid_date_range', __( 'End date must be after start date.', 'obsidian-booking' ), array( 'status' => 400 ) );
+	}
+
+	$duration_days = $start->diff( $end )->days;
+	if ( $duration_days > 30 ) {
+		return new WP_Error( 'duration_too_long', __( 'For rentals longer than 30 days, please contact our corporate team directly.', 'obsidian-booking' ), array( 'status' => 400 ) );
+	}
+
+	$today = new DateTime( 'today', wp_timezone() );
+	if ( $start < $today ) {
+		return new WP_Error( 'past_date', __( 'Start date cannot be in the past.', 'obsidian-booking' ), array( 'status' => 400 ) );
+	}
+
+	if ( ! in_array( $customer_type, array( 'local', 'international' ), true ) ) {
+		return new WP_Error( 'invalid_customer_type', __( 'Customer type must be "local" or "international".', 'obsidian-booking' ), array( 'status' => 400 ) );
+	}
+
+	if ( ! empty( $color ) ) {
+		$color_available = obsidian_get_available_units_by_color( $car_id, $color, $start_date, $end_date, 0, $location_id );
+		if ( $color_available <= 0 ) {
+			return new WP_Error( 'not_available', __( 'Sorry, this color variant is no longer available at this branch for the selected dates.', 'obsidian-booking' ), array( 'status' => 409 ) );
+		}
+	} elseif ( ! obsidian_is_car_available( $car_id, $start_date, $end_date, $location_id ) ) {
+		return new WP_Error( 'not_available', __( 'Sorry, this car is no longer available at this branch for the selected dates.', 'obsidian-booking' ), array( 'status' => 409 ) );
+	}
+
+	return array(
+		'user_id'       => get_current_user_id(),
+		'car_id'        => $car_id,
+		'location_id'   => $location_id,
+		'start_date'    => $start_date,
+		'end_date'      => $end_date,
+		'color'         => $color,
+		'customer_type' => $customer_type,
+		'created_at'    => time(),
+	);
+}
 
 
 /* ══════════════════════════════════════════════════════════════
@@ -383,6 +540,29 @@ function obsidian_api_get_location( $request ) {
 }
 
 /**
+ * POST /booking-drafts
+ * Creates a short-lived, user-owned booking draft and returns its clean URL.
+ */
+function obsidian_api_create_booking_draft( $request ) {
+	$params = $request->get_json_params();
+	$draft  = obsidian_validate_booking_draft_params( is_array( $params ) ? $params : array() );
+
+	if ( is_wp_error( $draft ) ) {
+		return $draft;
+	}
+
+	$draft_id = strtolower( wp_generate_password( 32, false, false ) );
+	set_transient( obsidian_booking_draft_key( $draft_id ), $draft, 2 * HOUR_IN_SECONDS );
+
+	return rest_ensure_response( array(
+		'success'     => true,
+		'draft_id'    => $draft_id,
+		'booking_url' => home_url( '/booking/draft/' . rawurlencode( $draft_id ) . '/' ),
+		'expires_in'  => 2 * HOUR_IN_SECONDS,
+	) );
+}
+
+/**
  * POST /bookings
  * Creates a new booking. Validates all inputs and re-checks availability.
  */
@@ -410,6 +590,7 @@ function obsidian_api_create_booking( $request ) {
 	$end_date      = sanitize_text_field( $params['end_date'] );
 	$customer_type = sanitize_text_field( $params['customer_type'] );
 	$color         = isset( $params['color'] ) ? sanitize_text_field( strtolower( $params['color'] ) ) : '';
+	$draft_id      = isset( $params['booking_draft_id'] ) ? sanitize_key( $params['booking_draft_id'] ) : '';
 	$user_id       = get_current_user_id();
 	$user          = wp_get_current_user();
 
@@ -688,6 +869,13 @@ function obsidian_api_create_booking( $request ) {
 	) );
 
 	do_action( 'obsidian_booking_status_changed', $booking_id, '', 'pending_review' );
+
+	if ( $draft_id ) {
+		$draft = obsidian_get_booking_draft( $draft_id );
+		if ( $draft && (int) $draft['car_id'] === $car_id ) {
+			obsidian_delete_booking_draft( $draft_id );
+		}
+	}
 
 	return rest_ensure_response( array(
 		'success'    => true,

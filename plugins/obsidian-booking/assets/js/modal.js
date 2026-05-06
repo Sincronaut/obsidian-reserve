@@ -823,16 +823,53 @@
       const end          = dropoffFP.selectedDates[0];
       const customerType = modal.querySelector('input[name="obsidian_customer_type"]:checked');
 
-      const params = new URLSearchParams({
-         car_id:        currentCar.id,
-         location_id:   selectedLocationId || '',
-         start:         formatDate(start),
-         end:           formatDate(end),
-         color:         selectedColor || '',
-         customer_type: customerType ? customerType.value : 'local'
-      });
+      proceedBtn.disabled = true;
+      if (statusEl) {
+         statusEl.hidden = false;
+         statusEl.classList.remove('is-info', 'is-warn', 'is-success');
+         statusEl.classList.add('is-info');
+      }
+      if (statusTextEl) {
+         statusTextEl.textContent = 'Preparing your secure booking draft...';
+      }
 
-      window.location.href = (cfg.bookingPageUrl || '/booking/') + '?' + params.toString();
+      fetch(cfg.restUrl + 'booking-drafts', {
+         method: 'POST',
+         headers: {
+            'Content-Type': 'application/json',
+            'X-WP-Nonce': cfg.nonce
+         },
+         body: JSON.stringify({
+            car_id:        currentCar.id,
+            location_id:   selectedLocationId || 0,
+            start_date:    formatDate(start),
+            end_date:      formatDate(end),
+            color:         selectedColor || '',
+            customer_type: customerType ? customerType.value : 'local'
+         })
+      })
+      .then(function (r) {
+         return r.json().then(function (body) {
+            if (!r.ok) {
+               throw new Error(body.message || 'Could not prepare your booking.');
+            }
+            return body;
+         });
+      })
+      .then(function (result) {
+         window.location.href = result.booking_url || (cfg.bookingPageUrl || '/booking/');
+      })
+      .catch(function (err) {
+         proceedBtn.disabled = false;
+         if (statusEl) {
+            statusEl.hidden = false;
+            statusEl.classList.remove('is-info', 'is-success');
+            statusEl.classList.add('is-warn');
+         }
+         if (statusTextEl) {
+            statusTextEl.textContent = err.message || 'Could not prepare your booking. Please try again.';
+         }
+      });
    }
 
    /* ── Utilities ── */
