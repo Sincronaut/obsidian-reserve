@@ -11,34 +11,34 @@
  * @package child-obsidian-reserve
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /* ── Require login ── */
-if (!is_user_logged_in()) {
+if ( ! is_user_logged_in() ) {
 	printf(
 		'<section class="obsidian-profile-section"><div class="obsidian-profile-wrap"><p class="obsidian-profile-login">Please <a href="%s">log in</a> to view your profile.</p></div></section>',
-		esc_url(wp_login_url(get_permalink()))
+		esc_url( wp_login_url( get_permalink() ) )
 	);
 	return;
 }
 
 $ob_current_user = wp_get_current_user();
-$user_id = $ob_current_user->ID;
+$user_id         = $ob_current_user->ID;
 
 /* ── User meta ── */
-$display_name = $ob_current_user->display_name ? $ob_current_user->display_name : $ob_current_user->user_login;
-$username = $ob_current_user->user_login;
-$first_name = $ob_current_user->first_name;
-$last_name = $ob_current_user->last_name;
-$full_name = trim($first_name . ' ' . $last_name) ? trim($first_name . ' ' . $last_name) : $display_name;
-$email = $ob_current_user->user_email;
-$phone = get_user_meta($user_id, '_obsidian_phone', true);
-$license = get_user_meta($user_id, '_obsidian_license', true);
-$avatar_url = get_avatar_url($user_id, array('size' => 200));
-$custom_avatar = get_user_meta($user_id, '_obsidian_avatar', true);
-if ($custom_avatar) {
+$display_name  = $ob_current_user->display_name ? $ob_current_user->display_name : $ob_current_user->user_login;
+$username      = $ob_current_user->user_login;
+$first_name    = $ob_current_user->first_name;
+$last_name     = $ob_current_user->last_name;
+$full_name     = trim( $first_name . ' ' . $last_name ) ? trim( $first_name . ' ' . $last_name ) : $display_name;
+$email         = $ob_current_user->user_email;
+$phone         = get_user_meta( $user_id, '_obsidian_phone', true );
+$license       = get_user_meta( $user_id, '_obsidian_license', true );
+$avatar_url    = get_avatar_url( $user_id, array( 'size' => 200 ) );
+$custom_avatar = get_user_meta( $user_id, '_obsidian_avatar', true );
+if ( $custom_avatar ) {
 	$avatar_url = $custom_avatar;
 }
 
@@ -46,155 +46,155 @@ if ($custom_avatar) {
 $tier = 'Platinum';
 
 /* ── Most recent completed booking (for Booking History) ── */
-$recent_booking = null;
+$recent_booking  = null;
 $recent_bookings = get_posts(
 	array(
-		'post_type' => 'booking',
+		'post_type'      => 'booking',
 		'posts_per_page' => 1,
-		'meta_query' => array(
+		'meta_query'     => array(
 			array(
-				'key' => '_booking_user_id',
+				'key'   => '_booking_user_id',
 				'value' => $user_id,
 			),
 		),
-		'orderby' => 'date',
-		'order' => 'DESC',
+		'orderby'        => 'date',
+		'order'          => 'DESC',
 	)
 );
 
-if (!empty($recent_bookings)) {
-	$rb = $recent_bookings[0];
+if ( ! empty( $recent_bookings ) ) {
+	$rb             = $recent_bookings[0];
 	$recent_booking = array(
-		'id' => $rb->ID,
-		'date' => get_the_date('F j, Y', $rb),
-		'car_name' => get_the_title((int) get_post_meta($rb->ID, '_booking_car_id', true)),
-		'total' => (float) get_post_meta($rb->ID, '_booking_total_price', true),
-		'status' => get_post_meta($rb->ID, '_booking_status', true),
+		'id'       => $rb->ID,
+		'date'     => get_the_date( 'F j, Y', $rb ),
+		'car_name' => get_the_title( (int) get_post_meta( $rb->ID, '_booking_car_id', true ) ),
+		'total'    => (float) get_post_meta( $rb->ID, '_booking_total_price', true ),
+		'status'   => get_post_meta( $rb->ID, '_booking_status', true ),
 	);
 }
 
 /* ── ALL bookings for the Transaction History modal (exclude awaiting_payment) ── */
-$all_bookings_data = array();
+$all_bookings_data  = array();
 $all_bookings_query = get_posts(
 	array(
-		'post_type' => 'booking',
+		'post_type'      => 'booking',
 		'posts_per_page' => -1,
-		'meta_query' => array(
+		'meta_query'     => array(
 			'relation' => 'AND',
 			array(
-				'key' => '_booking_user_id',
+				'key'   => '_booking_user_id',
 				'value' => $user_id,
 			),
 		),
-		'orderby' => 'date',
-		'order' => 'DESC',
+		'orderby'        => 'date',
+		'order'          => 'DESC',
 	)
 );
 
-foreach ($all_bookings_query as $bk) {
-	$bk_car_id = (int) get_post_meta($bk->ID, '_booking_car_id', true);
-	$bk_color = get_post_meta($bk->ID, '_booking_color', true);
-	$bk_status = get_post_meta($bk->ID, '_booking_status', true);
+foreach ( $all_bookings_query as $bk ) {
+	$bk_car_id = (int) get_post_meta( $bk->ID, '_booking_car_id', true );
+	$bk_color  = get_post_meta( $bk->ID, '_booking_color', true );
+	$bk_status = get_post_meta( $bk->ID, '_booking_status', true );
 
 	// Get car image.
 	$bk_image = '';
-	if ($bk_color && function_exists('obsidian_get_color_variants')) {
-		$bk_variants = obsidian_get_color_variants($bk_car_id);
-		$bk_c_lower = strtolower($bk_color);
-		if (isset($bk_variants[$bk_c_lower]['images'][0])) {
-			$bk_image = wp_get_attachment_image_url((int) $bk_variants[$bk_c_lower]['images'][0], 'medium');
+	if ( $bk_color && function_exists( 'obsidian_get_color_variants' ) ) {
+		$bk_variants = obsidian_get_color_variants( $bk_car_id );
+		$bk_c_lower  = strtolower( $bk_color );
+		if ( isset( $bk_variants[ $bk_c_lower ]['images'][0] ) ) {
+			$bk_image = wp_get_attachment_image_url( (int) $bk_variants[ $bk_c_lower ]['images'][0], 'medium' );
 		}
 	}
-	if (!$bk_image) {
-		$bk_image = get_the_post_thumbnail_url($bk_car_id, 'medium') ? get_the_post_thumbnail_url($bk_car_id, 'medium') : '';
+	if ( ! $bk_image ) {
+		$bk_image = get_the_post_thumbnail_url( $bk_car_id, 'medium' ) ? get_the_post_thumbnail_url( $bk_car_id, 'medium' ) : '';
 	}
 
 	$status_labels_all = array(
-		'confirmed' => 'Confirmed',
-		'paid' => 'Paid',
+		'confirmed'        => 'Confirmed',
+		'paid'             => 'Paid',
 		'awaiting_payment' => 'Awaiting Payment',
-		'pending_review' => 'Pending Review',
-		'completed' => 'Completed',
-		'cancelled' => 'Cancelled',
-		'denied' => 'Denied',
+		'pending_review'   => 'Pending Review',
+		'completed'        => 'Completed',
+		'cancelled'        => 'Cancelled',
+		'denied'           => 'Denied',
 	);
 
 	$all_bookings_data[] = array(
-		'id' => $bk->ID,
-		'date' => get_the_date('F j, Y', $bk),
-		'car_name' => get_the_title($bk_car_id),
-		'color' => ucfirst($bk_color),
-		'car_image' => $bk_image,
-		'status' => $bk_status,
-		'status_label' => $status_labels_all[$bk_status] ?? ucfirst($bk_status),
+		'id'           => $bk->ID,
+		'date'         => get_the_date( 'F j, Y', $bk ),
+		'car_name'     => get_the_title( $bk_car_id ),
+		'color'        => ucfirst( $bk_color ),
+		'car_image'    => $bk_image,
+		'status'       => $bk_status,
+		'status_label' => $status_labels_all[ $bk_status ] ?? ucfirst( $bk_status ),
 	);
 }
 
 /* ── Upcoming reservations (confirmed / paid / awaiting_payment) ── */
 $upcoming_reservations = array();
-$upcoming_query = get_posts(
+$upcoming_query        = get_posts(
 	array(
-		'post_type' => 'booking',
+		'post_type'      => 'booking',
 		'posts_per_page' => -1,
-		'meta_query' => array(
+		'meta_query'     => array(
 			'relation' => 'AND',
 			array(
-				'key' => '_booking_user_id',
+				'key'   => '_booking_user_id',
 				'value' => $user_id,
 			),
 			array(
-				'key' => '_booking_status',
-				'value' => array('confirmed', 'paid', 'awaiting_payment', 'pending_review'),
+				'key'     => '_booking_status',
+				'value'   => array( 'confirmed', 'paid', 'awaiting_payment', 'pending_review' ),
 				'compare' => 'IN',
 			),
 		),
-		'orderby' => 'date',
-		'order' => 'DESC',
+		'orderby'        => 'date',
+		'order'          => 'DESC',
 	)
 );
 
-foreach ($upcoming_query as $ub) {
-	$car_id = (int) get_post_meta($ub->ID, '_booking_car_id', true);
-	$color = get_post_meta($ub->ID, '_booking_color', true);
-	$start_date = get_post_meta($ub->ID, '_booking_start_date', true);
-	$end_date = get_post_meta($ub->ID, '_booking_end_date', true);
-	$booking_status = get_post_meta($ub->ID, '_booking_status', true);
-	$location = get_post_meta($ub->ID, '_booking_location', true);
-	$delivery_address = get_post_meta($ub->ID, '_booking_delivery_address', true);
+foreach ( $upcoming_query as $ub ) {
+	$car_id           = (int) get_post_meta( $ub->ID, '_booking_car_id', true );
+	$color            = get_post_meta( $ub->ID, '_booking_color', true );
+	$start_date       = get_post_meta( $ub->ID, '_booking_start_date', true );
+	$end_date         = get_post_meta( $ub->ID, '_booking_end_date', true );
+	$booking_status   = get_post_meta( $ub->ID, '_booking_status', true );
+	$location         = get_post_meta( $ub->ID, '_booking_location', true );
+	$delivery_address = get_post_meta( $ub->ID, '_booking_delivery_address', true );
 
 	// Get car image.
 	$car_image = '';
-	if ($color && function_exists('obsidian_get_color_variants')) {
-		$variants = obsidian_get_color_variants($car_id);
-		$c_lower = strtolower($color);
-		if (isset($variants[$c_lower]['images'][0])) {
-			$car_image = wp_get_attachment_image_url((int) $variants[$c_lower]['images'][0], 'medium');
+	if ( $color && function_exists( 'obsidian_get_color_variants' ) ) {
+		$variants = obsidian_get_color_variants( $car_id );
+		$c_lower  = strtolower( $color );
+		if ( isset( $variants[ $c_lower ]['images'][0] ) ) {
+			$car_image = wp_get_attachment_image_url( (int) $variants[ $c_lower ]['images'][0], 'medium' );
 		}
 	}
-	if (!$car_image) {
-		$car_image = get_the_post_thumbnail_url($car_id, 'medium') ? get_the_post_thumbnail_url($car_id, 'medium') : '';
+	if ( ! $car_image ) {
+		$car_image = get_the_post_thumbnail_url( $car_id, 'medium' ) ? get_the_post_thumbnail_url( $car_id, 'medium' ) : '';
 	}
 
 	// Format dates.
 	$start_display = '';
-	$end_display = '';
-	if ($start_date) {
-		$dt = DateTime::createFromFormat('Y-m-d', $start_date);
-		$start_display = $dt ? $dt->format('M j') : $start_date;
+	$end_display   = '';
+	if ( $start_date ) {
+		$dt            = DateTime::createFromFormat( 'Y-m-d', $start_date );
+		$start_display = $dt ? $dt->format( 'M j' ) : $start_date;
 	}
-	if ($end_date) {
-		$dt = DateTime::createFromFormat('Y-m-d', $end_date);
-		$end_display = $dt ? $dt->format('M j') : $end_date;
+	if ( $end_date ) {
+		$dt          = DateTime::createFromFormat( 'Y-m-d', $end_date );
+		$end_display = $dt ? $dt->format( 'M j' ) : $end_date;
 	}
 
 	// Location / delivery address.
 	$location_name = '';
-	if ($delivery_address) {
+	if ( $delivery_address ) {
 		$location_name = $delivery_address;
-	} elseif ($location) {
-		if (is_numeric($location)) {
-			$loc_post = get_post((int) $location);
-			if ($loc_post) {
+	} elseif ( $location ) {
+		if ( is_numeric( $location ) ) {
+			$loc_post = get_post( (int) $location );
+			if ( $loc_post ) {
 				$location_name = $loc_post->post_title;
 			}
 		} else {
@@ -204,61 +204,61 @@ foreach ($upcoming_query as $ub) {
 
 	// Payment URL for awaiting_payment bookings.
 	$payment_url = '';
-	if ('awaiting_payment' === $booking_status) {
-		$payment_token = get_post_meta($ub->ID, '_booking_payment_token', true);
-		if ($payment_token) {
+	if ( 'awaiting_payment' === $booking_status ) {
+		$payment_token = get_post_meta( $ub->ID, '_booking_payment_token', true );
+		if ( $payment_token ) {
 			$payment_url = function_exists( 'obsidian_get_payment_url' )
 				? obsidian_get_payment_url( $ub->ID, $payment_token )
-				: home_url('/booking/payment/');
+				: home_url( '/booking/payment/' );
 		}
 	}
 
 	// Status label.
 	$status_labels = array(
-		'confirmed' => 'RESERVED',
-		'paid' => 'PAID',
+		'confirmed'        => 'RESERVED',
+		'paid'             => 'PAID',
 		'awaiting_payment' => 'AWAITING PAYMENT',
-		'pending_review' => 'PENDING REVIEW',
+		'pending_review'   => 'PENDING REVIEW',
 	);
 
 	$upcoming_reservations[] = array(
-		'id' => $ub->ID,
-		'car_name' => get_the_title($car_id),
-		'color' => ucfirst($color),
-		'car_image' => $car_image,
-		'start_date' => $start_display,
-		'end_date' => $end_display,
-		'status' => $booking_status,
-		'status_label' => $status_labels[$booking_status] ?? strtoupper($booking_status),
+		'id'            => $ub->ID,
+		'car_name'      => get_the_title( $car_id ),
+		'color'         => ucfirst( $color ),
+		'car_image'     => $car_image,
+		'start_date'    => $start_display,
+		'end_date'      => $end_display,
+		'status'        => $booking_status,
+		'status_label'  => $status_labels[ $booking_status ] ?? strtoupper( $booking_status ),
 		'location_name' => $location_name,
-		'payment_url' => $payment_url,
+		'payment_url'   => $payment_url,
 	);
 }
 
 /* ── Recently viewed article (from user's reading history tracked by blog-engine.php) ── */
-$recent_article = null;
-$reading_history = get_user_meta($user_id, '_obsidian_reading_history', true);
+$recent_article  = null;
+$reading_history = get_user_meta( $user_id, '_obsidian_reading_history', true );
 
-if (is_array($reading_history) && !empty($reading_history)) {
+if ( is_array( $reading_history ) && ! empty( $reading_history ) ) {
 	// The first item in the array is the most recently viewed post.
 	$most_recent_id = (int) $reading_history[0];
-	$rp = get_post($most_recent_id);
+	$rp             = get_post( $most_recent_id );
 
-	if ($rp && 'publish' === $rp->post_status && 'post' === $rp->post_type) {
+	if ( $rp && 'publish' === $rp->post_status && 'post' === $rp->post_type ) {
 		$recent_article = array(
-			'title' => get_the_title($rp),
-			'excerpt' => wp_trim_words(get_the_excerpt($rp), 30, '…'),
-			'image' => get_the_post_thumbnail_url($rp, 'medium_large'),
-			'permalink' => get_permalink($rp),
+			'title'     => get_the_title( $rp ),
+			'excerpt'   => wp_trim_words( get_the_excerpt( $rp ), 30, '…' ),
+			'image'     => get_the_post_thumbnail_url( $rp, 'medium_large' ),
+			'permalink' => get_permalink( $rp ),
 		);
 	}
 }
 
-$logout_url = wp_logout_url(home_url('/'));
+$logout_url = wp_logout_url( home_url( '/' ) );
 ?>
 
 <section class="obsidian-profile-section">
-	<div <?php echo get_block_wrapper_attributes(array('class' => 'obsidian-profile-wrap')); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+	<div <?php echo get_block_wrapper_attributes( array( 'class' => 'obsidian-profile-wrap' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 
 		<!-- ═══════════════════════════════════════════════
 		PROFILE HEADER
@@ -266,7 +266,7 @@ $logout_url = wp_logout_url(home_url('/'));
 		<div class="opd-header">
 			<div class="opd-header-left">
 				<div class="opd-avatar" id="opd-avatar-trigger" title="Change profile picture">
-					<img src="<?php echo esc_url($avatar_url); ?>" alt="<?php echo esc_attr($full_name); ?>"
+					<img src="<?php echo esc_url( $avatar_url ); ?>" alt="<?php echo esc_attr( $full_name ); ?>"
 						id="opd-avatar-img" />
 					<div class="opd-avatar-overlay">
 						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -284,9 +284,9 @@ $logout_url = wp_logout_url(home_url('/'));
 						style="display:none;" />
 				</div>
 				<div class="opd-user-info">
-					<h1 class="opd-user-name"><?php echo esc_html($full_name); ?></h1>
+					<h1 class="opd-user-name"><?php echo esc_html( $full_name ); ?></h1>
 					<div class="opd-user-top">
-						<span class="opd-tier-badge"><?php echo esc_html($tier); ?></span>
+						<span class="opd-tier-badge"><?php echo esc_html( $tier ); ?></span>
 						<button class="opd-notification-btn" aria-label="Notifications">
 							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
 								stroke-width="1.5">
@@ -296,19 +296,19 @@ $logout_url = wp_logout_url(home_url('/'));
 						</button>
 					</div>
 					<div class="opd-user-meta">
-						<span>Username : <strong class="text-gold">@<?php echo esc_html($username); ?></strong></span>
+						<span>Username : <strong class="text-gold">@<?php echo esc_html( $username ); ?></strong></span>
 					</div>
 					<div class="opd-user-meta">
-						<span>Email : <a href="mailto:<?php echo esc_attr($email); ?>"
-								class="text-gold"><?php echo esc_html($email); ?></a></span>
-						<?php if ($phone): ?>
-							<span>Mobile Number : <span class="text-gold"><?php echo esc_html($phone); ?></span></span>
+						<span>Email : <a href="mailto:<?php echo esc_attr( $email ); ?>"
+								class="text-gold"><?php echo esc_html( $email ); ?></a></span>
+						<?php if ( $phone ) : ?>
+							<span>Mobile Number : <span class="text-gold"><?php echo esc_html( $phone ); ?></span></span>
 						<?php endif; ?>
 					</div>
-					<?php if ($license): ?>
+					<?php if ( $license ) : ?>
 						<div class="opd-user-meta">
 							<span>Driver License Status : <a href="#"
-									class="text-gold"><?php echo esc_html($license); ?></a></span>
+									class="text-gold"><?php echo esc_html( $license ); ?></a></span>
 						</div>
 					<?php endif; ?>
 				</div>
@@ -319,7 +319,7 @@ $logout_url = wp_logout_url(home_url('/'));
 						id="opd-edit-profile-trigger">Edit Profile</button>
 				</div>
 				<div class="wp-block-button is-style-outline-gold">
-					<a href="<?php echo esc_url($logout_url); ?>" class="wp-block-button__link wp-element-button">Log
+					<a href="<?php echo esc_url( $logout_url ); ?>" class="wp-block-button__link wp-element-button">Log
 						Out</a>
 				</div>
 			</div>
@@ -345,16 +345,16 @@ $logout_url = wp_logout_url(home_url('/'));
 						</svg>
 					</h2>
 
-					<?php if ($recent_booking): ?>
+					<?php if ( $recent_booking ) : ?>
 						<div class="opd-history-row">
 							<span class="opd-history-label">Recent</span>
 							<div class="opd-history-detail">
-								<span class="opd-history-date"><?php echo esc_html($recent_booking['date']); ?></span>
+								<span class="opd-history-date"><?php echo esc_html( $recent_booking['date'] ); ?></span>
 								<span class="opd-history-txn">(Transac No:
-									<?php echo esc_html($recent_booking['id']); ?>)</span>
+									<?php echo esc_html( $recent_booking['id'] ); ?>)</span>
 							</div>
 						</div>
-					<?php else: ?>
+					<?php else : ?>
 						<p class="opd-empty">No booking history yet.</p>
 					<?php endif; ?>
 
@@ -374,32 +374,32 @@ $logout_url = wp_logout_url(home_url('/'));
 					<h2 class="opd-card-title"><span class="text-white">Upcoming</span> <span
 							class="text-gold">Reservations</span></h2>
 
-					<?php if (!empty($upcoming_reservations)): ?>
+					<?php if ( ! empty( $upcoming_reservations ) ) : ?>
 						<?php $first_res = $upcoming_reservations[0]; ?>
 						<div class="opd-reservation-card">
-							<span class="opd-reservation-status"><?php echo esc_html($first_res['status_label']); ?></span>
+							<span class="opd-reservation-status"><?php echo esc_html( $first_res['status_label'] ); ?></span>
 
-							<?php if ($first_res['car_image']): ?>
+							<?php if ( $first_res['car_image'] ) : ?>
 								<div class="opd-reservation-img">
-									<img src="<?php echo esc_url($first_res['car_image']); ?>"
-										alt="<?php echo esc_attr($first_res['car_name']); ?>" />
+									<img src="<?php echo esc_url( $first_res['car_image'] ); ?>"
+										alt="<?php echo esc_attr( $first_res['car_name'] ); ?>" />
 								</div>
 							<?php endif; ?>
 
-							<h3 class="opd-reservation-name"><?php echo esc_html($first_res['car_name']); ?> <span
-									class="text-gold"><?php echo esc_html($first_res['color']); ?></span></h3>
+							<h3 class="opd-reservation-name"><?php echo esc_html( $first_res['car_name'] ); ?> <span
+									class="text-gold"><?php echo esc_html( $first_res['color'] ); ?></span></h3>
 
 							<div class="opd-reservation-meta">
 								<span>Dates:
-									<?php echo esc_html($first_res['start_date'] . ' - ' . $first_res['end_date']); ?></span>
-								<?php if ($first_res['location_name']): ?>
-									<span>Delivery Location: <?php echo esc_html($first_res['location_name']); ?></span>
+									<?php echo esc_html( $first_res['start_date'] . ' - ' . $first_res['end_date'] ); ?></span>
+								<?php if ( $first_res['location_name'] ) : ?>
+									<span>Delivery Location: <?php echo esc_html( $first_res['location_name'] ); ?></span>
 								<?php endif; ?>
 							</div>
 
 							<div class="opd-reservation-actions">
-								<?php if ('awaiting_payment' === $first_res['status'] && !empty($first_res['payment_url'])): ?>
-									<a href="<?php echo esc_url($first_res['payment_url']); ?>"
+								<?php if ( 'awaiting_payment' === $first_res['status'] && ! empty( $first_res['payment_url'] ) ) : ?>
+									<a href="<?php echo esc_url( $first_res['payment_url'] ); ?>"
 										class="opd-btn opd-btn-payment">Proceed to Payment</a>
 								<?php endif; ?>
 
@@ -407,13 +407,13 @@ $logout_url = wp_logout_url(home_url('/'));
 							</div>
 						</div>
 
-						<?php if (count($upcoming_reservations) > 1): ?>
+						<?php if ( count( $upcoming_reservations ) > 1 ) : ?>
 							<a href="#" class="opd-history-link" id="opd-upcoming-trigger"
 								style="display: block; text-align: center; margin-top: 16px;">
 								View all Upcoming Reservations
 							</a>
 						<?php endif; ?>
-					<?php else: ?>
+					<?php else : ?>
 						<p class="opd-empty">No upcoming reservations.</p>
 					<?php endif; ?>
 				</div>
@@ -427,24 +427,24 @@ $logout_url = wp_logout_url(home_url('/'));
 				<div class="opd-card opd-recent-article">
 					<div class="opd-article-header">
 						<h2 class="opd-card-title-plain">Recently Viewed Article</h2>
-						<?php if ($recent_article): ?>
-							<a href="<?php echo esc_url(home_url('/blog/')); ?>" class="opd-article-readmore">Read
+						<?php if ( $recent_article ) : ?>
+							<a href="<?php echo esc_url( home_url( '/blog/' ) ); ?>" class="opd-article-readmore">Read
 								More</a>
 						<?php endif; ?>
 					</div>
 
-					<?php if ($recent_article): ?>
-						<a href="<?php echo esc_url($recent_article['permalink']); ?>" class="opd-article-link">
-							<?php if ($recent_article['image']): ?>
+					<?php if ( $recent_article ) : ?>
+						<a href="<?php echo esc_url( $recent_article['permalink'] ); ?>" class="opd-article-link">
+							<?php if ( $recent_article['image'] ) : ?>
 								<div class="opd-article-img">
-									<img src="<?php echo esc_url($recent_article['image']); ?>"
-										alt="<?php echo esc_attr($recent_article['title']); ?>" />
+									<img src="<?php echo esc_url( $recent_article['image'] ); ?>"
+										alt="<?php echo esc_attr( $recent_article['title'] ); ?>" />
 								</div>
 							<?php endif; ?>
-							<h3 class="opd-article-title"><?php echo esc_html($recent_article['title']); ?></h3>
-							<p class="opd-article-excerpt"><?php echo esc_html($recent_article['excerpt']); ?></p>
+							<h3 class="opd-article-title"><?php echo esc_html( $recent_article['title'] ); ?></h3>
+							<p class="opd-article-excerpt"><?php echo esc_html( $recent_article['excerpt'] ); ?></p>
 						</a>
-					<?php else: ?>
+					<?php else : ?>
 						<p class="opd-empty">No articles viewed yet.</p>
 					<?php endif; ?>
 				</div>
@@ -468,23 +468,23 @@ $logout_url = wp_logout_url(home_url('/'));
 					<div class="opd-edit-field">
 						<label for="opd-full-name">Full Name</label>
 						<input type="text" id="opd-full-name" name="full_name"
-							value="<?php echo esc_attr($full_name); ?>" placeholder="ex: Juan Miguel Dela Cruz" />
+							value="<?php echo esc_attr( $full_name ); ?>" placeholder="ex: Juan Miguel Dela Cruz" />
 					</div>
 
 					<div class="opd-edit-field">
 						<label for="opd-email">Email Address</label>
-						<input type="email" id="opd-email" name="email" value="<?php echo esc_attr($email); ?>" />
+						<input type="email" id="opd-email" name="email" value="<?php echo esc_attr( $email ); ?>" />
 					</div>
 
 					<div class="opd-edit-field">
 						<label for="opd-phone">Mobile Number</label>
-						<input type="tel" id="opd-phone" name="phone" value="<?php echo esc_attr($phone); ?>"
+						<input type="tel" id="opd-phone" name="phone" value="<?php echo esc_attr( $phone ); ?>"
 							placeholder="+63" />
 					</div>
 
 					<div class="opd-edit-field">
 						<label for="opd-license">Driver's License Number</label>
-						<input type="text" id="opd-license" name="license" value="<?php echo esc_attr($license); ?>"
+						<input type="text" id="opd-license" name="license" value="<?php echo esc_attr( $license ); ?>"
 							placeholder="N04-000-000-000" />
 					</div>
 
@@ -548,32 +548,32 @@ $logout_url = wp_logout_url(home_url('/'));
 					</svg>
 				</h2>
 
-				<?php if (!empty($all_bookings_data)): ?>
+				<?php if ( ! empty( $all_bookings_data ) ) : ?>
 					<div class="opd-txn-list">
-						<?php foreach ($all_bookings_data as $txn): ?>
+						<?php foreach ( $all_bookings_data as $txn ) : ?>
 							<div class="opd-txn-card">
 								<div class="opd-txn-info">
-									<h3 class="opd-txn-car"><?php echo esc_html($txn['car_name']); ?> <span
-											class="text-gold"><?php echo esc_html($txn['color']); ?></span></h3>
+									<h3 class="opd-txn-car"><?php echo esc_html( $txn['car_name'] ); ?> <span
+											class="text-gold"><?php echo esc_html( $txn['color'] ); ?></span></h3>
 									<div class="opd-txn-meta">
-										<span class="opd-txn-date"><?php echo esc_html($txn['date']); ?></span>
-										<span class="opd-txn-id">(Transac No: <?php echo esc_html($txn['id']); ?>)</span>
+										<span class="opd-txn-date"><?php echo esc_html( $txn['date'] ); ?></span>
+										<span class="opd-txn-id">(Transac No: <?php echo esc_html( $txn['id'] ); ?>)</span>
 									</div>
 									<span
-										class="opd-txn-status opd-txn-status--<?php echo esc_attr($txn['status']); ?>"><?php echo esc_html($txn['status_label']); ?></span>
+										class="opd-txn-status opd-txn-status--<?php echo esc_attr( $txn['status'] ); ?>"><?php echo esc_html( $txn['status_label'] ); ?></span>
 								</div>
-								<?php if ($txn['car_image']): ?>
+								<?php if ( $txn['car_image'] ) : ?>
 									<div class="opd-txn-img-wrap">
-										<img src="<?php echo esc_url($txn['car_image']); ?>"
-											alt="<?php echo esc_attr($txn['car_name']); ?>" />
+										<img src="<?php echo esc_url( $txn['car_image'] ); ?>"
+											alt="<?php echo esc_attr( $txn['car_name'] ); ?>" />
 										<span
-											class="opd-txn-img-label"><?php echo esc_html($txn['car_name'] . ' ' . $txn['color']); ?></span>
+											class="opd-txn-img-label"><?php echo esc_html( $txn['car_name'] . ' ' . $txn['color'] ); ?></span>
 									</div>
 								<?php endif; ?>
 							</div>
 						<?php endforeach; ?>
 					</div>
-				<?php else: ?>
+				<?php else : ?>
 					<p class="opd-empty">No transaction history yet.</p>
 				<?php endif; ?>
 			</div>
@@ -596,32 +596,32 @@ $logout_url = wp_logout_url(home_url('/'));
 				<h2 class="opd-card-title" style="margin-bottom:28px;"><span class="text-white">Upcoming</span> <span
 						class="text-gold">Reservations</span></h2>
 
-				<?php if (!empty($upcoming_reservations)): ?>
+				<?php if ( ! empty( $upcoming_reservations ) ) : ?>
 					<div class="opd-txn-list">
-						<?php foreach ($upcoming_reservations as $txn): ?>
+						<?php foreach ( $upcoming_reservations as $txn ) : ?>
 							<div class="opd-txn-card">
 								<div class="opd-txn-info">
-									<h3 class="opd-txn-car"><?php echo esc_html($txn['car_name']); ?> <span
-											class="text-gold"><?php echo esc_html($txn['color']); ?></span></h3>
+									<h3 class="opd-txn-car"><?php echo esc_html( $txn['car_name'] ); ?> <span
+											class="text-gold"><?php echo esc_html( $txn['color'] ); ?></span></h3>
 									<div class="opd-txn-meta">
 										<span
-											class="opd-txn-date"><?php echo esc_html($txn['start_date'] . ' - ' . $txn['end_date']); ?></span>
+											class="opd-txn-date"><?php echo esc_html( $txn['start_date'] . ' - ' . $txn['end_date'] ); ?></span>
 										<span class="opd-txn-id">Location:
-											<?php echo esc_html($txn['location_name']); ?></span>
+											<?php echo esc_html( $txn['location_name'] ); ?></span>
 									</div>
 									<span
-										class="opd-txn-status opd-txn-status--<?php echo esc_attr($txn['status']); ?>"><?php echo esc_html($txn['status_label']); ?></span>
-									<?php if ('awaiting_payment' === $txn['status'] && !empty($txn['payment_url'])): ?>
-										<a href="<?php echo esc_url($txn['payment_url']); ?>" class="opd-btn opd-btn-small"
+										class="opd-txn-status opd-txn-status--<?php echo esc_attr( $txn['status'] ); ?>"><?php echo esc_html( $txn['status_label'] ); ?></span>
+									<?php if ( 'awaiting_payment' === $txn['status'] && ! empty( $txn['payment_url'] ) ) : ?>
+										<a href="<?php echo esc_url( $txn['payment_url'] ); ?>" class="opd-btn opd-btn-small"
 											style="margin-top:8px;">Proceed to Payment</a>
 									<?php endif; ?>
 								</div>
-								<?php if ($txn['car_image']): ?>
+								<?php if ( $txn['car_image'] ) : ?>
 									<div class="opd-txn-img-wrap">
-										<img src="<?php echo esc_url($txn['car_image']); ?>"
-											alt="<?php echo esc_attr($txn['car_name']); ?>" />
+										<img src="<?php echo esc_url( $txn['car_image'] ); ?>"
+											alt="<?php echo esc_attr( $txn['car_name'] ); ?>" />
 										<span
-											class="opd-txn-img-label"><?php echo esc_html($txn['car_name'] . ' ' . $txn['color']); ?></span>
+											class="opd-txn-img-label"><?php echo esc_html( $txn['car_name'] . ' ' . $txn['color'] ); ?></span>
 									</div>
 								<?php endif; ?>
 							</div>
@@ -722,8 +722,8 @@ $logout_url = wp_logout_url(home_url('/'));
 		const avatarInput = document.getElementById('opd-avatar-input');
 		const avatarImg = document.getElementById('opd-avatar-img');
 		const avatarLoading = document.getElementById('opd-avatar-loading');
-		const restNonce = '<?php echo wp_create_nonce('wp_rest'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>';
-		const restBase = '<?php echo esc_url_raw(rest_url()); ?>';
+		const restNonce = '<?php echo wp_create_nonce( 'wp_rest' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>';
+		const restBase = '<?php echo esc_url_raw( rest_url() ); ?>';
 		let pageLeaving = false;
 		let isUploading = false;
 
