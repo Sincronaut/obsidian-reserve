@@ -577,6 +577,7 @@
 
 		const payload = {
 			car_id:         parseInt((document.getElementById('obf-car-id') || {}).value || '0', 10),
+			booking_draft_id: (document.getElementById('obf-booking-draft-id') || {}).value || '',
 			location_id:    locationId,
 			start_date:     (document.getElementById('obf-start-date') || {}).value || '',
 			end_date:       (document.getElementById('obf-end-date') || {}).value || '',

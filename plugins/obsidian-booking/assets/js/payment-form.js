@@ -19,7 +19,7 @@
 	if ( ! form || ! wrap ) return;
 
 	const bookingId  = document.getElementById( 'obp-booking-id' )?.value;
-	const token      = document.getElementById( 'obp-token' )?.value;
+	const paymentSessionId = document.getElementById( 'obp-payment-session-id' )?.value || '';
 	const totalVal   = parseFloat( document.getElementById( 'obp-total' )?.value || 0 );
 	const depositVal = parseFloat( document.getElementById( 'obp-deposit' )?.value || 0 );
 
@@ -262,8 +262,7 @@
 				'X-WP-Nonce':   nonce,
 			},
 			body: JSON.stringify({
-				booking_id:     bookingId,
-				token:          token,
+				payment_session_id: paymentSessionId,
 				payment_option: getSelectedOption(),
 				payment_method: selectedMethod,
 			}),
@@ -351,10 +350,10 @@
 
 			sessionStorage.setItem( 'obPayment', JSON.stringify({
 				bookingId:      bookingId,
-				token:          token,
 				intentId:       intentId,
 				clientKey:      clientKey,
 				pmId:           pmRes.data.id,
+				paymentSessionId: paymentSessionId,
 				method:         'card',
 				methodLabel:    METHOD_LABELS.card,
 				bankName:       parsedBankName,
@@ -368,7 +367,7 @@
 				rentalTotal:    rental_total,
 			}));
 
-			window.location.href = confirmationUrl + '?booking_id=' + bookingId;
+			window.location.href = confirmationUrl + paymentSessionId + '/';
 
 		} catch ( err ) {
 			showMessage( err.message || 'An error occurred. Please try again.', 'error' );
@@ -400,10 +399,10 @@
 
 			sessionStorage.setItem( 'obPayment', JSON.stringify({
 				bookingId:      bookingId,
-				token:          token,
 				intentId:       intentId,
 				clientKey:      clientKey,
 				pmId:           pmRes.data.id,
+				paymentSessionId: paymentSessionId,
 				method:         selectedMethod,
 				methodLabel:    METHOD_LABELS[ selectedMethod ] || selectedMethod,
 				bankName:       BANK_NAMES[ selectedMethod ] || '',
@@ -417,7 +416,7 @@
 				rentalTotal:    rental_total,
 			}));
 
-			window.location.href = confirmationUrl + '?booking_id=' + bookingId;
+			window.location.href = confirmationUrl + paymentSessionId + '/';
 
 		} catch ( err ) {
 			showMessage( err.message || 'An error occurred. Please try again.', 'error' );

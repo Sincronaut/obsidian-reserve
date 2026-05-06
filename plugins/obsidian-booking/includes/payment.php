@@ -49,6 +49,146 @@ function obsidian_verify_payment_token( $booking_id, $token ) {
 }
 
 /**
+ * Build transient key for payment sessions.
+ *
+ * @param string $session_id Opaque payment session ID.
+ * @return string
+ */
+function obsidian_payment_session_key( $session_id ) {
+	return 'obsidian_payment_session_' . $session_id;
+}
+
+/**
+ * Payment session lifetime in seconds.
+ *
+ * @return int
+ */
+function obsidian_payment_session_ttl() {
+	return 2 * DAY_IN_SECONDS;
+}
+
+/**
+ * Finalize an existing payment session so it cannot create new intents.
+ * Keeps booking/user context for confirmation rendering.
+ *
+ * @param string $session_id Opaque payment session ID.
+ * @return void
+ */
+function obsidian_finalize_payment_session( $session_id ) {
+	$session_id = sanitize_key( $session_id );
+	if ( ! preg_match( '/^[a-z0-9]{32}$/', $session_id ) ) {
+		return;
+	}
+
+	$data = get_transient( obsidian_payment_session_key( $session_id ) );
+	if ( ! is_array( $data ) ) {
+		return;
+	}
+
+	$data['token']        = '';
+	$data['finalized_at'] = time();
+
+	set_transient( obsidian_payment_session_key( $session_id ), $data, DAY_IN_SECONDS );
+}
+
+/**
+ * Finalize payment session linked to a booking.
+ *
+ * @param int $booking_id Booking post ID.
+ * @return void
+ */
+function obsidian_finalize_payment_session_by_booking( $booking_id ) {
+	$booking_id = (int) $booking_id;
+	$session_id = get_post_meta( $booking_id, '_booking_payment_session_id', true );
+
+	if ( is_string( $session_id ) && preg_match( '/^[a-z0-9]{32}$/', $session_id ) ) {
+		obsidian_finalize_payment_session( $session_id );
+	}
+}
+
+/**
+ * Create or reuse a short-lived payment session for a booking/token pair.
+ *
+ * @param int    $booking_id Booking post ID.
+ * @param string $token      Payment token.
+ * @return string Session ID.
+ */
+function obsidian_create_payment_session( $booking_id, $token ) {
+	$booking_id = (int) $booking_id;
+	$token      = sanitize_text_field( $token );
+
+	$existing = get_post_meta( $booking_id, '_booking_payment_session_id', true );
+	if ( is_string( $existing ) && preg_match( '/^[a-z0-9]{32}$/', $existing ) ) {
+		$data = get_transient( obsidian_payment_session_key( $existing ) );
+		if ( is_array( $data ) && (int) ( $data['booking_id'] ?? 0 ) === $booking_id ) {
+			$existing_token = sanitize_text_field( $data['token'] ?? '' );
+			$existing_user  = (int) ( $data['user_id'] ?? 0 );
+			$booking_user   = (int) get_post_meta( $booking_id, '_booking_user_id', true );
+
+			if ( $existing_token === $token && $existing_user === $booking_user && $existing_token !== '' ) {
+				return $existing;
+			}
+		}
+		delete_transient( obsidian_payment_session_key( $existing ) );
+	}
+
+	try {
+		$session_id = bin2hex( random_bytes( 16 ) );
+	} catch ( Exception $e ) {
+		$session_id = strtolower( wp_generate_password( 32, false, false ) );
+	}
+	$data       = array(
+		'booking_id' => $booking_id,
+		'token'      => $token,
+		'user_id'    => (int) get_post_meta( $booking_id, '_booking_user_id', true ),
+		'created_at' => time(),
+	);
+
+	set_transient( obsidian_payment_session_key( $session_id ), $data, obsidian_payment_session_ttl() );
+	update_post_meta( $booking_id, '_booking_payment_session_id', $session_id );
+
+	return $session_id;
+}
+
+/**
+ * Resolve a payment session ID into booking context.
+ *
+ * @param string $session_id    Opaque payment session ID.
+ * @param bool   $require_token Whether a live token is required.
+ * @return array|false
+ */
+function obsidian_get_payment_session( $session_id, $require_token = true ) {
+	$session_id = sanitize_key( $session_id );
+	if ( ! preg_match( '/^[a-z0-9]{32}$/', $session_id ) ) {
+		return false;
+	}
+
+	$data = get_transient( obsidian_payment_session_key( $session_id ) );
+	if ( ! is_array( $data ) ) {
+		return false;
+	}
+
+	$booking_id = (int) ( $data['booking_id'] ?? 0 );
+	$token      = sanitize_text_field( $data['token'] ?? '' );
+	$user_id    = (int) ( $data['user_id'] ?? 0 );
+
+	if ( ! $booking_id || ! $user_id ) {
+		return false;
+	}
+
+	if ( $require_token && '' === $token ) {
+		return false;
+	}
+
+	return array(
+		'session_id' => $session_id,
+		'booking_id' => $booking_id,
+		'token'      => $token,
+		'user_id'    => $user_id,
+	);
+}
+
+/**
  * Build the payment page URL for a booking.
  *
  * @param int    $booking_id The Booking post ID.
@@ -56,13 +196,8 @@ function obsidian_verify_payment_token( $booking_id, $token ) {
  * @return string Full URL to the payment page.
  */
 function obsidian_get_payment_url( $booking_id, $token ) {
-	return add_query_arg(
-		array(
-			'booking_id' => $booking_id,
-			'token'      => $token,
-		),
-		home_url( '/booking/payment/' )
-	);
+	$session_id = obsidian_create_payment_session( $booking_id, $token );
+	return home_url( '/booking/payment/' . rawurlencode( $session_id ) . '/' );
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -198,13 +333,19 @@ add_action( 'rest_api_init', 'obsidian_register_payment_routes' );
 function obsidian_api_create_payment_intent( $request ) {
 
 	$params         = $request->get_json_params();
-	$booking_id     = (int) ( $params['booking_id'] ?? 0 );
-	$token          = sanitize_text_field( $params['token'] ?? '' );
+	$session_id     = sanitize_key( $params['payment_session_id'] ?? '' );
 	$payment_option = sanitize_text_field( $params['payment_option'] ?? 'full' );
 	$payment_method = sanitize_text_field( $params['payment_method'] ?? 'card' );
+	$session        = obsidian_get_payment_session( $session_id );
+	$booking_id     = $session ? (int) $session['booking_id'] : 0;
+	$token          = $session ? sanitize_text_field( $session['token'] ) : '';
 
-	if ( ! $booking_id ) {
-		return new WP_Error( 'missing_booking', 'Booking ID is required.', array( 'status' => 400 ) );
+	if ( ! $session || ! $booking_id ) {
+		return new WP_Error( 'missing_session', 'Payment session is required.', array( 'status' => 400 ) );
+	}
+
+	if ( (int) $session['user_id'] !== get_current_user_id() ) {
+		return new WP_Error( 'unauthorized', 'You do not own this payment session.', array( 'status' => 403 ) );
 	}
 
 	// Verify token
@@ -300,6 +441,7 @@ function obsidian_api_confirm_payment( $request ) {
 	// Auto-transition to confirmed.
 	update_post_meta( $booking_id, '_booking_status', 'confirmed' );
 	do_action( 'obsidian_booking_status_changed', $booking_id, 'paid', 'confirmed' );
+	obsidian_finalize_payment_session_by_booking( $booking_id );
 
 	return rest_ensure_response( array( 'message' => 'Booking confirmed.', 'status' => 'confirmed' ) );
 }
@@ -356,6 +498,7 @@ function obsidian_api_paymongo_webhook( $request ) {
 			// Auto-transition to confirmed
 			update_post_meta( $booking_id, '_booking_status', 'confirmed' );
 			do_action( 'obsidian_booking_status_changed', $booking_id, 'paid', 'confirmed' );
+			obsidian_finalize_payment_session_by_booking( $booking_id );
 		}
 
 		return new WP_REST_Response( array( 'message' => 'Payment processed.' ), 200 );

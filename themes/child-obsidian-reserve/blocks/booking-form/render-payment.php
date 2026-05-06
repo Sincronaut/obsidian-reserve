@@ -2,7 +2,7 @@
 /**
  * Payment Page — render-payment.php
  *
- * Renders the PayMongo payment form. Validates booking_id + token.
+ * Renders the PayMongo payment form. Validates payment session.
  *
  * @package child-obsidian-reserve
  */
@@ -19,12 +19,14 @@ if ( ! is_user_logged_in() ) {
 	return;
 }
 
-$booking_id = isset( $_GET['booking_id'] ) ? (int) $_GET['booking_id'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-$token      = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$payment_session_id = sanitize_key( get_query_var( 'ob_payment_session', '' ) );
+$payment_session    = function_exists( 'obsidian_get_payment_session' ) ? obsidian_get_payment_session( $payment_session_id ) : false;
+$booking_id         = $payment_session ? (int) $payment_session['booking_id'] : 0;
+$token              = $payment_session ? sanitize_text_field( $payment_session['token'] ) : '';
 
 // Validate.
 $booking_error = '';
-if ( ! $booking_id || ! get_post( $booking_id ) ) {
+if ( ! $payment_session || ! $booking_id || ! get_post( $booking_id ) ) {
 	$booking_error = 'Invalid booking. Please check your payment link.';
 } elseif ( ! function_exists( 'obsidian_verify_payment_token' ) || ! obsidian_verify_payment_token( $booking_id, $token ) ) {
 	$booking_error = 'Invalid or expired payment link. Please contact support.';
@@ -95,7 +97,7 @@ $color_display = ucfirst( $color );
 
 	<!-- Hidden fields for JS -->
 	<input type="hidden" id="obp-booking-id" value="<?php echo esc_attr( $booking_id ); ?>" />
-	<input type="hidden" id="obp-token" value="<?php echo esc_attr( $token ); ?>" />
+	<input type="hidden" id="obp-payment-session-id" value="<?php echo esc_attr( $payment_session_id ); ?>" />
 	<input type="hidden" id="obp-total" value="<?php echo esc_attr( $total ); ?>" />
 	<input type="hidden" id="obp-deposit" value="<?php echo esc_attr( $deposit ); ?>" />
 
