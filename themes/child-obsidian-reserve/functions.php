@@ -19,7 +19,7 @@ function obsidian_reserve_enqueue_styles() {
 		'obsidian-reserve-google-fonts',
 		'https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap',
 		array(),
-		null
+		wp_get_theme()->get( 'Version' )
 	);
 
 	wp_enqueue_style(
@@ -217,7 +217,7 @@ function obsidian_reserve_editor_styles() {
 		'obsidian-reserve-google-fonts-editor',
 		'https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap',
 		array(),
-		null
+		wp_get_theme()->get( 'Version' )
 	);
 	add_editor_style( 'style.css' );
 }

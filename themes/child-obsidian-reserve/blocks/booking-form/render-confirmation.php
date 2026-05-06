@@ -23,7 +23,7 @@ if ( ! is_user_logged_in() ) {
 $payment_session_id = sanitize_key( get_query_var( 'ob_payment_session', '' ) );
 $payment_session    = function_exists( 'obsidian_get_payment_session' ) ? obsidian_get_payment_session( $payment_session_id, false ) : false;
 $booking_id         = $payment_session ? (int) $payment_session['booking_id'] : 0;
-$booking     = $booking_id ? get_post( $booking_id ) : null;
+$booking            = $booking_id ? get_post( $booking_id ) : null;
 
 if ( ! $booking || 'booking' !== $booking->post_type ) {
 	echo '<section class="obsidian-booking-form-section"><div class="obsidian-booking-form-wrap"><p class="obsidian-bf-error">Booking not found. <a href="' . esc_url( home_url( '/fleet/' ) ) . '">Back to Fleet</a></p></div></section>';
@@ -127,7 +127,7 @@ if ( $is_paid ) : ?>
 		<div class="obp-showcase-bottom">
 			<div class="obp-showcase-specs">
 				<?php
-				// Re-filter specs specifically for this view
+				// Re-filter specs specifically for this view.
 				$final_specs = array();
 				$wanted      = array( 'engine', 'power', 'transmission' );
 				foreach ( $specs_lines as $line ) {
@@ -143,7 +143,8 @@ if ( $is_paid ) : ?>
 					}
 				}
 
-				if ( ! empty( $final_specs ) ) : ?>
+				if ( ! empty( $final_specs ) ) :
+					?>
 					<p class="obp-showcase-specs-title"><strong>Specifications</strong></p>
 					<?php foreach ( $final_specs as $spec ) : ?>
 						<p class="obp-showcase-spec-line"><strong><?php echo esc_html( $spec['label'] ); ?>:</strong> <?php echo esc_html( $spec['value'] ); ?></p>
