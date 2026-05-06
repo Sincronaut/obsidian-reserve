@@ -6,4 +6,6 @@
  * Templates: booking-pending.php, booking-received.php,
  *            booking-confirmed.php, booking-denied.php,
  *            booking-cancelled.php
+ *
+ * @package obsidian-booking
  */

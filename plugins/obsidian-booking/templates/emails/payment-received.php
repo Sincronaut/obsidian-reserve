@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-include __DIR__ . '/email-header.php';
+require __DIR__ . '/email-header.php';
 ?>
 
 <h2 style="margin:0 0 20px;font-size:20px;color:#ffffff;">Payment Received</h2>
@@ -45,13 +45,13 @@ A payment has been received for the following booking.
 </tr>
 <tr>
 	<td style="padding:6px 0;font-size:13px;color:#888888;">Payment Type</td>
-	<td style="padding:6px 0;font-size:14px;color:#ffffff;"><?php echo $payment_option === 'full' ? 'Full Prepayment' : '50% Down Payment'; ?></td>
+	<td style="padding:6px 0;font-size:14px;color:#ffffff;"><?php echo 'full' === $payment_option ? 'Full Prepayment' : '50% Down Payment'; ?></td>
 </tr>
 <tr>
 	<td style="padding:6px 0;font-size:13px;color:#888888;">Amount Paid</td>
 	<td style="padding:6px 0;font-size:14px;color:#4caf50;font-weight:600;">₱<?php echo esc_html( number_format( $payment_amount, 2 ) ); ?></td>
 </tr>
-<?php if ( $payment_option === 'down' ) : ?>
+<?php if ( 'down' === $payment_option ) : ?>
 <tr>
 	<td style="padding:6px 0;font-size:13px;color:#888888;">Balance Due</td>
 	<td style="padding:6px 0;font-size:14px;color:#ff9800;font-weight:600;">₱<?php echo esc_html( number_format( $total_price - $payment_amount, 2 ) ); ?></td>
@@ -70,4 +70,4 @@ A payment has been received for the following booking.
 </tr>
 </table>
 
-<?php include __DIR__ . '/email-footer.php'; ?>
+<?php require __DIR__ . '/email-footer.php'; ?>

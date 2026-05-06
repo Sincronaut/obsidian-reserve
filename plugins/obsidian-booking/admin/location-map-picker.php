@@ -40,23 +40,27 @@ add_action( 'add_meta_boxes_location', 'obsidian_register_map_picker_meta_box' )
  *
  * The actual map is initialized client-side by admin-map-picker.js.
  * We output a container div plus a search bar and coordinate readout.
+ *
+ * @param WP_Post $post Location post object.
+ * @return void
  */
 function obsidian_render_map_picker_meta_box( $post ) {
 	// Read current coordinates (may be empty for new locations).
 	$lat = get_post_meta( $post->ID, 'location_latitude', true );
 	$lng = get_post_meta( $post->ID, 'location_longitude', true );
+	wp_nonce_field( 'obsidian_save_location_map_picker', 'obsidian_map_picker_nonce' );
 	?>
 	<div class="obsidian-map-picker"
-		 data-lat="<?php echo esc_attr( $lat ); ?>"
-		 data-lng="<?php echo esc_attr( $lng ); ?>">
+		data-lat="<?php echo esc_attr( $lat ); ?>"
+		data-lng="<?php echo esc_attr( $lng ); ?>">
 
 		<!-- Search bar -->
 		<div class="obsidian-map-picker__search">
 			<input type="text"
-				   id="obsidian-map-search"
-				   class="obsidian-map-picker__search-input"
-				   placeholder="Search for a place (e.g. BGC, Makati, Cebu IT Park)…"
-				   autocomplete="off" />
+					id="obsidian-map-search"
+					class="obsidian-map-picker__search-input"
+					placeholder="Search for a place (e.g. BGC, Makati, Cebu IT Park)…"
+					autocomplete="off" />
 			<button type="button"
 					id="obsidian-map-search-btn"
 					class="obsidian-map-picker__search-btn button">
@@ -120,9 +124,12 @@ function obsidian_render_map_picker_meta_box( $post ) {
 
 /**
  * Enqueue Leaflet + our picker script on the Location editor screen.
+ *
+ * @param string $hook Current admin page hook.
+ * @return void
  */
 function obsidian_enqueue_map_picker_assets( $hook ) {
-	// Only on post-new.php / post.php for location CPT
+	// Only on post-new.php / post.php for location CPT.
 	if ( ! in_array( $hook, array( 'post-new.php', 'post.php' ), true ) ) {
 		return;
 	}
@@ -132,7 +139,7 @@ function obsidian_enqueue_map_picker_assets( $hook ) {
 		return;
 	}
 
-	// Leaflet CSS
+	// Leaflet CSS.
 	wp_enqueue_style(
 		'leaflet-admin',
 		'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
@@ -140,7 +147,7 @@ function obsidian_enqueue_map_picker_assets( $hook ) {
 		'1.9.4'
 	);
 
-	// Leaflet JS
+	// Leaflet JS.
 	wp_enqueue_script(
 		'leaflet-admin',
 		'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
@@ -149,7 +156,7 @@ function obsidian_enqueue_map_picker_assets( $hook ) {
 		true
 	);
 
-	// Our picker script
+	// Our picker script.
 	wp_enqueue_script(
 		'obsidian-map-picker',
 		OBSIDIAN_BOOKING_URL . 'assets/js/admin-map-picker.js',
@@ -158,7 +165,7 @@ function obsidian_enqueue_map_picker_assets( $hook ) {
 		true
 	);
 
-	// Map picker CSS
+	// Map picker CSS.
 	wp_enqueue_style(
 		'obsidian-map-picker',
 		OBSIDIAN_BOOKING_URL . 'assets/css/admin-map-picker.css',
@@ -170,9 +177,12 @@ add_action( 'admin_enqueue_scripts', 'obsidian_enqueue_map_picker_assets' );
 
 /**
  * Save the map coordinates when the location post is saved.
+ *
+ * @param int $post_id Post ID.
+ * @return void
  */
 function obsidian_save_location_map_picker_data( $post_id ) {
-	// Security checks
+	// Security checks.
 	if ( ! isset( $_POST['location_latitude'] ) && ! isset( $_POST['location_longitude'] ) ) {
 		return;
 	}
@@ -182,13 +192,20 @@ function obsidian_save_location_map_picker_data( $post_id ) {
 	if ( ! current_user_can( 'edit_post', $post_id ) ) {
 		return;
 	}
+	if ( ! isset( $_POST['obsidian_map_picker_nonce'] ) ) {
+		return;
+	}
+	$nonce = sanitize_text_field( wp_unslash( $_POST['obsidian_map_picker_nonce'] ) );
+	if ( ! wp_verify_nonce( $nonce, 'obsidian_save_location_map_picker' ) ) {
+		return;
+	}
 
-	// Save coordinates
+	// Save coordinates.
 	if ( isset( $_POST['location_latitude'] ) ) {
-		update_post_meta( $post_id, 'location_latitude', sanitize_text_field( $_POST['location_latitude'] ) );
+		update_post_meta( $post_id, 'location_latitude', sanitize_text_field( wp_unslash( $_POST['location_latitude'] ) ) );
 	}
 	if ( isset( $_POST['location_longitude'] ) ) {
-		update_post_meta( $post_id, 'location_longitude', sanitize_text_field( $_POST['location_longitude'] ) );
+		update_post_meta( $post_id, 'location_longitude', sanitize_text_field( wp_unslash( $_POST['location_longitude'] ) ) );
 	}
 }
 add_action( 'save_post_location', 'obsidian_save_location_map_picker_data' );

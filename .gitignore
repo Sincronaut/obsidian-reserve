@@ -29,6 +29,7 @@ themes/child-obsidian-reserve/node_modules/
 themes/child-obsidian-reserve/vendor/
 themes/child-obsidian-reserve/dist/
 plugins/obsidian-booking/node_modules/
+plugins/obsidian-booking/vendor/
 plugins/obsidian-booking/dist/
 
 # IDE / Editor config

@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-include __DIR__ . '/email-header.php';
+require __DIR__ . '/email-header.php';
 ?>
 
 <h2 style="margin:0 0 8px;font-size:20px;color:#ffffff;">Documents Approved</h2>
@@ -62,4 +62,4 @@ Please complete your payment to confirm your reservation. You can choose between
 This payment link is unique to your booking. Please do not share it with others.
 </p>
 
-<?php include __DIR__ . '/email-footer.php'; ?>
+<?php require __DIR__ . '/email-footer.php'; ?>

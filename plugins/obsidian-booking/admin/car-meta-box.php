@@ -75,15 +75,20 @@ function obsidian_add_car_meta_boxes() {
 }
 add_action( 'add_meta_boxes', 'obsidian_add_car_meta_boxes' );
 
-/* ══════════════════════════════════════════════════════════════
-   META BOX 1 — INVENTORY (tabbed by branch)
-   ══════════════════════════════════════════════════════════════ */
+/*
+ * ======================================================================
+ * META BOX 1 - INVENTORY (tabbed by branch)
+ * ======================================================================
+ */
 
 /**
  * Render the tabbed inventory UI.
  *
  * The list of selectable colors is driven by the ACF `car_colors` checkbox.
  * Branches that aren't yet stocked appear in the "+ Add Branch" dropdown.
+ *
+ * @param WP_Post $post Car post object.
+ * @return void
  */
 function obsidian_render_inventory_meta_box( $post ) {
 
@@ -115,7 +120,7 @@ function obsidian_render_inventory_meta_box( $post ) {
 	$active_tab_ids = array();
 	foreach ( array_keys( $inventory ) as $branch_id ) {
 		$branch_id = (int) $branch_id;
-		if ( $branch_id > 0 && get_post_status( $branch_id ) === 'publish' ) {
+		if ( $branch_id > 0 && 'publish' === get_post_status( $branch_id ) ) {
 			$active_tab_ids[] = $branch_id;
 		}
 	}
@@ -139,8 +144,8 @@ function obsidian_render_inventory_meta_box( $post ) {
 	</p>
 
 	<div class="obsidian-inventory"
-		 data-colors='<?php echo esc_attr( wp_json_encode( array_values( $colors ) ) ); ?>'
-		 data-images-per-color="<?php echo esc_attr( OBSIDIAN_IMAGES_PER_COLOR ); ?>">
+		data-colors='<?php echo esc_attr( wp_json_encode( array_values( $colors ) ) ); ?>'
+		data-images-per-color="<?php echo esc_attr( OBSIDIAN_IMAGES_PER_COLOR ); ?>">
 
 		<div class="obsidian-inventory-toolbar">
 			<label for="obsidian-add-branch" class="screen-reader-text">
@@ -182,7 +187,7 @@ function obsidian_render_inventory_meta_box( $post ) {
 				<?php if ( $region_name ) : ?>
 					<span class="tab-region"><?php echo esc_html( $region_name ); ?></span>
 				<?php endif; ?>
-				<?php if ( $status && $status !== 'active' ) : ?>
+				<?php if ( $status && 'active' !== $status ) : ?>
 					<span class="tab-status-pill tab-status-<?php echo esc_attr( $status ); ?>">
 						<?php echo esc_html( str_replace( '_', ' ', $status ) ); ?>
 					</span>
@@ -201,11 +206,14 @@ function obsidian_render_inventory_meta_box( $post ) {
 		foreach ( $active_tab_ids as $branch_id ) :
 			$branch_entry = isset( $inventory[ (string) $branch_id ] ) && is_array( $inventory[ (string) $branch_id ] )
 				? $inventory[ (string) $branch_id ]
-				: array( 'status' => 'available', 'colors' => array() );
+				: array(
+					'status' => 'available',
+					'colors' => array(),
+				);
 			?>
 			<div class="obsidian-tab-panel<?php echo $is_first ? ' is-active' : ''; ?>"
-				 role="tabpanel"
-				 data-branch-id="<?php echo esc_attr( $branch_id ); ?>">
+				role="tabpanel"
+				data-branch-id="<?php echo esc_attr( $branch_id ); ?>">
 				<?php obsidian_render_branch_inventory_table( $branch_id, $colors, $branch_entry ); ?>
 			</div>
 			<?php
@@ -246,16 +254,16 @@ function obsidian_render_inventory_meta_box( $post ) {
  *
  * @param int   $branch_id    The branch this panel belongs to (0 = template).
  * @param array $master_colors The master ACF car_colors list (full universe).
- * @param array $entry        Existing branch entry: ['status' => str, 'colors' => map]
+ * @param array $entry        Existing branch entry: ['status' => str, 'colors' => map].
  * @param bool  $is_template  When true, name attributes use __BRANCH_ID__
  *                            placeholders for the JS clone path.
  */
 function obsidian_render_branch_inventory_table( $branch_id, $master_colors, $entry, $is_template = false ) {
 
-	$branch_attr   = $is_template ? '__BRANCH_ID__' : (int) $branch_id;
-	$current_stat  = isset( $entry['status'] ) ? (string) $entry['status'] : 'available';
-	$stocked_map   = isset( $entry['colors'] ) && is_array( $entry['colors'] ) ? $entry['colors'] : array();
-	$total         = 0;
+	$branch_attr  = $is_template ? '__BRANCH_ID__' : (int) $branch_id;
+	$current_stat = isset( $entry['status'] ) ? (string) $entry['status'] : 'available';
+	$stocked_map  = isset( $entry['colors'] ) && is_array( $entry['colors'] ) ? $entry['colors'] : array();
+	$total        = 0;
 
 	$status_choices = array(
 		'available'   => __( 'Available', 'obsidian-booking' ),
@@ -290,9 +298,10 @@ function obsidian_render_branch_inventory_table( $branch_id, $master_colors, $en
 			</tr>
 		</thead>
 		<tbody>
-			<?php foreach ( $master_colors as $color ) :
-				$key       = strtolower( $color );
-				$hex       = obsidian_get_color_hex( $key );
+			<?php
+			foreach ( $master_colors as $color ) :
+				$key        = strtolower( $color );
+				$hex        = obsidian_get_color_hex( $key );
 				$is_stocked = array_key_exists( $key, $stocked_map );
 				$units      = $is_stocked ? (int) ( $stocked_map[ $key ]['units'] ?? 0 ) : 0;
 				if ( $is_stocked ) {
@@ -302,11 +311,11 @@ function obsidian_render_branch_inventory_table( $branch_id, $master_colors, $en
 				<tr class="branch-color-row<?php echo $is_stocked ? ' is-stocked' : ''; ?>">
 					<td class="col-stocked">
 						<input type="checkbox"
-							   class="branch-stocked-toggle"
-							   id="obsidian-stocked-<?php echo esc_attr( $branch_attr . '-' . $key ); ?>"
-							   name="obsidian_branch_inventory[<?php echo esc_attr( $branch_attr ); ?>][colors][<?php echo esc_attr( $key ); ?>][stocked]"
-							   value="1"
-							   <?php checked( $is_stocked ); ?> />
+								class="branch-stocked-toggle"
+								id="obsidian-stocked-<?php echo esc_attr( $branch_attr . '-' . $key ); ?>"
+								name="obsidian_branch_inventory[<?php echo esc_attr( $branch_attr ); ?>][colors][<?php echo esc_attr( $key ); ?>][stocked]"
+								value="1"
+								<?php checked( $is_stocked ); ?> />
 					</td>
 					<td class="col-color">
 						<label for="obsidian-stocked-<?php echo esc_attr( $branch_attr . '-' . $key ); ?>" class="branch-color-label">
@@ -316,12 +325,12 @@ function obsidian_render_branch_inventory_table( $branch_id, $master_colors, $en
 					</td>
 					<td class="col-units">
 						<input type="number"
-							   name="obsidian_branch_inventory[<?php echo esc_attr( $branch_attr ); ?>][colors][<?php echo esc_attr( $key ); ?>][units]"
-							   value="<?php echo esc_attr( $units ); ?>"
-							   min="0"
-							   step="1"
-							   class="small-text branch-units-input"
-							   <?php disabled( ! $is_stocked ); ?> />
+								name="obsidian_branch_inventory[<?php echo esc_attr( $branch_attr ); ?>][colors][<?php echo esc_attr( $key ); ?>][units]"
+								value="<?php echo esc_attr( $units ); ?>"
+								min="0"
+								step="1"
+								class="small-text branch-units-input"
+								<?php disabled( ! $is_stocked ); ?> />
 					</td>
 				</tr>
 			<?php endforeach; ?>
@@ -339,12 +348,17 @@ function obsidian_render_branch_inventory_table( $branch_id, $master_colors, $en
 	<?php
 }
 
-/* ══════════════════════════════════════════════════════════════
-   META BOX 2 — SHARED COLOR GALLERIES
-   ══════════════════════════════════════════════════════════════ */
+/*
+ * ======================================================================
+ * META BOX 2 - SHARED COLOR GALLERIES
+ * ======================================================================
+ */
 
 /**
  * Render the shared color-gallery uploaders (one block per master color).
+ *
+ * @param WP_Post $post Car post object.
+ * @return void
  */
 function obsidian_render_galleries_meta_box( $post ) {
 
@@ -379,19 +393,28 @@ function obsidian_render_galleries_meta_box( $post ) {
 			</div>
 
 			<div class="variant-images-grid">
-				<?php for ( $i = 0; $i < OBSIDIAN_IMAGES_PER_COLOR; $i++ ) :
+				<?php
+				for ( $i = 0; $i < OBSIDIAN_IMAGES_PER_COLOR; $i++ ) :
 					$img_id  = (int) ( $images[ $i ] ?? 0 );
 					$img_url = $img_id > 0 ? wp_get_attachment_image_url( $img_id, 'thumbnail' ) : '';
-				?>
+					?>
 				<div class="variant-image-slot" data-index="<?php echo esc_attr( $i ); ?>">
 					<span class="variant-image-label">
-						<?php echo esc_html( $i === 0 ? __( 'Card Thumbnail', 'obsidian-booking' ) : sprintf( __( 'Image %d', 'obsidian-booking' ), $i ) ); ?>
+						<?php
+						if ( 0 === $i ) {
+							$label = __( 'Card Thumbnail', 'obsidian-booking' );
+						} else {
+							/* translators: %d: image index. */
+							$label = sprintf( __( 'Image %d', 'obsidian-booking' ), $i );
+						}
+						echo esc_html( $label );
+						?>
 					</span>
 
 					<input type="hidden"
-						   class="variant-image-id"
-						   name="obsidian_gallery[<?php echo esc_attr( $key ); ?>][<?php echo esc_attr( $i ); ?>]"
-						   value="<?php echo esc_attr( $img_id ); ?>" />
+							class="variant-image-id"
+							name="obsidian_gallery[<?php echo esc_attr( $key ); ?>][<?php echo esc_attr( $i ); ?>]"
+							value="<?php echo esc_attr( $img_id ); ?>" />
 
 					<div class="variant-image-preview">
 						<?php if ( $img_url ) : ?>
@@ -416,9 +439,11 @@ function obsidian_render_galleries_meta_box( $post ) {
 	echo '</div>';
 }
 
-/* ══════════════════════════════════════════════════════════════
-   SAVE HANDLERS
-   ══════════════════════════════════════════════════════════════ */
+/*
+ * ======================================================================
+ * SAVE HANDLERS
+ * ======================================================================
+ */
 
 /**
  * Save handler — runs once on save_post and writes both meta fields
@@ -426,10 +451,13 @@ function obsidian_render_galleries_meta_box( $post ) {
  *
  * Two separate nonces are checked so that a partial render of the screen
  * (e.g. quick-edit, REST update) can't accidentally wipe one of the fields.
+ *
+ * @param int $post_id Post ID.
+ * @return void
  */
 function obsidian_save_car_inventory_and_galleries( $post_id ) {
 
-	if ( get_post_type( $post_id ) !== 'car' ) {
+	if ( 'car' !== get_post_type( $post_id ) ) {
 		return;
 	}
 	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
@@ -439,12 +467,12 @@ function obsidian_save_car_inventory_and_galleries( $post_id ) {
 		return;
 	}
 
-	/* ── Inventory ── */
+	// Inventory.
 	if ( isset( $_POST['obsidian_car_inventory_nonce'] )
 		&& wp_verify_nonce( $_POST['obsidian_car_inventory_nonce'], 'obsidian_save_car_inventory' )
 	) {
-		$inventory       = array();
-		$valid_statuses  = array( 'available', 'maintenance', 'retired' );
+		$inventory      = array();
+		$valid_statuses = array( 'available', 'maintenance', 'retired' );
 
 		if ( isset( $_POST['obsidian_branch_inventory'] ) && is_array( $_POST['obsidian_branch_inventory'] ) ) {
 
@@ -456,8 +484,8 @@ function obsidian_save_car_inventory_and_galleries( $post_id ) {
 				}
 
 				// Validate the branch is a real published Location.
-				if ( get_post_type( $branch_id ) !== 'location'
-					|| get_post_status( $branch_id ) !== 'publish'
+				if ( 'location' !== get_post_type( $branch_id )
+					|| 'publish' !== get_post_status( $branch_id )
 				) {
 					continue;
 				}
@@ -471,8 +499,8 @@ function obsidian_save_car_inventory_and_galleries( $post_id ) {
 				// Colors — only persist entries whose [stocked] checkbox was
 				// ticked, so unticking a color removes it from this branch
 				// without affecting any other branch.
-				$colors_payload  = array();
-				$raw_colors      = isset( $branch_data['colors'] ) && is_array( $branch_data['colors'] ) ? $branch_data['colors'] : array();
+				$colors_payload = array();
+				$raw_colors     = isset( $branch_data['colors'] ) && is_array( $branch_data['colors'] ) ? $branch_data['colors'] : array();
 
 				foreach ( $raw_colors as $color => $data ) {
 					if ( ! is_array( $data ) ) {
@@ -510,7 +538,7 @@ function obsidian_save_car_inventory_and_galleries( $post_id ) {
 		update_post_meta( $post_id, '_inventory_v3', 1 );
 	}
 
-	/* ── Galleries ── */
+	// Galleries.
 	if ( isset( $_POST['obsidian_car_galleries_nonce'] )
 		&& wp_verify_nonce( $_POST['obsidian_car_galleries_nonce'], 'obsidian_save_car_galleries' )
 	) {
@@ -556,9 +584,11 @@ function obsidian_save_car_inventory_and_galleries( $post_id ) {
 }
 add_action( 'save_post', 'obsidian_save_car_inventory_and_galleries' );
 
-/* ══════════════════════════════════════════════════════════════
-   HELPERS
-   ══════════════════════════════════════════════════════════════ */
+/*
+ * ======================================================================
+ * HELPERS
+ * ======================================================================
+ */
 
 /**
  * All published "active" Locations, lightly formatted for admin dropdowns.
@@ -567,32 +597,34 @@ add_action( 'save_post', 'obsidian_save_car_inventory_and_galleries' );
  */
 function obsidian_admin_get_active_branches() {
 
-	$ids = get_posts( array(
-		'post_type'      => 'location',
-		'post_status'    => 'publish',
-		'posts_per_page' => -1,
-		'fields'         => 'ids',
-		'orderby'        => 'title',
-		'order'          => 'ASC',
-		'meta_query'     => array(
-			'relation' => 'OR',
-			array(
-				'key'     => 'location_status',
-				'value'   => 'active',
-				'compare' => '=',
+	$ids = get_posts(
+		array(
+			'post_type'      => 'location',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+			'meta_query'     => array(
+				'relation' => 'OR',
+				array(
+					'key'     => 'location_status',
+					'value'   => 'active',
+					'compare' => '=',
+				),
+				array(
+					'key'     => 'location_status',
+					'compare' => 'NOT EXISTS',
+				),
 			),
-			array(
-				'key'     => 'location_status',
-				'compare' => 'NOT EXISTS',
-			),
-		),
-	) );
+		)
+	);
 
 	$out = array();
 	foreach ( $ids as $id ) {
 		$region_terms = wp_get_post_terms( $id, 'region', array( 'number' => 1 ) );
 		$region_name  = ! is_wp_error( $region_terms ) && ! empty( $region_terms ) ? $region_terms[0]->name : '';
-		$out[] = array(
+		$out[]        = array(
 			'id'          => (int) $id,
 			'name'        => get_the_title( $id ),
 			'region_name' => $region_name,

@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-include __DIR__ . '/email-header.php';
+require __DIR__ . '/email-header.php';
 ?>
 
 <div style="text-align:center;margin-bottom:24px;">
@@ -84,7 +84,7 @@ Hello <?php echo esc_html( $first_name ); ?>, your reservation has been confirme
 	<td style="padding:6px 0;font-size:14px;color:#cccccc;">Amount Paid</td>
 	<td style="padding:6px 0;font-size:14px;color:#4caf50;text-align:right;font-weight:600;">₱<?php echo esc_html( number_format( $payment_amount, 2 ) ); ?></td>
 </tr>
-<?php if ( $payment_option === 'down' ) : ?>
+<?php if ( 'down' === $payment_option ) : ?>
 <tr>
 	<td style="padding:6px 0;font-size:14px;color:#cccccc;">Balance Due at Pickup</td>
 	<td style="padding:6px 0;font-size:14px;color:#ff9800;text-align:right;">₱<?php echo esc_html( number_format( $total_price - $payment_amount, 2 ) ); ?></td>
@@ -99,4 +99,4 @@ Hello <?php echo esc_html( $first_name ); ?>, your reservation has been confirme
 We look forward to seeing you. Drive safe!
 </p>
 
-<?php include __DIR__ . '/email-footer.php'; ?>
+<?php require __DIR__ . '/email-footer.php'; ?>
