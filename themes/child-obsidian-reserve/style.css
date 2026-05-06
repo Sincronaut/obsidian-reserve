@@ -329,3 +329,30 @@ textarea,
 	}
 }
 
+
+/* ============================================================
+   SINGLE POST PAGE (BLOG POST)
+   ============================================================ */
+
+.obsidian-single-post .obsidian-post-hero-wrap img,
+.obsidian-single-post .obsidian-post-content img {
+    border: 1px solid #C5A059;
+    border-radius: 5px;
+}
+
+.obsidian-single-post .obsidian-post-title {
+    color: #C5A059 !important;
+}
+
+.obsidian-single-post .obsidian-post-content {
+    color: #ffffff;
+}
+
+.obsidian-single-post .obsidian-post-content h1,
+.obsidian-single-post .obsidian-post-content h2,
+.obsidian-single-post .obsidian-post-content h3,
+.obsidian-single-post .obsidian-post-content h4,
+.obsidian-single-post .obsidian-post-content h5,
+.obsidian-single-post .obsidian-post-content h6 {
+    color: #C5A059 !important;
+}
