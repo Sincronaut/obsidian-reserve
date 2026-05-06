@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-include __DIR__ . '/email-header.php';
+require __DIR__ . '/email-header.php';
 ?>
 
 <h2 style="margin:0 0 20px;font-size:20px;color:#ffffff;">New Booking Submitted</h2>
@@ -64,4 +64,4 @@ A new reservation request has been submitted and is awaiting your review.
 </tr>
 </table>
 
-<?php include __DIR__ . '/email-footer.php'; ?>
+<?php require __DIR__ . '/email-footer.php'; ?>

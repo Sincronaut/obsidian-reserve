@@ -26,15 +26,19 @@ function obsidian_register_user_meta_for_rest() {
 	$fields = array( '_obsidian_phone', '_obsidian_license', '_obsidian_nationality', '_obsidian_avatar' );
 
 	foreach ( $fields as $key ) {
-		register_meta( 'user', $key, array(
-			'type'              => 'string',
-			'single'            => true,
-			'show_in_rest'      => true,
-			'sanitize_callback' => 'sanitize_text_field',
-			'auth_callback'     => function () {
-				return current_user_can( 'edit_user', get_current_user_id() );
-			},
-		) );
+		register_meta(
+			'user',
+			$key,
+			array(
+				'type'              => 'string',
+				'single'            => true,
+				'show_in_rest'      => true,
+				'sanitize_callback' => 'sanitize_text_field',
+				'auth_callback'     => function () {
+					return current_user_can( 'edit_user', get_current_user_id() );
+				},
+			)
+		);
 	}
 }
 add_action( 'init', 'obsidian_register_user_meta_for_rest' );
@@ -54,10 +58,10 @@ function obsidian_show_user_fields( $user ) {
 			<th><label for="obsidian_phone"><?php esc_html_e( 'Phone Number', 'obsidian-booking' ); ?></label></th>
 			<td>
 				<input type="text"
-					   name="obsidian_phone"
-					   id="obsidian_phone"
-					   value="<?php echo esc_attr( get_user_meta( $user->ID, '_obsidian_phone', true ) ); ?>"
-					   class="regular-text" />
+						name="obsidian_phone"
+						id="obsidian_phone"
+						value="<?php echo esc_attr( get_user_meta( $user->ID, '_obsidian_phone', true ) ); ?>"
+						class="regular-text" />
 				<p class="description"><?php esc_html_e( 'Contact number for booking confirmations.', 'obsidian-booking' ); ?></p>
 			</td>
 		</tr>
@@ -65,10 +69,10 @@ function obsidian_show_user_fields( $user ) {
 			<th><label for="obsidian_nationality"><?php esc_html_e( 'Nationality', 'obsidian-booking' ); ?></label></th>
 			<td>
 				<input type="text"
-					   name="obsidian_nationality"
-					   id="obsidian_nationality"
-					   value="<?php echo esc_attr( get_user_meta( $user->ID, '_obsidian_nationality', true ) ); ?>"
-					   class="regular-text" />
+						name="obsidian_nationality"
+						id="obsidian_nationality"
+						value="<?php echo esc_attr( get_user_meta( $user->ID, '_obsidian_nationality', true ) ); ?>"
+						class="regular-text" />
 				<p class="description"><?php esc_html_e( 'Used to determine document requirements (local vs. foreigner).', 'obsidian-booking' ); ?></p>
 			</td>
 		</tr>
@@ -76,10 +80,10 @@ function obsidian_show_user_fields( $user ) {
 			<th><label for="obsidian_license"><?php esc_html_e( "Driver's License Number", 'obsidian-booking' ); ?></label></th>
 			<td>
 				<input type="text"
-					   name="obsidian_license"
-					   id="obsidian_license"
-					   value="<?php echo esc_attr( get_user_meta( $user->ID, '_obsidian_license', true ) ); ?>"
-					   class="regular-text" />
+						name="obsidian_license"
+						id="obsidian_license"
+						value="<?php echo esc_attr( get_user_meta( $user->ID, '_obsidian_license', true ) ); ?>"
+						class="regular-text" />
 			</td>
 		</tr>
 	</table>
@@ -95,22 +99,26 @@ add_action( 'edit_user_profile', 'obsidian_show_user_fields' );
  */
 function obsidian_save_user_fields( $user_id ) {
 
-	// Security: only allow users to edit their own profile, or admins to edit anyone
+	// Security: only allow users to edit their own profile, or admins to edit anyone.
 	if ( ! current_user_can( 'edit_user', $user_id ) ) {
 		return;
 	}
 
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- Handled by WP core edit_user profile form.
+
 	if ( isset( $_POST['obsidian_phone'] ) ) {
-		update_user_meta( $user_id, '_obsidian_phone', sanitize_text_field( $_POST['obsidian_phone'] ) );
+		update_user_meta( $user_id, '_obsidian_phone', sanitize_text_field( wp_unslash( $_POST['obsidian_phone'] ) ) );
 	}
 
 	if ( isset( $_POST['obsidian_nationality'] ) ) {
-		update_user_meta( $user_id, '_obsidian_nationality', sanitize_text_field( $_POST['obsidian_nationality'] ) );
+		update_user_meta( $user_id, '_obsidian_nationality', sanitize_text_field( wp_unslash( $_POST['obsidian_nationality'] ) ) );
 	}
 
 	if ( isset( $_POST['obsidian_license'] ) ) {
-		update_user_meta( $user_id, '_obsidian_license', sanitize_text_field( $_POST['obsidian_license'] ) );
+		update_user_meta( $user_id, '_obsidian_license', sanitize_text_field( wp_unslash( $_POST['obsidian_license'] ) ) );
 	}
+
+	// phpcs:enable
 }
 add_action( 'personal_options_update', 'obsidian_save_user_fields' );
 add_action( 'edit_user_profile_update', 'obsidian_save_user_fields' );
@@ -132,12 +140,12 @@ function obsidian_get_user_data( $user_id ) {
 	}
 
 	return array(
-		'user_id'     => $user_id,
-		'display_name'=> $user->display_name,
-		'email'       => $user->user_email,
-		'phone'       => get_user_meta( $user_id, '_obsidian_phone', true ),
-		'nationality' => get_user_meta( $user_id, '_obsidian_nationality', true ),
-		'license'     => get_user_meta( $user_id, '_obsidian_license', true ),
-		'registered'  => $user->user_registered,
+		'user_id'      => $user_id,
+		'display_name' => $user->display_name,
+		'email'        => $user->user_email,
+		'phone'        => get_user_meta( $user_id, '_obsidian_phone', true ),
+		'nationality'  => get_user_meta( $user_id, '_obsidian_nationality', true ),
+		'license'      => get_user_meta( $user_id, '_obsidian_license', true ),
+		'registered'   => $user->user_registered,
 	);
 }

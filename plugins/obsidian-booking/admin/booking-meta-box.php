@@ -29,6 +29,9 @@ add_action( 'add_meta_boxes', 'obsidian_register_booking_meta_box' );
 
 /**
  * Render the meta box content.
+ *
+ * @param WP_Post $post Booking post object.
+ * @return void
  */
 function obsidian_render_booking_meta_box( $post ) {
 
@@ -52,7 +55,7 @@ function obsidian_render_booking_meta_box( $post ) {
 	$admin_notes   = get_post_meta( $booking_id, '_booking_admin_notes', true );
 	$denial_reason = get_post_meta( $booking_id, '_booking_denial_reason', true );
 
-	// Gov ID types (local)
+	// Gov ID types (local).
 	$gov_id_type   = get_post_meta( $booking_id, '_booking_gov_id_type', true );
 	$gov_id_type_2 = get_post_meta( $booking_id, '_booking_gov_id_type_2', true );
 
@@ -66,20 +69,25 @@ function obsidian_render_booking_meta_box( $post ) {
 	$return_time      = get_post_meta( $booking_id, '_booking_return_time', true );
 	$special_requests = get_post_meta( $booking_id, '_booking_special_requests', true );
 
-	// Passport (international)
-	$passport_num  = get_post_meta( $booking_id, '_booking_passport_number', true );
+	// Passport (international).
+	$passport_num = get_post_meta( $booking_id, '_booking_passport_number', true );
 
 	$docs = ! empty( $documents ) ? json_decode( $documents, true ) : array();
 	if ( ! is_array( $docs ) ) {
 		$docs = array();
 	}
 
-	// Calculate days
-	$start_dt = DateTime::createFromFormat( 'Y-m-d', $start_date );
-	$end_dt   = DateTime::createFromFormat( 'Y-m-d', $end_date );
-	$days     = ( $start_dt && $end_dt ) ? $start_dt->diff( $end_dt )->days : 0;
+	// Calculate days.
+	$start_dt    = DateTime::createFromFormat( 'Y-m-d', $start_date );
+	$end_dt      = DateTime::createFromFormat( 'Y-m-d', $end_date );
+	$days        = ( $start_dt && $end_dt ) ? $start_dt->diff( $end_dt )->days : 0;
+	$days        = absint( $days );
+	$days_suffix = '';
+	if ( 1 !== $days ) {
+		$days_suffix = 's';
+	}
 
-	// Status labels
+	// Status labels.
 	$status_labels = array(
 		'pending_review'   => 'Pending Review',
 		'awaiting_payment' => 'Awaiting Payment',
@@ -89,7 +97,11 @@ function obsidian_render_booking_meta_box( $post ) {
 		'completed'        => 'Completed',
 		'denied'           => 'Denied',
 	);
-	$status_label = $status_labels[ $status ] ?? ucfirst( $status );
+	if ( isset( $status_labels[ $status ] ) ) {
+		$status_label = $status_labels[ $status ];
+	} else {
+		$status_label = ucfirst( $status );
+	}
 
 	wp_nonce_field( 'obsidian_booking_actions', 'obsidian_booking_nonce' );
 	?>
@@ -100,7 +112,7 @@ function obsidian_render_booking_meta_box( $post ) {
 		<div class="obm-status-banner obm-status-<?php echo esc_attr( $status ); ?>">
 			<span class="obm-status-dot"></span>
 			<strong><?php echo esc_html( $status_label ); ?></strong>
-			<?php if ( $status === 'denied' && $denial_reason ) : ?>
+			<?php if ( 'denied' === $status && $denial_reason ) : ?>
 				<span class="obm-denial-reason">— <?php echo esc_html( $denial_reason ); ?></span>
 			<?php endif; ?>
 		</div>
@@ -145,12 +157,20 @@ function obsidian_render_booking_meta_box( $post ) {
 							( $end_dt ? $end_dt->format( 'M j, Y' ) : $end_date )
 						);
 						?>
-						<span class="obm-muted">(<?php echo esc_html( $days ); ?> day<?php echo $days !== 1 ? 's' : ''; ?>)</span>
+						<span class="obm-muted"><?php echo esc_html( $days ); ?> day<?php echo esc_html( $days_suffix ); ?></span>
 					</td>
 				</tr>
 				<tr>
 					<th>Location</th>
-					<td><?php echo esc_html( ucwords( str_replace( '_', ' ', $location ) ) ?: '—' ); ?></td>
+					<td>
+						<?php
+						$location_label = ucwords( str_replace( '_', ' ', $location ) );
+						if ( '' === $location_label ) {
+							$location_label = '—';
+						}
+						echo esc_html( $location_label );
+						?>
+					</td>
 				</tr>
 				<tr>
 					<th>Total</th>
@@ -165,7 +185,15 @@ function obsidian_render_booking_meta_box( $post ) {
 			<table class="obm-table">
 				<tr>
 					<th>Name</th>
-					<td><?php echo esc_html( trim( $first_name . ' ' . $last_name ) ?: '—' ); ?></td>
+					<td>
+						<?php
+						$full_name = trim( $first_name . ' ' . $last_name );
+						if ( '' === $full_name ) {
+							$full_name = '—';
+						}
+						echo esc_html( $full_name );
+						?>
+					</td>
 				</tr>
 				<tr>
 					<th>Email</th>
@@ -180,7 +208,7 @@ function obsidian_render_booking_meta_box( $post ) {
 				<tr>
 					<th>Type</th>
 					<td>
-						<?php if ( $customer_type === 'international' ) : ?>
+						<?php if ( 'international' === $customer_type ) : ?>
 							<span class="obsidian-badge obsidian-badge-intl">International</span>
 						<?php else : ?>
 							<span class="obsidian-badge obsidian-badge-local">Local</span>
@@ -195,14 +223,26 @@ function obsidian_render_booking_meta_box( $post ) {
 				<?php endif; ?>
 				<tr>
 					<th>Address</th>
-					<td><?php echo esc_html( $address ?: '—' ); ?></td>
+					<td>
+						<?php
+						$address_label = $address;
+						if ( '' === $address_label ) {
+							$address_label = '—';
+						}
+						echo esc_html( $address_label );
+						?>
+					</td>
 				</tr>
 				<tr>
 					<th>Birth Date</th>
 					<td>
 						<?php
-						$dob = DateTime::createFromFormat( 'Y-m-d', $birth_date );
-						echo esc_html( $dob ? $dob->format( 'M j, Y' ) : ( $birth_date ?: '—' ) );
+						$dob         = DateTime::createFromFormat( 'Y-m-d', $birth_date );
+						$birth_label = $birth_date;
+						if ( '' === $birth_label ) {
+							$birth_label = '—';
+						}
+						echo esc_html( $dob ? $dob->format( 'M j, Y' ) : $birth_label );
 						if ( $dob ) {
 							$age = $dob->diff( new DateTime() )->y;
 							echo ' <span class="obm-muted">(' . esc_html( $age ) . ' years old)</span>';
@@ -212,9 +252,17 @@ function obsidian_render_booking_meta_box( $post ) {
 				</tr>
 				<tr>
 					<th>License #</th>
-					<td><?php echo esc_html( $license_num ?: '—' ); ?></td>
+					<td>
+						<?php
+						$license_label = $license_num;
+						if ( '' === $license_label ) {
+							$license_label = '—';
+						}
+						echo esc_html( $license_label );
+						?>
+					</td>
 				</tr>
-				<?php if ( $customer_type === 'local' && ( $gov_id_type || $gov_id_type_2 ) ) : ?>
+				<?php if ( 'local' === $customer_type && ( $gov_id_type || $gov_id_type_2 ) ) : ?>
 				<tr>
 					<th>Gov ID Types</th>
 					<td>
@@ -225,7 +273,7 @@ function obsidian_render_booking_meta_box( $post ) {
 					</td>
 				</tr>
 				<?php endif; ?>
-				<?php if ( $customer_type === 'international' && $passport_num ) : ?>
+				<?php if ( 'international' === $customer_type && $passport_num ) : ?>
 				<tr>
 					<th>Passport #</th>
 					<td><?php echo esc_html( $passport_num ); ?></td>
@@ -265,7 +313,9 @@ function obsidian_render_booking_meta_box( $post ) {
 						<?php
 						$del_dt = DateTime::createFromFormat( 'Y-m-d', $delivery_date );
 						echo esc_html( $del_dt ? $del_dt->format( 'M j, Y' ) : $delivery_date );
-						if ( $delivery_time ) echo ' at ' . esc_html( $delivery_time );
+						if ( $delivery_time ) {
+							echo ' at ' . esc_html( $delivery_time );
+						}
 						?>
 					</td>
 				</tr>
@@ -283,7 +333,9 @@ function obsidian_render_booking_meta_box( $post ) {
 						<?php
 						$ret_dt = DateTime::createFromFormat( 'Y-m-d', $return_date );
 						echo esc_html( $ret_dt ? $ret_dt->format( 'M j, Y' ) : $return_date );
-						if ( $return_time ) echo ' at ' . esc_html( $return_time );
+						if ( $return_time ) {
+							echo ' at ' . esc_html( $return_time );
+						}
 						?>
 					</td>
 				</tr>
@@ -306,9 +358,9 @@ function obsidian_render_booking_meta_box( $post ) {
 			<?php else : ?>
 				<div class="obm-documents">
 					<?php
-					// Friendly labels for each doc key. The two gov-ID slots
-					// pull the actual ID type the renter chose (SSS, PhilHealth,
-					// etc.) so the admin sees what they're looking at.
+					// Friendly labels for each doc key. The two gov-ID slots.
+					// Pull the actual ID type the renter chose (SSS, PhilHealth).
+					// This way the admin sees what they are looking at.
 					$gov_id_label_1 = $gov_id_type
 						? 'Government ID #1 — ' . ucwords( str_replace( '_', ' ', $gov_id_type ) )
 						: 'Government ID #1';
@@ -328,17 +380,21 @@ function obsidian_render_booking_meta_box( $post ) {
 					);
 					foreach ( $docs as $key => $attachment_id ) :
 						$attachment_id = (int) $attachment_id;
-						if ( $attachment_id <= 0 ) continue;
+						if ( $attachment_id <= 0 ) {
+							continue;
+						}
 
 						$url   = wp_get_attachment_url( $attachment_id );
 						$mime  = get_post_mime_type( $attachment_id );
 						$label = $doc_labels[ $key ] ?? ucwords( str_replace( '_', ' ', $key ) );
 
-						if ( ! $url ) continue;
-					?>
+						if ( ! $url ) {
+							continue;
+						}
+						?>
 						<div class="obm-doc-item">
 							<span class="obm-doc-label"><?php echo esc_html( $label ); ?></span>
-							<?php if ( $mime && strpos( $mime, 'image/' ) === 0 ) : ?>
+							<?php if ( $mime && 0 === strpos( $mime, 'image/' ) ) : ?>
 								<a href="<?php echo esc_url( $url ); ?>" target="_blank" class="obm-doc-preview">
 									<img src="<?php echo esc_url( $url ); ?>" alt="<?php echo esc_attr( $label ); ?>" />
 									<span class="obm-doc-overlay"><span class="dashicons dashicons-visibility"></span> View Full Size</span>
@@ -360,7 +416,7 @@ function obsidian_render_booking_meta_box( $post ) {
 		</div>
 
 		<!-- Actions -->
-		<?php if ( $status === 'pending_review' ) : ?>
+		<?php if ( 'pending_review' === $status ) : ?>
 		<div class="obm-section obm-actions-section">
 			<h4 class="obm-section-title"><span class="dashicons dashicons-yes-alt"></span> Actions</h4>
 			<div class="obm-actions">
@@ -377,7 +433,7 @@ function obsidian_render_booking_meta_box( $post ) {
 		</div>
 		<?php endif; ?>
 
-		<?php if ( $status === 'confirmed' ) : ?>
+		<?php if ( 'confirmed' === $status ) : ?>
 		<div class="obm-section obm-actions-section">
 			<h4 class="obm-section-title"><span class="dashicons dashicons-yes-alt"></span> Actions</h4>
 			<button type="button" id="obm-mark-active" class="obm-btn obm-btn-approve" data-booking-id="<?php echo esc_attr( $booking_id ); ?>">
@@ -386,7 +442,7 @@ function obsidian_render_booking_meta_box( $post ) {
 		</div>
 		<?php endif; ?>
 
-		<?php if ( $status === 'active' ) : ?>
+		<?php if ( 'active' === $status ) : ?>
 		<div class="obm-section obm-actions-section">
 			<h4 class="obm-section-title"><span class="dashicons dashicons-yes-alt"></span> Actions</h4>
 			<button type="button" id="obm-mark-completed" class="obm-btn obm-btn-approve" data-booking-id="<?php echo esc_attr( $booking_id ); ?>">
@@ -423,21 +479,23 @@ function obsidian_handle_booking_action() {
 	switch ( $action ) {
 
 		case 'approve':
-			if ( $current_status !== 'pending_review' ) {
+			if ( 'pending_review' !== $current_status ) {
 				wp_send_json_error( array( 'message' => 'Booking is not pending review.' ) );
 			}
 			update_post_meta( $booking_id, '_booking_status', 'awaiting_payment' );
 
 			// Notification system handles token generation + email.
 			do_action( 'obsidian_booking_status_changed', $booking_id, $current_status, 'awaiting_payment' );
-			wp_send_json_success( array(
-				'message'    => 'Documents approved. Payment link emailed to customer.',
-				'new_status' => 'awaiting_payment',
-			) );
+			wp_send_json_success(
+				array(
+					'message'    => 'Documents approved. Payment link emailed to customer.',
+					'new_status' => 'awaiting_payment',
+				)
+			);
 			break;
 
 		case 'deny':
-			if ( $current_status !== 'pending_review' ) {
+			if ( 'pending_review' !== $current_status ) {
 				wp_send_json_error( array( 'message' => 'Booking is not pending review.' ) );
 			}
 			$reason = sanitize_text_field( $_POST['reason'] ?? '' );
@@ -447,34 +505,40 @@ function obsidian_handle_booking_action() {
 			update_post_meta( $booking_id, '_booking_status', 'denied' );
 			update_post_meta( $booking_id, '_booking_denial_reason', $reason );
 			do_action( 'obsidian_booking_status_changed', $booking_id, $current_status, 'denied' );
-			wp_send_json_success( array(
-				'message'    => 'Booking denied.',
-				'new_status' => 'denied',
-			) );
+			wp_send_json_success(
+				array(
+					'message'    => 'Booking denied.',
+					'new_status' => 'denied',
+				)
+			);
 			break;
 
 		case 'mark_active':
-			if ( $current_status !== 'confirmed' ) {
+			if ( 'confirmed' !== $current_status ) {
 				wp_send_json_error( array( 'message' => 'Booking is not confirmed.' ) );
 			}
 			update_post_meta( $booking_id, '_booking_status', 'active' );
 			do_action( 'obsidian_booking_status_changed', $booking_id, $current_status, 'active' );
-			wp_send_json_success( array(
-				'message'    => 'Booking marked as active.',
-				'new_status' => 'active',
-			) );
+			wp_send_json_success(
+				array(
+					'message'    => 'Booking marked as active.',
+					'new_status' => 'active',
+				)
+			);
 			break;
 
 		case 'mark_completed':
-			if ( $current_status !== 'active' ) {
+			if ( 'active' !== $current_status ) {
 				wp_send_json_error( array( 'message' => 'Booking is not active.' ) );
 			}
 			update_post_meta( $booking_id, '_booking_status', 'completed' );
 			do_action( 'obsidian_booking_status_changed', $booking_id, $current_status, 'completed' );
-			wp_send_json_success( array(
-				'message'    => 'Booking completed.',
-				'new_status' => 'completed',
-			) );
+			wp_send_json_success(
+				array(
+					'message'    => 'Booking completed.',
+					'new_status' => 'completed',
+				)
+			);
 			break;
 
 		case 'save_notes':

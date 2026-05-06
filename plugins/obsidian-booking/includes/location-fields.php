@@ -15,110 +15,117 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Register the Location ACF field group programmatically.
+ *
+ * @return void
+ */
 function obsidian_register_location_acf_fields() {
 
 	if ( ! function_exists( 'acf_add_local_field_group' ) ) {
 		return;
 	}
 
-	acf_add_local_field_group( array(
-		'key'                   => 'group_obsidian_branch_details',
-		'title'                 => __( 'Branch Details', 'obsidian-booking' ),
-		'fields'                => array(
-			array(
-				'key'          => 'field_obsidian_location_name',
-				'label'        => __( 'Branch Name', 'obsidian-booking' ),
-				'name'         => 'location_name',
-				'type'         => 'text',
-				'instructions' => __( 'The name of this branch (e.g. "Makati Main"). Updates the main post title automatically.', 'obsidian-booking' ),
-				'required'     => 1,
-			),
-			array(
-				'key'           => 'field_obsidian_location_region',
-				'label'         => __( 'Region', 'obsidian-booking' ),
-				'name'          => 'location_region',
-				'type'          => 'taxonomy',
-				'taxonomy'      => 'region',
-				'field_type'    => 'select',
-				'allow_null'    => 0,
-				'add_term'      => 0,
-				'save_terms'    => 1,
-				'load_terms'    => 1,
-				'return_format' => 'id',
-				'multiple'      => 0,
-				'instructions'  => __( 'Select the region this branch belongs to.', 'obsidian-booking' ),
-				'required'      => 1,
-			),
-			array(
-				'key'          => 'field_obsidian_location_address',
-				'label'        => __( 'Address', 'obsidian-booking' ),
-				'name'         => 'location_address',
-				'type'         => 'textarea',
-				'instructions' => __( 'Full street address shown on the fleet page, confirmation page, and emails.', 'obsidian-booking' ),
-				'required'     => 1,
-				'rows'         => 3,
-				'new_lines'    => 'br',
-			),
-			array(
-				'key'          => 'field_obsidian_location_contact_number',
-				'label'        => __( 'Contact Number', 'obsidian-booking' ),
-				'name'         => 'location_contact_number',
-				'type'         => 'text',
-				'instructions' => __( 'Branch landline or mobile (with country code, e.g. +63...).', 'obsidian-booking' ),
-				'required'     => 1,
-			),
-			array(
-				'key'          => 'field_obsidian_location_contact_email',
-				'label'        => __( 'Contact Email', 'obsidian-booking' ),
-				'name'         => 'location_contact_email',
-				'type'         => 'email',
-				'instructions' => __( 'Branch inbox for customer enquiries.', 'obsidian-booking' ),
-				'required'     => 0,
-			),
-			array(
-				'key'          => 'field_obsidian_location_hours',
-				'label'        => __( 'Operating Hours', 'obsidian-booking' ),
-				'name'         => 'location_hours',
-				'type'         => 'textarea',
-				'instructions' => __( 'e.g. "Mon–Sat 8am–8pm, Sun closed".', 'obsidian-booking' ),
-				'required'     => 0,
-				'rows'         => 2,
-				'new_lines'    => 'br',
-			),
-
-			array(
-				'key'           => 'field_obsidian_location_status',
-				'label'         => __( 'Status', 'obsidian-booking' ),
-				'name'          => 'location_status',
-				'type'          => 'select',
-				'instructions'  => __( 'Only "active" branches are bookable. "Coming soon" appears on the map (greyed out) but cannot be selected. "Closed" is hidden.', 'obsidian-booking' ),
-				'required'      => 1,
-				'choices'       => array(
-					'active'      => __( 'Active', 'obsidian-booking' ),
-					'coming_soon' => __( 'Coming Soon', 'obsidian-booking' ),
-					'closed'      => __( 'Closed', 'obsidian-booking' ),
-				),
-				'default_value' => 'active',
-				'allow_null'    => 0,
-				'return_format' => 'value',
-			),
-		),
-		'location'              => array(
-			array(
+	acf_add_local_field_group(
+		array(
+			'key'                   => 'group_obsidian_branch_details',
+			'title'                 => __( 'Branch Details', 'obsidian-booking' ),
+			'fields'                => array(
 				array(
-					'param'    => 'post_type',
-					'operator' => '==',
-					'value'    => 'location',
+					'key'          => 'field_obsidian_location_name',
+					'label'        => __( 'Branch Name', 'obsidian-booking' ),
+					'name'         => 'location_name',
+					'type'         => 'text',
+					'instructions' => __( 'The name of this branch (e.g. "Makati Main"). Updates the main post title automatically.', 'obsidian-booking' ),
+					'required'     => 1,
+				),
+				array(
+					'key'           => 'field_obsidian_location_region',
+					'label'         => __( 'Region', 'obsidian-booking' ),
+					'name'          => 'location_region',
+					'type'          => 'taxonomy',
+					'taxonomy'      => 'region',
+					'field_type'    => 'select',
+					'allow_null'    => 0,
+					'add_term'      => 0,
+					'save_terms'    => 1,
+					'load_terms'    => 1,
+					'return_format' => 'id',
+					'multiple'      => 0,
+					'instructions'  => __( 'Select the region this branch belongs to.', 'obsidian-booking' ),
+					'required'      => 1,
+				),
+				array(
+					'key'          => 'field_obsidian_location_address',
+					'label'        => __( 'Address', 'obsidian-booking' ),
+					'name'         => 'location_address',
+					'type'         => 'textarea',
+					'instructions' => __( 'Full street address shown on the fleet page, confirmation page, and emails.', 'obsidian-booking' ),
+					'required'     => 1,
+					'rows'         => 3,
+					'new_lines'    => 'br',
+				),
+				array(
+					'key'          => 'field_obsidian_location_contact_number',
+					'label'        => __( 'Contact Number', 'obsidian-booking' ),
+					'name'         => 'location_contact_number',
+					'type'         => 'text',
+					'instructions' => __( 'Branch landline or mobile (with country code, e.g. +63...).', 'obsidian-booking' ),
+					'required'     => 1,
+				),
+				array(
+					'key'          => 'field_obsidian_location_contact_email',
+					'label'        => __( 'Contact Email', 'obsidian-booking' ),
+					'name'         => 'location_contact_email',
+					'type'         => 'email',
+					'instructions' => __( 'Branch inbox for customer enquiries.', 'obsidian-booking' ),
+					'required'     => 0,
+				),
+				array(
+					'key'          => 'field_obsidian_location_hours',
+					'label'        => __( 'Operating Hours', 'obsidian-booking' ),
+					'name'         => 'location_hours',
+					'type'         => 'textarea',
+					'instructions' => __( 'e.g. "Mon–Sat 8am–8pm, Sun closed".', 'obsidian-booking' ),
+					'required'     => 0,
+					'rows'         => 2,
+					'new_lines'    => 'br',
+				),
+
+				array(
+					'key'           => 'field_obsidian_location_status',
+					'label'         => __( 'Status', 'obsidian-booking' ),
+					'name'          => 'location_status',
+					'type'          => 'select',
+					'instructions'  => __( 'Only "active" branches are bookable. "Coming soon" appears on the map (greyed out) but cannot be selected. "Closed" is hidden.', 'obsidian-booking' ),
+					'required'      => 1,
+					'choices'       => array(
+						'active'      => __( 'Active', 'obsidian-booking' ),
+						'coming_soon' => __( 'Coming Soon', 'obsidian-booking' ),
+						'closed'      => __( 'Closed', 'obsidian-booking' ),
+					),
+					'default_value' => 'active',
+					'allow_null'    => 0,
+					'return_format' => 'value',
 				),
 			),
-		),
-		'menu_order'            => 0,
-		'position'              => 'normal',
-		'style'                 => 'default',
-		'label_placement'       => 'top',
-		'instruction_placement' => 'label',
-		'active'                => true,
-		'show_in_rest'          => 1,
-	) );
+			'location'              => array(
+				array(
+					array(
+						'param'    => 'post_type',
+						'operator' => '==',
+						'value'    => 'location',
+					),
+				),
+			),
+			'menu_order'            => 0,
+			'position'              => 'normal',
+			'style'                 => 'default',
+			'label_placement'       => 'top',
+			'instruction_placement' => 'label',
+			'active'                => true,
+			'show_in_rest'          => 1,
+		)
+	);
 }
 add_action( 'acf/init', 'obsidian_register_location_acf_fields' );

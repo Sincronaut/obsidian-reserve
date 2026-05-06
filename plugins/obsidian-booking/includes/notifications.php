@@ -13,18 +13,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Gather common booking data used across all email templates.
+ *
+ * @param int $booking_id Booking post ID.
+ * @return array
  */
 function obsidian_get_booking_email_data( $booking_id ) {
 	$all_meta = get_post_custom( $booking_id );
-	
-	// Helper to get meta value from the custom array (WP returns meta as arrays)
-	$get_meta = function( $key ) use ( $all_meta ) {
+
+	// Helper to get meta value from the custom array (WP returns meta as arrays).
+	$get_meta = function ( $key ) use ( $all_meta ) {
 		return isset( $all_meta[ $key ][0] ) ? $all_meta[ $key ][0] : '';
 	};
 
-	$car_id    = (int) $get_meta( '_booking_car_id' );
-	$user_id   = (int) $get_meta( '_booking_user_id' );
-	$user      = get_userdata( $user_id );
+	$car_id  = (int) $get_meta( '_booking_car_id' );
+	$user_id = (int) $get_meta( '_booking_user_id' );
+	$user    = get_userdata( $user_id );
 
 	return array(
 		'booking_id'       => $booking_id,
@@ -52,6 +55,10 @@ function obsidian_get_booking_email_data( $booking_id ) {
 
 /**
  * Render an email template and return the HTML string.
+ *
+ * @param string $template_name Template file slug.
+ * @param array  $vars          Variables for the template.
+ * @return string
  */
 function obsidian_render_email_template( $template_name, $vars = array() ) {
 	$template_path = OBSIDIAN_BOOKING_DIR . 'templates/emails/' . $template_name . '.php';
@@ -70,6 +77,11 @@ function obsidian_render_email_template( $template_name, $vars = array() ) {
 
 /**
  * Send an HTML email via wp_mail.
+ *
+ * @param string $to      Recipient email.
+ * @param string $subject Email subject.
+ * @param string $html    Email HTML body.
+ * @return void
  */
 function obsidian_send_email( $to, $subject, $html ) {
 	$headers = array(
@@ -81,7 +93,12 @@ function obsidian_send_email( $to, $subject, $html ) {
 }
 
 /**
- * Main dispatcher — schedules background emails so the user doesn't wait.
+ * Main dispatcher - schedules background emails so the user does not wait.
+ *
+ * @param int    $booking_id Booking post ID.
+ * @param string $old_status Previous status.
+ * @param string $new_status New status.
+ * @return void
  */
 function obsidian_notify_on_status_change( $booking_id, $old_status, $new_status ) {
 	// Offload to a background task (Phase 11.16 optimization).
@@ -92,6 +109,11 @@ add_action( 'obsidian_booking_status_changed', 'obsidian_notify_on_status_change
 
 /**
  * The actual notification runner, called via WP-Cron.
+ *
+ * @param int    $booking_id Booking post ID.
+ * @param string $old_status Previous status.
+ * @param string $new_status New status.
+ * @return void
  */
 function obsidian_run_async_notifications( $booking_id, $old_status, $new_status ) {
 	$data = obsidian_get_booking_email_data( $booking_id );
@@ -133,7 +155,11 @@ add_action( 'obsidian_send_async_notifications', 'obsidian_run_async_notificatio
 // -------------------------------------------------------------------------
 
 /**
- * New booking submitted — notify admin.
+ * New booking submitted - notify admin.
+ *
+ * @param array  $data        Email template data.
+ * @param string $admin_email Admin email.
+ * @return void
  */
 function obsidian_notify_booking_submitted( $data, $admin_email ) {
 	$subject = sprintf(
@@ -148,7 +174,10 @@ function obsidian_notify_booking_submitted( $data, $admin_email ) {
 }
 
 /**
- * Booking received — receipt to user.
+ * Booking received - receipt to user.
+ *
+ * @param array $data Email template data.
+ * @return void
  */
 function obsidian_notify_booking_received( $data ) {
 	$subject = 'Your Reservation Request Has Been Received';
@@ -157,7 +186,11 @@ function obsidian_notify_booking_received( $data ) {
 }
 
 /**
- * Documents approved — send payment link to user.
+ * Documents approved - send payment link to user.
+ *
+ * @param array $data       Email template data.
+ * @param int   $booking_id Booking post ID.
+ * @return void
  */
 function obsidian_notify_docs_approved( $data, $booking_id ) {
 	if ( function_exists( 'obsidian_generate_payment_token' ) ) {
@@ -175,7 +208,10 @@ function obsidian_notify_docs_approved( $data, $booking_id ) {
 }
 
 /**
- * Booking denied — notify user with reason.
+ * Booking denied - notify user with reason.
+ *
+ * @param array $data Email template data.
+ * @return void
  */
 function obsidian_notify_booking_denied( $data ) {
 	$subject = 'Update on Your Reservation Request';
@@ -184,7 +220,11 @@ function obsidian_notify_booking_denied( $data ) {
 }
 
 /**
- * Payment received — notify admin.
+ * Payment received - notify admin.
+ *
+ * @param array  $data        Email template data.
+ * @param string $admin_email Admin email.
+ * @return void
  */
 function obsidian_notify_payment_received( $data, $admin_email ) {
 	$subject = sprintf(
@@ -199,7 +239,10 @@ function obsidian_notify_payment_received( $data, $admin_email ) {
 }
 
 /**
- * Booking confirmed — notify user.
+ * Booking confirmed - notify user.
+ *
+ * @param array $data Email template data.
+ * @return void
  */
 function obsidian_notify_booking_confirmed( $data ) {
 	$subject = sprintf( 'Your %s Reservation is Confirmed ✅', $data['car_name'] );
@@ -213,6 +256,8 @@ function obsidian_notify_booking_confirmed( $data ) {
 
 /**
  * Schedule the daily pickup reminder cron on plugin activation.
+ *
+ * @return void
  */
 function obsidian_schedule_reminder_cron() {
 	if ( ! wp_next_scheduled( 'obsidian_daily_pickup_reminders' ) ) {
@@ -223,6 +268,8 @@ add_action( 'init', 'obsidian_schedule_reminder_cron' );
 
 /**
  * Unschedule on deactivation.
+ *
+ * @return void
  */
 function obsidian_unschedule_reminder_cron() {
 	$timestamp = wp_next_scheduled( 'obsidian_daily_pickup_reminders' );
@@ -234,25 +281,29 @@ register_deactivation_hook( OBSIDIAN_BOOKING_FILE, 'obsidian_unschedule_reminder
 
 /**
  * Send pickup reminder emails for bookings starting tomorrow.
+ *
+ * @return void
  */
 function obsidian_send_pickup_reminders() {
 	$tomorrow = gmdate( 'Y-m-d', strtotime( '+1 day' ) );
 
-	$bookings = get_posts( array(
-		'post_type'      => 'obsidian_booking',
-		'posts_per_page' => -1,
-		'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery
+	$bookings = get_posts(
+		array(
+			'post_type'      => 'obsidian_booking',
+			'posts_per_page' => -1,
+			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery
 			'relation' => 'AND',
 			array(
 				'key'   => '_booking_start_date',
 				'value' => $tomorrow,
 			),
 			array(
-				'key'     => '_booking_status',
-				'value'   => 'confirmed',
+				'key'   => '_booking_status',
+				'value' => 'confirmed',
 			),
-		),
-	) );
+			),
+		)
+	);
 
 	foreach ( $bookings as $booking ) {
 		$already_sent = get_post_meta( $booking->ID, '_booking_reminder_sent', true );

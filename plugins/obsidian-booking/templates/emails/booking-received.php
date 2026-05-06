@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-include __DIR__ . '/email-header.php';
+require __DIR__ . '/email-header.php';
 ?>
 
 <h2 style="margin:0 0 8px;font-size:20px;color:#ffffff;">We've Received Your Request</h2>
@@ -61,4 +61,4 @@ Hello <?php echo esc_html( $first_name ); ?>, thank you for choosing Obsidian Re
 We typically review submissions within 24 hours. You'll receive an email as soon as a decision is made.
 </p>
 
-<?php include __DIR__ . '/email-footer.php'; ?>
+<?php require __DIR__ . '/email-footer.php'; ?>

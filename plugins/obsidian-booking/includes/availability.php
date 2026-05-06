@@ -17,9 +17,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   COLOR / SWATCH HELPERS
-   ══════════════════════════════════════════════════════════════ */
+/*
+ * ======================================================================
+ * COLOR / SWATCH HELPERS
+ * ======================================================================
+ */
 
 /**
  * Map a color name to its hex code for rendering swatches.
@@ -44,9 +46,11 @@ function obsidian_get_color_hex( $color_name ) {
 	return $map[ strtolower( trim( $color_name ) ) ] ?? '#888888';
 }
 
-/* ══════════════════════════════════════════════════════════════
-   CAR INVENTORY HELPERS (Phase 11)
-   ══════════════════════════════════════════════════════════════ */
+/*
+ * ======================================================================
+ * CAR INVENTORY HELPERS (Phase 11)
+ * ======================================================================
+ */
 
 /**
  * Branch statuses considered "operational" — the car can be listed and
@@ -64,8 +68,8 @@ function obsidian_get_active_branch_statuses() {
 /**
  * Normalise one branch entry from `_car_inventory` into the v3 shape.
  *
- * v2 (legacy) shape:  [ "blue" => ["units"=>2], "black" => ["units"=>1] ]
- * v3 (current) shape: [ "status" => "available",
+ * V2 (legacy) shape:  [ "blue" => ["units"=>2], "black" => ["units"=>1] ]
+ * V3 (current) shape: [ "status" => "available",
  *                       "colors" => [ "blue" => ["units"=>2], ... ] ]
  *
  * Detection: the v3 shape always has an explicit `colors` key.
@@ -78,7 +82,10 @@ function obsidian_get_active_branch_statuses() {
 function obsidian_normalize_branch_entry( $branch_data ) {
 
 	if ( ! is_array( $branch_data ) ) {
-		return array( 'status' => 'available', 'colors' => array() );
+		return array(
+			'status' => 'available',
+			'colors' => array(),
+		);
 	}
 
 	if ( isset( $branch_data['colors'] ) && is_array( $branch_data['colors'] ) ) {
@@ -89,7 +96,13 @@ function obsidian_normalize_branch_entry( $branch_data ) {
 				'units' => (int) ( is_array( $data ) ? ( $data['units'] ?? 0 ) : 0 ),
 			);
 		}
-		return array( 'status' => $status ?: 'available', 'colors' => $colors );
+		if ( '' === $status ) {
+			$status = 'available';
+		}
+		return array(
+			'status' => $status,
+			'colors' => $colors,
+		);
 	}
 
 	// Legacy shape — top-level keys are colors directly.
@@ -102,7 +115,10 @@ function obsidian_normalize_branch_entry( $branch_data ) {
 			'units' => (int) ( $data['units'] ?? 0 ),
 		);
 	}
-	return array( 'status' => 'available', 'colors' => $colors );
+	return array(
+		'status' => 'available',
+		'colors' => $colors,
+	);
 }
 
 /**
@@ -192,9 +208,14 @@ function obsidian_get_car_galleries( $car_id ) {
 		if ( ! is_array( $images ) ) {
 			continue;
 		}
-		$ids = array_values( array_filter( array_map( 'intval', $images ), function ( $id ) {
-			return $id > 0;
-		} ) );
+		$ids = array_values(
+			array_filter(
+				array_map( 'intval', $images ),
+				function ( $id ) {
+					return $id > 0;
+				}
+			)
+		);
 		if ( ! empty( $ids ) ) {
 			$out[ strtolower( $color ) ] = $ids;
 		}
@@ -247,12 +268,12 @@ function obsidian_get_car_branches( $car_id ) {
 		if ( $branch_id <= 0 ) {
 			continue;
 		}
-		if ( get_post_status( $branch_id ) !== 'publish' ) {
+		if ( 'publish' !== get_post_status( $branch_id ) ) {
 			continue;
 		}
 
 		$loc_status = get_post_meta( $branch_id, 'location_status', true );
-		if ( $loc_status && $loc_status !== 'active' ) {
+		if ( $loc_status && 'active' !== $loc_status ) {
 			continue;
 		}
 
@@ -427,13 +448,13 @@ function obsidian_get_color_variants( $car_id, $location_id = 0 ) {
 		return $result;
 	}
 
-	/* ── Legacy fallback: pre-Phase-11 _car_color_variants ── */
+	// Legacy fallback: pre-Phase-11 _car_color_variants.
 
 	$json     = get_post_meta( $car_id, '_car_color_variants', true );
 	$variants = ! empty( $json ) ? json_decode( $json, true ) : null;
 
 	if ( ! empty( $variants ) && is_array( $variants ) ) {
-		// Normalise old image_id format → images array
+		// Normalise old image_id format → images array.
 		foreach ( $variants as $color => &$data ) {
 			if ( ! isset( $data['images'] ) || ! is_array( $data['images'] ) ) {
 				$legacy_id      = (int) ( $data['image_id'] ?? 0 );
@@ -466,9 +487,11 @@ function obsidian_get_total_units( $car_id, $location_id = 0 ) {
 	return $total;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   AVAILABILITY FUNCTIONS
-   ══════════════════════════════════════════════════════════════ */
+/*
+ * ======================================================================
+ * AVAILABILITY FUNCTIONS
+ * ======================================================================
+ */
 
 /**
  * Statuses that block inventory (everything before completed/denied).
@@ -551,20 +574,22 @@ function obsidian_get_available_units( $car_id, $start_date, $end_date, $exclude
 
 	$meta_query = array_merge( $meta_query, obsidian_branch_meta_query( $location_id ) );
 
-	$query = new WP_Query( array(
-		'post_type'      => 'booking',
-		'post_status'    => 'any',
-		'posts_per_page' => -1,
-		'fields'         => 'ids',
-		'meta_query'     => $meta_query,
-	) );
+	$query = new WP_Query(
+		array(
+			'post_type'      => 'booking',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'meta_query'     => $meta_query,
+		)
+	);
 
 	$overlapping_count = $query->found_posts;
 
 	if ( $exclude_booking_id > 0 ) {
 		$overlapping_ids = $query->posts;
 		if ( in_array( $exclude_booking_id, $overlapping_ids, true ) ) {
-			$overlapping_count--;
+			--$overlapping_count;
 		}
 	}
 
@@ -632,20 +657,22 @@ function obsidian_get_available_units_by_color( $car_id, $color, $start_date, $e
 
 	$meta_query = array_merge( $meta_query, obsidian_branch_meta_query( $location_id ) );
 
-	$query = new WP_Query( array(
-		'post_type'      => 'booking',
-		'post_status'    => 'any',
-		'posts_per_page' => -1,
-		'fields'         => 'ids',
-		'meta_query'     => $meta_query,
-	) );
+	$query = new WP_Query(
+		array(
+			'post_type'      => 'booking',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'meta_query'     => $meta_query,
+		)
+	);
 
 	$overlapping_count = $query->found_posts;
 
 	if ( $exclude_booking_id > 0 ) {
 		$overlapping_ids = $query->posts;
 		if ( in_array( $exclude_booking_id, $overlapping_ids, true ) ) {
-			$overlapping_count--;
+			--$overlapping_count;
 		}
 	}
 
@@ -670,7 +697,11 @@ function obsidian_is_car_available( $car_id, $start_date, $end_date, $location_i
  * Internal helper to fetch all overlapping bookings for a car within a window.
  * Optimization: Reduces hundreds of queries to a single batch lookup.
  *
- * @access private
+ * @param int    $car_id      The Car post ID.
+ * @param string $start_date  Requested start date (Y-m-d).
+ * @param string $end_date    Requested end date (Y-m-d).
+ * @param int    $location_id Optional branch ID. 0 = aggregate across branches.
+ * @return array<int,array{start:string,end:string,color:string}>
  */
 function obsidian_get_bookings_in_range_batch( $car_id, $start_date, $end_date, $location_id = 0 ) {
 	$meta_query = array(
@@ -695,7 +726,7 @@ function obsidian_get_bookings_in_range_batch( $car_id, $start_date, $end_date, 
 		array(
 			'key'     => '_booking_end_date',
 			'value'   => $start_date,
-			'compare' => '>', 
+			'compare' => '>',
 			'type'    => 'DATE',
 		),
 	);
@@ -709,13 +740,15 @@ function obsidian_get_bookings_in_range_batch( $car_id, $start_date, $end_date, 
 		);
 	}
 
-	$query = new WP_Query( array(
-		'post_type'      => 'booking',
-		'post_status'    => 'any',
-		'posts_per_page' => -1,
-		'meta_query'     => $meta_query,
-		'fields'         => 'ids',
-	) );
+	$query = new WP_Query(
+		array(
+			'post_type'      => 'booking',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'meta_query'     => $meta_query,
+			'fields'         => 'ids',
+		)
+	);
 
 	$results = array();
 	foreach ( $query->posts as $post_id ) {
@@ -747,8 +780,8 @@ function obsidian_get_unavailable_dates( $car_id, $days_ahead = 90, $location_id
 		return array();
 	}
 
-	$unavailable = array();
-	$today       = new DateTime( 'today', wp_timezone() );
+	$unavailable  = array();
+	$today        = new DateTime( 'today', wp_timezone() );
 	$future_limit = clone $today;
 	$future_limit->modify( "+{$days_ahead} days" );
 
@@ -767,7 +800,7 @@ function obsidian_get_unavailable_dates( $car_id, $days_ahead = 90, $location_id
 		$count = 0;
 		foreach ( $bookings as $b ) {
 			if ( $b['start'] <= $date_string && $b['end'] > $date_string ) {
-				$count++;
+				++$count;
 			}
 		}
 
@@ -781,6 +814,11 @@ function obsidian_get_unavailable_dates( $car_id, $days_ahead = 90, $location_id
 
 /**
  * Get fully-booked dates per color variant.
+ *
+ * @param int $car_id      The Car post ID.
+ * @param int $days_ahead  How many days into the future to check (default 90).
+ * @param int $location_id Optional branch ID. 0 = aggregate across branches.
+ * @return array Array of color => list of unavailable Y-m-d strings.
  */
 function obsidian_get_unavailable_dates_by_color( $car_id, $days_ahead = 90, $location_id = 0 ) {
 	$variants = obsidian_get_color_variants( $car_id, $location_id );
@@ -817,8 +855,8 @@ function obsidian_get_unavailable_dates_by_color( $car_id, $days_ahead = 90, $lo
 
 			$count = 0;
 			foreach ( $bookings as $b ) {
-				if ( $b['color'] === $color && $b['start'] <= $date_string && $b['end'] > $date_string ) {
-					$count++;
+				if ( $color === $b['color'] && $b['start'] <= $date_string && $b['end'] > $date_string ) {
+					++$count;
 				}
 			}
 

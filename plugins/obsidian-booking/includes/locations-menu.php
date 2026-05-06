@@ -55,21 +55,30 @@ add_shortcode( 'obsidian_locations_menu', 'obsidian_locations_menu_shortcode' );
  */
 function obsidian_render_locations_menu_html() {
 
-	$regions = get_terms( array(
-		'taxonomy'   => 'region',
-		'hide_empty' => false,
-		'orderby'    => 'name',
-		'order'      => 'ASC',
-	) );
+	$regions = get_terms(
+		array(
+			'taxonomy'   => 'region',
+			'hide_empty' => false,
+			'orderby'    => 'name',
+			'order'      => 'ASC',
+		)
+	);
 
 	// Manual Sort: Luzon -> Visayas -> Mindanao.
 	if ( ! is_wp_error( $regions ) && ! empty( $regions ) ) {
-		usort( $regions, function( $a, $b ) {
-			$order = array( 'Luzon' => 1, 'Visayas' => 2, 'Mindanao' => 3 );
-			$val_a = $order[ $a->name ] ?? 999;
-			$val_b = $order[ $b->name ] ?? 999;
-			return $val_a <=> $val_b;
-		} );
+		usort(
+			$regions,
+			function ( $a, $b ) {
+				$order = array(
+					'Luzon'    => 1,
+					'Visayas'  => 2,
+					'Mindanao' => 3,
+				);
+				$val_a = $order[ $a->name ] ?? 999;
+				$val_b = $order[ $b->name ] ?? 999;
+				return $val_a <=> $val_b;
+			}
+		);
 	}
 
 	if ( is_wp_error( $regions ) || empty( $regions ) ) {
@@ -82,27 +91,29 @@ function obsidian_render_locations_menu_html() {
 	// are excluded so retired pickup spots don't keep appearing in nav.
 	$columns = array();
 	foreach ( $regions as $region ) {
-		$branches = get_posts( array(
-			'post_type'      => 'location',
-			'post_status'    => 'publish',
-			'posts_per_page' => -1,
-			'orderby'        => 'title',
-			'order'          => 'ASC',
-			'tax_query'      => array(
-				array(
-					'taxonomy' => 'region',
-					'field'    => 'term_id',
-					'terms'    => $region->term_id,
+		$branches = get_posts(
+			array(
+				'post_type'      => 'location',
+				'post_status'    => 'publish',
+				'posts_per_page' => -1,
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+				'tax_query'      => array(
+					array(
+						'taxonomy' => 'region',
+						'field'    => 'term_id',
+						'terms'    => $region->term_id,
+					),
 				),
-			),
-			'meta_query'     => array(
-				array(
-					'key'     => 'location_status',
-					'value'   => 'closed',
-					'compare' => '!=',
+				'meta_query'     => array(
+					array(
+						'key'     => 'location_status',
+						'value'   => 'closed',
+						'compare' => '!=',
+					),
 				),
-			),
-		) );
+			)
+		);
 
 		if ( empty( $branches ) ) {
 			continue;
@@ -128,20 +139,25 @@ function obsidian_render_locations_menu_html() {
 
 		<div class="obsidian-dropdown-menu obsidian-locations-menu__panel">
 			<div class="obsidian-locations-menu__columns" data-columns="<?php echo esc_attr( count( $columns ) ); ?>">
-				<?php foreach ( $columns as $col ) :
+				<?php
+				foreach ( $columns as $col ) :
 					$region = $col['region'];
 					?>
 					<div class="obsidian-locations-menu__column">
 						<a class="obsidian-locations-menu__region"
-						   href="<?php echo esc_url( home_url( '/fleet/?region=' . rawurlencode( $region->slug ) ) ); ?>">
+							href="<?php echo esc_url( home_url( '/fleet/?region=' . rawurlencode( $region->slug ) ) ); ?>">
 							<?php echo esc_html( $region->name ); ?>
 						</a>
 						<ul class="obsidian-locations-menu__branches">
-							<?php foreach ( $col['branches'] as $branch ) :
-								$status     = get_post_meta( $branch->ID, 'location_status', true ) ?: 'active';
-								$is_coming  = ( 'coming_soon' === $status );
-								$slug       = $branch->post_name;
-								$label      = get_the_title( $branch->ID );
+							<?php
+							foreach ( $col['branches'] as $branch ) :
+								$status = get_post_meta( $branch->ID, 'location_status', true );
+								if ( '' === $status ) {
+									$status = 'active';
+								}
+								$is_coming = ( 'coming_soon' === $status );
+								$slug      = $branch->post_name;
+								$label     = get_the_title( $branch->ID );
 								?>
 								<li class="obsidian-locations-menu__branch<?php echo $is_coming ? ' is-coming-soon' : ''; ?>">
 									<?php if ( $is_coming ) : ?>
@@ -151,7 +167,7 @@ function obsidian_render_locations_menu_html() {
 										</span>
 									<?php else : ?>
 										<a class="branch-link"
-										   href="<?php echo esc_url( home_url( '/fleet/?location=' . rawurlencode( $slug ) ) ); ?>">
+											href="<?php echo esc_url( home_url( '/fleet/?location=' . rawurlencode( $slug ) ) ); ?>">
 											<?php echo esc_html( $label ); ?>
 										</a>
 									<?php endif; ?>
@@ -164,7 +180,7 @@ function obsidian_render_locations_menu_html() {
 
 			<div class="obsidian-locations-menu__footer">
 				<a class="obsidian-locations-menu__view-all"
-				   href="<?php echo esc_url( home_url( '/fleet/' ) ); ?>">
+					href="<?php echo esc_url( home_url( '/fleet/' ) ); ?>">
 					View all branches →
 				</a>
 			</div>
@@ -176,6 +192,9 @@ function obsidian_render_locations_menu_html() {
 
 /**
  * Bust the cache when location posts or region terms change.
+ *
+ * @param int $post_id Post ID, when available.
+ * @return void
  */
 function obsidian_invalidate_locations_menu_cache( $post_id = 0 ) {
 	// `save_post_<type>` passes a post ID; taxonomy hooks don't — both branches
@@ -185,11 +204,11 @@ function obsidian_invalidate_locations_menu_cache( $post_id = 0 ) {
 	}
 	delete_transient( OBSIDIAN_LOCATIONS_MENU_CACHE_KEY );
 }
-add_action( 'save_post_location',   'obsidian_invalidate_locations_menu_cache' );
-add_action( 'trashed_post',         'obsidian_invalidate_locations_menu_cache' );
-add_action( 'untrashed_post',       'obsidian_invalidate_locations_menu_cache' );
-add_action( 'deleted_post',         'obsidian_invalidate_locations_menu_cache' );
-add_action( 'created_region',       'obsidian_invalidate_locations_menu_cache' );
-add_action( 'edited_region',        'obsidian_invalidate_locations_menu_cache' );
-add_action( 'delete_region',        'obsidian_invalidate_locations_menu_cache' );
-add_action( 'set_object_terms',     'obsidian_invalidate_locations_menu_cache' );
+add_action( 'save_post_location', 'obsidian_invalidate_locations_menu_cache' );
+add_action( 'trashed_post', 'obsidian_invalidate_locations_menu_cache' );
+add_action( 'untrashed_post', 'obsidian_invalidate_locations_menu_cache' );
+add_action( 'deleted_post', 'obsidian_invalidate_locations_menu_cache' );
+add_action( 'created_region', 'obsidian_invalidate_locations_menu_cache' );
+add_action( 'edited_region', 'obsidian_invalidate_locations_menu_cache' );
+add_action( 'delete_region', 'obsidian_invalidate_locations_menu_cache' );
+add_action( 'set_object_terms', 'obsidian_invalidate_locations_menu_cache' );

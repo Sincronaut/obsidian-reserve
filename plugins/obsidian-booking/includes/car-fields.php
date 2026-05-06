@@ -61,155 +61,157 @@ function obsidian_register_car_acf_fields() {
 		return;
 	}
 
-	acf_add_local_field_group( array(
-		'key'                   => 'group_obsidian_car_details',
-		'title'                 => __( 'Car Details — shared across branches', 'obsidian-booking' ),
-		'fields'                => array(
+	acf_add_local_field_group(
+		array(
+			'key'                   => 'group_obsidian_car_details',
+			'title'                 => __( 'Car Details — shared across branches', 'obsidian-booking' ),
+			'fields'                => array(
 
-			/* ── Top-of-group note ─────────────────────────────────────────── */
-			array(
-				'key'     => 'field_obsidian_car_intro',
-				'label'   => '',
-				'name'    => '',
-				'type'    => 'message',
-				'message' => __(
-					"These details describe the vehicle itself and are <strong>shared across every branch</strong> that stocks it.\n\nPer-branch <strong>unit counts</strong> are managed in <em>Inventory — by Branch</em> below. Per-color <strong>image galleries</strong> are managed once for the whole vehicle in <em>Color Galleries</em> below.",
-					'obsidian-booking'
-				),
-				'new_lines'         => 'wpautop',
-				'esc_html'          => 0,
-			),
-			array(
-				'key'          => 'field_obsidian_car_name',
-				'label'        => __( 'Car Name', 'obsidian-booking' ),
-				'name'         => 'car_name',
-				'type'         => 'text',
-				'instructions' => __( 'The display name of this vehicle (e.g. "Nissan GTR R35"). Updates the main post title automatically.', 'obsidian-booking' ),
-				'required'     => 1,
-			),
-			array(
-				'key'           => 'field_obsidian_car_class_taxonomy',
-				'label'         => __( 'Car Class', 'obsidian-booking' ),
-				'name'          => 'car_class',
-				'type'          => 'taxonomy',
-				'taxonomy'      => 'car_class',
-				'field_type'    => 'select',
-				'allow_null'    => 0,
-				'add_term'      => 0,
-				'save_terms'    => 1,
-				'load_terms'    => 1,
-				'return_format' => 'id',
-				'multiple'      => 0,
-				'instructions'  => __( 'Select the vehicle class (e.g. Exotic, Executive).', 'obsidian-booking' ),
-				'required'      => 1,
-			),
-
-			/* ── Identification ───────────────────────────────────────────── */
-			array(
-				'key'          => 'field_obsidian_car_make',
-				'label'        => __( 'Make', 'obsidian-booking' ),
-				'name'         => 'car_make',
-				'type'         => 'text',
-				'instructions' => __( 'Manufacturer, e.g. "Nissan", "Toyota".', 'obsidian-booking' ),
-				'required'     => 1,
-				'wrapper'      => array( 'width' => '50' ),
-			),
-			array(
-				'key'          => 'field_obsidian_car_model',
-				'label'        => __( 'Model', 'obsidian-booking' ),
-				'name'         => 'car_model',
-				'type'         => 'text',
-				'instructions' => __( 'Model name, e.g. "GTR", "Vios".', 'obsidian-booking' ),
-				'required'     => 1,
-				'wrapper'      => array( 'width' => '50' ),
-			),
-			array(
-				'key'          => 'field_obsidian_car_year',
-				'label'        => __( 'Year', 'obsidian-booking' ),
-				'name'         => 'car_year',
-				'type'         => 'number',
-				'instructions' => __( 'Model year, e.g. 2024.', 'obsidian-booking' ),
-				'required'     => 1,
-				'min'          => 1980,
-				'max'          => (int) date( 'Y' ) + 2,
-				'step'         => 1,
-				'wrapper'      => array( 'width' => '50' ),
-			),
-			array(
-				'key'          => 'field_obsidian_car_daily_rate',
-				'label'        => __( 'Daily Rate (PHP)', 'obsidian-booking' ),
-				'name'         => 'car_daily_rate',
-				'type'         => 'number',
-				'instructions' => __( 'Daily rental rate in PHP, e.g. 850.00. Same rate at every branch.', 'obsidian-booking' ),
-				'required'     => 1,
-				'min'          => 0,
-				'step'         => 0.01,
-				'wrapper'      => array( 'width' => '50' ),
-			),
-
-			/* ── Specs ────────────────────────────────────────────────────── */
-			array(
-				'key'          => 'field_obsidian_car_specs',
-				'label'        => __( 'Specifications', 'obsidian-booking' ),
-				'name'         => 'car_specs',
-				'type'         => 'textarea',
-				'instructions' => __( 'One bullet per line — these render as a list in the booking modal (e.g. "5 seats", "Automatic transmission", "Bluetooth").', 'obsidian-booking' ),
-				'required'     => 0,
-				'rows'         => 5,
-				'new_lines'    => '',
-			),
-
-			/* ── Master color list (per-branch units handled separately) ──── */
-			array(
-				'key'           => 'field_obsidian_car_colors',
-				'label'         => __( 'Available Colors', 'obsidian-booking' ),
-				'name'          => 'car_colors',
-				'type'          => 'checkbox',
-				'instructions'  => __( 'Master list of color variants this vehicle comes in. After saving, set how many units of each color are stocked at each branch in the Inventory section below.', 'obsidian-booking' ),
-				'required'      => 1,
-				'choices'       => obsidian_get_car_color_choices(),
-				'allow_custom'  => 0,
-				'save_custom'   => 0,
-				'layout'        => 'horizontal',
-				'toggle'        => 0,
-				'return_format' => 'value',
-			),
-
-			/* ── Vehicle-wide status ──────────────────────────────────────── */
-			array(
-				'key'           => 'field_obsidian_car_status',
-				'label'         => __( 'Vehicle Status', 'obsidian-booking' ),
-				'name'          => 'car_status',
-				'type'          => 'select',
-				'instructions'  => __( 'Vehicle-wide listing status. Use "Maintenance" or "Retired" to hide this car from every branch at once. To pull the car from a single branch only, set its units to 0 in the Inventory section instead.', 'obsidian-booking' ),
-				'required'      => 1,
-				'choices'       => array(
-					'available'   => __( 'Available', 'obsidian-booking' ),
-					'maintenance' => __( 'Maintenance', 'obsidian-booking' ),
-					'retired'     => __( 'Retired', 'obsidian-booking' ),
-				),
-				'default_value' => 'available',
-				'allow_null'    => 0,
-				'return_format' => 'value',
-			),
-		),
-		'location'              => array(
-			array(
+				/* ── Top-of-group note ─────────────────────────────────────────── */
 				array(
-					'param'    => 'post_type',
-					'operator' => '==',
-					'value'    => 'car',
+					'key'       => 'field_obsidian_car_intro',
+					'label'     => '',
+					'name'      => '',
+					'type'      => 'message',
+					'message'   => __(
+						"These details describe the vehicle itself and are <strong>shared across every branch</strong> that stocks it.\n\nPer-branch <strong>unit counts</strong> are managed in <em>Inventory — by Branch</em> below. Per-color <strong>image galleries</strong> are managed once for the whole vehicle in <em>Color Galleries</em> below.",
+						'obsidian-booking'
+					),
+					'new_lines' => 'wpautop',
+					'esc_html'  => 0,
+				),
+				array(
+					'key'          => 'field_obsidian_car_name',
+					'label'        => __( 'Car Name', 'obsidian-booking' ),
+					'name'         => 'car_name',
+					'type'         => 'text',
+					'instructions' => __( 'The display name of this vehicle (e.g. "Nissan GTR R35"). Updates the main post title automatically.', 'obsidian-booking' ),
+					'required'     => 1,
+				),
+				array(
+					'key'           => 'field_obsidian_car_class_taxonomy',
+					'label'         => __( 'Car Class', 'obsidian-booking' ),
+					'name'          => 'car_class',
+					'type'          => 'taxonomy',
+					'taxonomy'      => 'car_class',
+					'field_type'    => 'select',
+					'allow_null'    => 0,
+					'add_term'      => 0,
+					'save_terms'    => 1,
+					'load_terms'    => 1,
+					'return_format' => 'id',
+					'multiple'      => 0,
+					'instructions'  => __( 'Select the vehicle class (e.g. Exotic, Executive).', 'obsidian-booking' ),
+					'required'      => 1,
+				),
+
+				/* ── Identification ───────────────────────────────────────────── */
+				array(
+					'key'          => 'field_obsidian_car_make',
+					'label'        => __( 'Make', 'obsidian-booking' ),
+					'name'         => 'car_make',
+					'type'         => 'text',
+					'instructions' => __( 'Manufacturer, e.g. "Nissan", "Toyota".', 'obsidian-booking' ),
+					'required'     => 1,
+					'wrapper'      => array( 'width' => '50' ),
+				),
+				array(
+					'key'          => 'field_obsidian_car_model',
+					'label'        => __( 'Model', 'obsidian-booking' ),
+					'name'         => 'car_model',
+					'type'         => 'text',
+					'instructions' => __( 'Model name, e.g. "GTR", "Vios".', 'obsidian-booking' ),
+					'required'     => 1,
+					'wrapper'      => array( 'width' => '50' ),
+				),
+				array(
+					'key'          => 'field_obsidian_car_year',
+					'label'        => __( 'Year', 'obsidian-booking' ),
+					'name'         => 'car_year',
+					'type'         => 'number',
+					'instructions' => __( 'Model year, e.g. 2024.', 'obsidian-booking' ),
+					'required'     => 1,
+					'min'          => 1980,
+					'max'          => (int) gmdate( 'Y' ) + 2,
+					'step'         => 1,
+					'wrapper'      => array( 'width' => '50' ),
+				),
+				array(
+					'key'          => 'field_obsidian_car_daily_rate',
+					'label'        => __( 'Daily Rate (PHP)', 'obsidian-booking' ),
+					'name'         => 'car_daily_rate',
+					'type'         => 'number',
+					'instructions' => __( 'Daily rental rate in PHP, e.g. 850.00. Same rate at every branch.', 'obsidian-booking' ),
+					'required'     => 1,
+					'min'          => 0,
+					'step'         => 0.01,
+					'wrapper'      => array( 'width' => '50' ),
+				),
+
+				/* ── Specs ────────────────────────────────────────────────────── */
+				array(
+					'key'          => 'field_obsidian_car_specs',
+					'label'        => __( 'Specifications', 'obsidian-booking' ),
+					'name'         => 'car_specs',
+					'type'         => 'textarea',
+					'instructions' => __( 'One bullet per line — these render as a list in the booking modal (e.g. "5 seats", "Automatic transmission", "Bluetooth").', 'obsidian-booking' ),
+					'required'     => 0,
+					'rows'         => 5,
+					'new_lines'    => '',
+				),
+
+				/* ── Master color list (per-branch units handled separately) ──── */
+				array(
+					'key'           => 'field_obsidian_car_colors',
+					'label'         => __( 'Available Colors', 'obsidian-booking' ),
+					'name'          => 'car_colors',
+					'type'          => 'checkbox',
+					'instructions'  => __( 'Master list of color variants this vehicle comes in. After saving, set how many units of each color are stocked at each branch in the Inventory section below.', 'obsidian-booking' ),
+					'required'      => 1,
+					'choices'       => obsidian_get_car_color_choices(),
+					'allow_custom'  => 0,
+					'save_custom'   => 0,
+					'layout'        => 'horizontal',
+					'toggle'        => 0,
+					'return_format' => 'value',
+				),
+
+				/* ── Vehicle-wide status ──────────────────────────────────────── */
+				array(
+					'key'           => 'field_obsidian_car_status',
+					'label'         => __( 'Vehicle Status', 'obsidian-booking' ),
+					'name'          => 'car_status',
+					'type'          => 'select',
+					'instructions'  => __( 'Vehicle-wide listing status. Use "Maintenance" or "Retired" to hide this car from every branch at once. To pull the car from a single branch only, set its units to 0 in the Inventory section instead.', 'obsidian-booking' ),
+					'required'      => 1,
+					'choices'       => array(
+						'available'   => __( 'Available', 'obsidian-booking' ),
+						'maintenance' => __( 'Maintenance', 'obsidian-booking' ),
+						'retired'     => __( 'Retired', 'obsidian-booking' ),
+					),
+					'default_value' => 'available',
+					'allow_null'    => 0,
+					'return_format' => 'value',
 				),
 			),
-		),
-		'menu_order'            => 0,
-		'position'              => 'normal',
-		'style'                 => 'default',
-		'label_placement'       => 'top',
-		'instruction_placement' => 'label',
-		'active'                => true,
-		'show_in_rest'          => 1,
-	) );
+			'location'              => array(
+				array(
+					array(
+						'param'    => 'post_type',
+						'operator' => '==',
+						'value'    => 'car',
+					),
+				),
+			),
+			'menu_order'            => 0,
+			'position'              => 'normal',
+			'style'                 => 'default',
+			'label_placement'       => 'top',
+			'instruction_placement' => 'label',
+			'active'                => true,
+			'show_in_rest'          => 1,
+		)
+	);
 }
 add_action( 'acf/init', 'obsidian_register_car_acf_fields' );
 
@@ -238,7 +240,7 @@ function obsidian_suppress_legacy_car_field_groups( $groups ) {
 	foreach ( $groups as $i => $group ) {
 
 		// Skip our own code-defined group.
-		if ( ! empty( $group['key'] ) && $group['key'] === 'group_obsidian_car_details' ) {
+		if ( ! empty( $group['key'] ) && 'group_obsidian_car_details' === $group['key'] ) {
 			continue;
 		}
 
@@ -250,9 +252,9 @@ function obsidian_suppress_legacy_car_field_groups( $groups ) {
 				foreach ( (array) $rule_group as $rule ) {
 					if (
 						isset( $rule['param'], $rule['operator'], $rule['value'] )
-						&& $rule['param'] === 'post_type'
-						&& $rule['operator'] === '=='
-						&& $rule['value'] === 'car'
+						&& 'post_type' === $rule['param']
+						&& '==' === $rule['operator']
+						&& 'car' === $rule['value']
 					) {
 						$is_for_car = true;
 						break 2;

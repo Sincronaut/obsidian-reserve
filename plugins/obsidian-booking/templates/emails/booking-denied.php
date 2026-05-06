@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-include __DIR__ . '/email-header.php';
+require __DIR__ . '/email-header.php';
 ?>
 
 <h2 style="margin:0 0 8px;font-size:20px;color:#ffffff;">Update on Your Reservation</h2>
@@ -55,4 +55,4 @@ Hello <?php echo esc_html( $first_name ); ?>, we've reviewed your reservation re
 If you believe this was made in error or have additional documents to provide, please feel free to submit a new reservation request on our website.
 </p>
 
-<?php include __DIR__ . '/email-footer.php'; ?>
+<?php require __DIR__ . '/email-footer.php'; ?>

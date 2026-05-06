@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-include __DIR__ . '/email-header.php';
+require __DIR__ . '/email-header.php';
 ?>
 
 <h2 style="margin:0 0 8px;font-size:20px;color:#ffffff;text-align:center;">Your Pickup Is Tomorrow!</h2>
@@ -73,7 +73,7 @@ Hello <?php echo esc_html( $first_name ); ?>, just a friendly reminder that your
 <tr>
 <td style="padding:4px 0;font-size:14px;color:#cccccc;">• Government-issued ID</td>
 </tr>
-<?php if ( $payment_option === 'down' ) : ?>
+<?php if ( 'down' === $payment_option ) : ?>
 <tr>
 <td style="padding:4px 0;font-size:14px;color:#cccccc;">• Remaining balance payment</td>
 </tr>
@@ -84,4 +84,4 @@ Hello <?php echo esc_html( $first_name ); ?>, just a friendly reminder that your
 See you tomorrow! Drive safe.
 </p>
 
-<?php include __DIR__ . '/email-footer.php'; ?>
+<?php require __DIR__ . '/email-footer.php'; ?>

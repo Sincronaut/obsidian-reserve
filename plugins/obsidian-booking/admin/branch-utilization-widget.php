@@ -42,36 +42,40 @@ add_action( 'wp_dashboard_setup', 'obsidian_add_branch_utilization_widget' );
  */
 function obsidian_render_branch_utilization_widget() {
 
-	$today      = wp_date( 'Y-m-d' );
+	$today        = wp_date( 'Y-m-d' );
 	$bookings_url = admin_url( 'edit.php?post_type=booking' );
 
 	// Collect every published branch grouped by region term.
-	$regions = get_terms( array(
-		'taxonomy'   => 'region',
-		'hide_empty' => false,
-		'orderby'    => 'name',
-		'order'      => 'ASC',
-	) );
+	$regions = get_terms(
+		array(
+			'taxonomy'   => 'region',
+			'hide_empty' => false,
+			'orderby'    => 'name',
+			'order'      => 'ASC',
+		)
+	);
 
 	$grouped = array();
 
 	if ( ! is_wp_error( $regions ) ) {
 		foreach ( $regions as $region ) {
-			$branch_ids = get_posts( array(
-				'post_type'      => 'location',
-				'post_status'    => 'publish',
-				'posts_per_page' => -1,
-				'fields'         => 'ids',
-				'orderby'        => 'title',
-				'order'          => 'ASC',
-				'tax_query'      => array(
-					array(
-						'taxonomy' => 'region',
-						'field'    => 'term_id',
-						'terms'    => $region->term_id,
+			$branch_ids = get_posts(
+				array(
+					'post_type'      => 'location',
+					'post_status'    => 'publish',
+					'posts_per_page' => -1,
+					'fields'         => 'ids',
+					'orderby'        => 'title',
+					'order'          => 'ASC',
+					'tax_query'      => array(
+						array(
+							'taxonomy' => 'region',
+							'field'    => 'term_id',
+							'terms'    => $region->term_id,
+						),
 					),
-				),
-			) );
+				)
+			);
 
 			if ( empty( $branch_ids ) ) {
 				continue;
@@ -86,20 +90,22 @@ function obsidian_render_branch_utilization_widget() {
 
 	// Surface unassigned branches (no region) as their own group so they
 	// don't silently disappear from the widget.
-	$orphans = get_posts( array(
-		'post_type'      => 'location',
-		'post_status'    => 'publish',
-		'posts_per_page' => -1,
-		'fields'         => 'ids',
-		'orderby'        => 'title',
-		'order'          => 'ASC',
-		'tax_query'      => array(
-			array(
-				'taxonomy' => 'region',
-				'operator' => 'NOT EXISTS',
+	$orphans = get_posts(
+		array(
+			'post_type'      => 'location',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+			'tax_query'      => array(
+				array(
+					'taxonomy' => 'region',
+					'operator' => 'NOT EXISTS',
+				),
 			),
-		),
-	) );
+		)
+	);
 
 	if ( ! empty( $orphans ) ) {
 		$grouped[] = array(
@@ -121,29 +127,31 @@ function obsidian_render_branch_utilization_widget() {
 
 	?>
 	<div class="obsidian-bu">
-	<?php foreach ( $grouped as $group ) :
+	<?php
+	foreach ( $grouped as $group ) :
 		$region_label = $group['region'] ? $group['region']->name : __( 'Unassigned', 'obsidian-booking' );
 		?>
 		<div class="obsidian-bu-region">
 			<h4 class="obsidian-bu-region-title"><?php echo esc_html( $region_label ); ?></h4>
 			<ul class="obsidian-bu-list">
-				<?php foreach ( $group['branch_ids'] as $branch_id ) :
+				<?php
+				foreach ( $group['branch_ids'] as $branch_id ) :
 					$total  = obsidian_get_branch_total_units( $branch_id );
 					$rented = obsidian_count_branch_active_today( $branch_id, $today );
 
-					$percent       = $total > 0 ? (int) round( ( $rented / $total ) * 100 ) : 0;
-					$bar_class     = '';
-					if ( $percent >= 90 ) {
+					$percent   = $total > 0 ? (int) round( ( $rented / $total ) * 100 ) : 0;
+					$bar_class = '';
+					if ( 90 <= $percent ) {
 						$bar_class = 'is-hot';
-					} elseif ( $percent >= 60 ) {
+					} elseif ( 60 <= $percent ) {
 						$bar_class = 'is-warm';
 					}
 
-					$status        = get_post_meta( $branch_id, 'location_status', true );
-					$status_pill   = ( $status && $status !== 'active' ) ? $status : '';
+					$status      = get_post_meta( $branch_id, 'location_status', true );
+					$status_pill = ( $status && 'active' !== $status ) ? $status : '';
 
 					$filter_url = add_query_arg( 'booking_location_filter', $branch_id, $bookings_url );
-				?>
+					?>
 				<li class="obsidian-bu-item">
 					<div class="obsidian-bu-row">
 						<a href="<?php echo esc_url( get_edit_post_link( $branch_id ) ); ?>" class="obsidian-bu-name">
@@ -172,7 +180,7 @@ function obsidian_render_branch_utilization_widget() {
 					<?php if ( $total > 0 ) : ?>
 						<div class="obsidian-bu-bar">
 							<div class="obsidian-bu-bar-fill <?php echo esc_attr( $bar_class ); ?>"
-								 style="width: <?php echo esc_attr( min( 100, $percent ) ); ?>%;">
+								style="width: <?php echo esc_attr( min( 100, $percent ) ); ?>%;">
 							</div>
 						</div>
 					<?php else : ?>
@@ -203,6 +211,9 @@ function obsidian_render_branch_utilization_widget() {
  * Loops once over all published cars; cheap for fleets up to the low
  * hundreds of cars (the dashboard widget only renders for logged-in
  * admins, not on every page load).
+ *
+ * @param int $branch_id Branch post ID.
+ * @return int
  */
 function obsidian_get_branch_total_units( $branch_id ) {
 
@@ -211,12 +222,14 @@ function obsidian_get_branch_total_units( $branch_id ) {
 		return 0;
 	}
 
-	$car_ids = get_posts( array(
-		'post_type'      => 'car',
-		'post_status'    => 'publish',
-		'posts_per_page' => -1,
-		'fields'         => 'ids',
-	) );
+	$car_ids = get_posts(
+		array(
+			'post_type'      => 'car',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+		)
+	);
 
 	$total = 0;
 	$key   = (string) $branch_id;
@@ -243,6 +256,7 @@ function obsidian_get_branch_total_units( $branch_id ) {
  *
  * @param int    $branch_id The branch ID.
  * @param string $today     Y-m-d formatted date.
+ * @return int
  */
 function obsidian_count_branch_active_today( $branch_id, $today ) {
 
@@ -255,39 +269,41 @@ function obsidian_count_branch_active_today( $branch_id, $today ) {
 		? obsidian_get_blocking_statuses()
 		: array( 'pending_review', 'awaiting_payment', 'paid', 'confirmed', 'active' );
 
-	$query = new WP_Query( array(
-		'post_type'      => 'booking',
-		'post_status'    => 'any',
-		'posts_per_page' => -1,
-		'fields'         => 'ids',
-		'no_found_rows'  => false,
-		'meta_query'     => array(
-			'relation' => 'AND',
-			array(
-				'key'     => '_booking_location_id',
-				'value'   => $branch_id,
-				'compare' => '=',
-				'type'    => 'NUMERIC',
+	$query = new WP_Query(
+		array(
+			'post_type'      => 'booking',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'no_found_rows'  => false,
+			'meta_query'     => array(
+				'relation' => 'AND',
+				array(
+					'key'     => '_booking_location_id',
+					'value'   => $branch_id,
+					'compare' => '=',
+					'type'    => 'NUMERIC',
+				),
+				array(
+					'key'     => '_booking_status',
+					'value'   => $blocking,
+					'compare' => 'IN',
+				),
+				array(
+					'key'     => '_booking_start_date',
+					'value'   => $today,
+					'compare' => '<=',
+					'type'    => 'DATE',
+				),
+				array(
+					'key'     => '_booking_end_date',
+					'value'   => $today,
+					'compare' => '>=',
+					'type'    => 'DATE',
+				),
 			),
-			array(
-				'key'     => '_booking_status',
-				'value'   => $blocking,
-				'compare' => 'IN',
-			),
-			array(
-				'key'     => '_booking_start_date',
-				'value'   => $today,
-				'compare' => '<=',
-				'type'    => 'DATE',
-			),
-			array(
-				'key'     => '_booking_end_date',
-				'value'   => $today,
-				'compare' => '>=',
-				'type'    => 'DATE',
-			),
-		),
-	) );
+		)
+	);
 
 	return (int) $query->found_posts;
 }

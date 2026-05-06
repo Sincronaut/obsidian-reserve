@@ -14,6 +14,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Define custom columns for the Bookings list table.
+ *
+ * @param array $columns Existing column definitions.
+ * @return array
  */
 function obsidian_booking_columns( $columns ) {
 	return array(
@@ -33,6 +36,10 @@ add_filter( 'manage_booking_posts_columns', 'obsidian_booking_columns' );
 
 /**
  * Render content for each custom column.
+ *
+ * @param string $column  Column key.
+ * @param int    $post_id Booking post ID.
+ * @return void
  */
 function obsidian_booking_column_content( $column, $post_id ) {
 
@@ -71,7 +78,10 @@ function obsidian_booking_column_content( $column, $post_id ) {
 
 			if ( $location_id > 0 && get_post( $location_id ) ) {
 				$region_terms = wp_get_post_terms( $location_id, 'region', array( 'number' => 1 ) );
-				$region_name  = ! is_wp_error( $region_terms ) && ! empty( $region_terms ) ? $region_terms[0]->name : '';
+				$region_name  = '';
+				if ( ! is_wp_error( $region_terms ) && ! empty( $region_terms ) ) {
+					$region_name = $region_terms[0]->name;
+				}
 
 				printf(
 					'<a href="%s"><strong>%s</strong></a>',
@@ -110,16 +120,21 @@ function obsidian_booking_column_content( $column, $post_id ) {
 			$start = get_post_meta( $post_id, '_booking_start_date', true );
 			$end   = get_post_meta( $post_id, '_booking_end_date', true );
 			if ( $start && $end ) {
-				$start_dt = DateTime::createFromFormat( 'Y-m-d', $start );
-				$end_dt   = DateTime::createFromFormat( 'Y-m-d', $end );
-				$days     = $start_dt && $end_dt ? $start_dt->diff( $end_dt )->days : 0;
+				$start_dt    = DateTime::createFromFormat( 'Y-m-d', $start );
+				$end_dt      = DateTime::createFromFormat( 'Y-m-d', $end );
+				$days        = ( $start_dt && $end_dt ) ? $start_dt->diff( $end_dt )->days : 0;
+				$days_value  = absint( $days );
+				$days_suffix = '';
+				if ( 1 !== $days_value ) {
+					$days_suffix = 's';
+				}
 
 				printf(
-					'%s – %s<br><span class="obsidian-col-muted">%d day%s</span>',
+					'%s - %s<br><span class="obsidian-col-muted">%s day%s</span>',
 					$start_dt ? esc_html( $start_dt->format( 'M j, Y' ) ) : esc_html( $start ),
 					$end_dt ? esc_html( $end_dt->format( 'M j' ) ) : esc_html( $end ),
-					$days,
-					$days !== 1 ? 's' : ''
+					esc_html( (string) $days_value ),
+					esc_html( $days_suffix )
 				);
 			} else {
 				echo '<span class="obsidian-col-muted">—</span>';
@@ -128,9 +143,9 @@ function obsidian_booking_column_content( $column, $post_id ) {
 
 		case 'booking_type':
 			$type = get_post_meta( $post_id, '_booking_customer_type', true );
-			if ( $type === 'international' ) {
+			if ( 'international' === $type ) {
 				echo '<span class="obsidian-badge obsidian-badge-intl">International</span>';
-			} elseif ( $type === 'local' ) {
+			} elseif ( 'local' === $type ) {
 				echo '<span class="obsidian-badge obsidian-badge-local">Local</span>';
 			} else {
 				echo '<span class="obsidian-col-muted">—</span>';
@@ -156,7 +171,11 @@ function obsidian_booking_column_content( $column, $post_id ) {
 					esc_html( $map[ $status ][0] )
 				);
 			} else {
-				echo '<span class="obsidian-col-muted">' . esc_html( $status ?: '—' ) . '</span>';
+				$status_label = $status;
+				if ( '' === $status_label ) {
+					$status_label = '—';
+				}
+				echo '<span class="obsidian-col-muted">' . esc_html( $status_label ) . '</span>';
 			}
 			break;
 
@@ -191,6 +210,9 @@ add_action( 'manage_booking_posts_custom_column', 'obsidian_booking_column_conte
 
 /**
  * Make key columns sortable.
+ *
+ * @param array $columns Existing sortable columns.
+ * @return array
  */
 function obsidian_booking_sortable_columns( $columns ) {
 	$columns['booking_status']   = 'booking_status';
@@ -203,24 +225,27 @@ add_filter( 'manage_edit-booking_sortable_columns', 'obsidian_booking_sortable_c
 
 /**
  * Handle sorting by custom meta fields.
+ *
+ * @param WP_Query $query Query instance.
+ * @return void
  */
 function obsidian_booking_sort_query( $query ) {
-	if ( ! is_admin() || ! $query->is_main_query() || $query->get( 'post_type' ) !== 'booking' ) {
+	if ( ! is_admin() || ! $query->is_main_query() || 'booking' !== $query->get( 'post_type' ) ) {
 		return;
 	}
 
 	$orderby = $query->get( 'orderby' );
 
-	if ( $orderby === 'booking_status' ) {
+	if ( 'booking_status' === $orderby ) {
 		$query->set( 'meta_key', '_booking_status' );
 		$query->set( 'orderby', 'meta_value' );
-	} elseif ( $orderby === 'booking_total' ) {
+	} elseif ( 'booking_total' === $orderby ) {
 		$query->set( 'meta_key', '_booking_total_price' );
 		$query->set( 'orderby', 'meta_value_num' );
-	} elseif ( $orderby === 'booking_dates' ) {
+	} elseif ( 'booking_dates' === $orderby ) {
 		$query->set( 'meta_key', '_booking_start_date' );
 		$query->set( 'orderby', 'meta_value' );
-	} elseif ( $orderby === 'booking_location' ) {
+	} elseif ( 'booking_location' === $orderby ) {
 		$query->set( 'meta_key', '_booking_location_id' );
 		$query->set( 'orderby', 'meta_value_num' );
 	}
@@ -233,12 +258,16 @@ add_action( 'pre_get_posts', 'obsidian_booking_sort_query' );
 function obsidian_booking_status_filter() {
 	global $typenow;
 
-	if ( $typenow !== 'booking' ) {
+	if ( 'booking' !== $typenow ) {
 		return;
 	}
 
-	$current = isset( $_GET['booking_status_filter'] ) ? sanitize_text_field( $_GET['booking_status_filter'] ) : '';
-	$statuses = array(
+	$nonce       = isset( $_GET['obsidian_booking_filters_nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['obsidian_booking_filters_nonce'] ) ) : '';
+	$nonce_valid = ( '' !== $nonce ) && wp_verify_nonce( $nonce, 'obsidian_booking_filters' );
+	$current     = $nonce_valid && isset( $_GET['booking_status_filter'] )
+		? sanitize_text_field( wp_unslash( $_GET['booking_status_filter'] ) )
+		: '';
+	$statuses    = array(
 		''                 => __( 'All Statuses', 'obsidian-booking' ),
 		'pending_review'   => __( 'Pending Review', 'obsidian-booking' ),
 		'awaiting_payment' => __( 'Awaiting Payment', 'obsidian-booking' ),
@@ -249,6 +278,7 @@ function obsidian_booking_status_filter() {
 		'denied'           => __( 'Denied', 'obsidian-booking' ),
 	);
 
+	wp_nonce_field( 'obsidian_booking_filters', 'obsidian_booking_filters_nonce' );
 	echo '<select name="booking_status_filter">';
 	foreach ( $statuses as $val => $label ) {
 		printf(
@@ -269,19 +299,23 @@ add_action( 'restrict_manage_posts', 'obsidian_booking_status_filter' );
 function obsidian_booking_branch_filter() {
 	global $typenow;
 
-	if ( $typenow !== 'booking' ) {
+	if ( 'booking' !== $typenow ) {
 		return;
 	}
 
-	$current = isset( $_GET['booking_location_filter'] ) ? (int) $_GET['booking_location_filter'] : 0;
+	$nonce       = isset( $_GET['obsidian_booking_filters_nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['obsidian_booking_filters_nonce'] ) ) : '';
+	$nonce_valid = ( '' !== $nonce ) && wp_verify_nonce( $nonce, 'obsidian_booking_filters' );
+	$current     = $nonce_valid && isset( $_GET['booking_location_filter'] ) ? (int) $_GET['booking_location_filter'] : 0;
 
 	// Group branches by region term so the <optgroup>s mirror the data model.
-	$regions = get_terms( array(
-		'taxonomy'   => 'region',
-		'hide_empty' => false,
-		'orderby'    => 'name',
-		'order'      => 'ASC',
-	) );
+	$regions = get_terms(
+		array(
+			'taxonomy'   => 'region',
+			'hide_empty' => false,
+			'orderby'    => 'name',
+			'order'      => 'ASC',
+		)
+	);
 
 	if ( is_wp_error( $regions ) ) {
 		return;
@@ -291,21 +325,23 @@ function obsidian_booking_branch_filter() {
 	echo '<option value="0">' . esc_html__( 'All Branches', 'obsidian-booking' ) . '</option>';
 
 	foreach ( $regions as $region ) {
-		$branch_ids = get_posts( array(
-			'post_type'      => 'location',
-			'post_status'    => 'publish',
-			'posts_per_page' => -1,
-			'fields'         => 'ids',
-			'orderby'        => 'title',
-			'order'          => 'ASC',
-			'tax_query'      => array(
-				array(
-					'taxonomy' => 'region',
-					'field'    => 'term_id',
-					'terms'    => $region->term_id,
+		$branch_ids = get_posts(
+			array(
+				'post_type'      => 'location',
+				'post_status'    => 'publish',
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+				'tax_query'      => array(
+					array(
+						'taxonomy' => 'region',
+						'field'    => 'term_id',
+						'terms'    => $region->term_id,
+					),
 				),
-			),
-		) );
+			)
+		);
 
 		if ( empty( $branch_ids ) ) {
 			continue;
@@ -325,20 +361,22 @@ function obsidian_booking_branch_filter() {
 
 	// Surface any branches that exist but aren't assigned to a region yet so
 	// they're still filterable.
-	$orphan_ids = get_posts( array(
-		'post_type'      => 'location',
-		'post_status'    => 'publish',
-		'posts_per_page' => -1,
-		'fields'         => 'ids',
-		'orderby'        => 'title',
-		'order'          => 'ASC',
-		'tax_query'      => array(
-			array(
-				'taxonomy' => 'region',
-				'operator' => 'NOT EXISTS',
+	$orphan_ids = get_posts(
+		array(
+			'post_type'      => 'location',
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+			'tax_query'      => array(
+				array(
+					'taxonomy' => 'region',
+					'operator' => 'NOT EXISTS',
+				),
 			),
-		),
-	) );
+		)
+	);
 
 	if ( ! empty( $orphan_ids ) ) {
 		printf( '<optgroup label="%s">', esc_attr__( 'Unassigned', 'obsidian-booking' ) );
@@ -359,16 +397,27 @@ add_action( 'restrict_manage_posts', 'obsidian_booking_branch_filter' );
 
 /**
  * Apply the status filter to the query.
+ *
+ * @param WP_Query $query Query instance.
+ * @return void
  */
 function obsidian_booking_apply_status_filter( $query ) {
-	if ( ! is_admin() || ! $query->is_main_query() || $query->get( 'post_type' ) !== 'booking' ) {
+	if ( ! is_admin() || ! $query->is_main_query() || 'booking' !== $query->get( 'post_type' ) ) {
 		return;
 	}
 
-	$status_filter = isset( $_GET['booking_status_filter'] ) ? sanitize_text_field( $_GET['booking_status_filter'] ) : '';
+	$nonce = isset( $_GET['obsidian_booking_filters_nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['obsidian_booking_filters_nonce'] ) ) : '';
+	if ( '' === $nonce || ! wp_verify_nonce( $nonce, 'obsidian_booking_filters' ) ) {
+		return;
+	}
+
+	$status_filter = isset( $_GET['booking_status_filter'] ) ? sanitize_text_field( wp_unslash( $_GET['booking_status_filter'] ) ) : '';
 	$branch_filter = isset( $_GET['booking_location_filter'] ) ? (int) $_GET['booking_location_filter'] : 0;
 
-	$meta_query = $query->get( 'meta_query' ) ?: array();
+	$meta_query = $query->get( 'meta_query' );
+	if ( empty( $meta_query ) ) {
+		$meta_query = array();
+	}
 
 	if ( ! empty( $status_filter ) ) {
 		$meta_query[] = array(

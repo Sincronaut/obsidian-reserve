@@ -9,10 +9,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/* ══════════════════════════════════════════════════
-   CAR Custom Post Type
-   ══════════════════════════════════════════════════ */
+/*
+ * ======================================================================
+ * CAR Custom Post Type
+ * ======================================================================
+ */
 
+/**
+ * Register the Car custom post type.
+ *
+ * @return void
+ */
 function obsidian_register_car_post_type() {
 
 	$labels = array(
@@ -32,7 +39,6 @@ function obsidian_register_car_post_type() {
 
 	$args = array(
 		'labels'              => $labels,
-		'description'         => __( 'Luxury vehicles available for reservation.', 'obsidian-booking' ),
 		'public'              => true,
 		'publicly_queryable'  => true,
 		'show_ui'             => true,
@@ -41,7 +47,10 @@ function obsidian_register_car_post_type() {
 		'menu_position'       => 5,
 		'menu_icon'           => 'dashicons-car',
 		'has_archive'         => true,
-		'rewrite'             => array( 'slug' => 'cars', 'with_front' => false ),
+		'rewrite'             => array(
+			'slug'       => 'cars',
+			'with_front' => false,
+		),
 		'supports'            => array( 'title', 'editor', 'thumbnail', 'custom-fields' ),
 		'capability_type'     => 'post',
 		'exclude_from_search' => false,
@@ -51,10 +60,17 @@ function obsidian_register_car_post_type() {
 }
 add_action( 'init', 'obsidian_register_car_post_type' );
 
-/* ══════════════════════════════════════════════════
-   BOOKING Custom Post Type
-   ══════════════════════════════════════════════════ */
+/*
+ * ======================================================================
+ * BOOKING Custom Post Type
+ * ======================================================================
+ */
 
+/**
+ * Register the Booking custom post type.
+ *
+ * @return void
+ */
 function obsidian_register_booking_post_type() {
 
 	$labels = array(
@@ -75,11 +91,11 @@ function obsidian_register_booking_post_type() {
 	$args = array(
 		'labels'              => $labels,
 		'description'         => __( 'Customer vehicle reservations.', 'obsidian-booking' ),
-		'public'              => false,       // Bookings have NO public URL
+		'public'              => false,       // Bookings have NO public URL.
 		'publicly_queryable'  => false,
-		'show_ui'             => true,        // But staff CAN see them in admin
+		'show_ui'             => true,        // But staff CAN see them in admin.
 		'show_in_menu'        => true,
-		'show_in_rest'        => true,        // Needed for our custom REST API
+		'show_in_rest'        => true,        // Needed for our custom REST API.
 		'menu_position'       => 6,
 		'menu_icon'           => 'dashicons-calendar-alt',
 		'has_archive'         => false,
@@ -92,9 +108,11 @@ function obsidian_register_booking_post_type() {
 }
 add_action( 'init', 'obsidian_register_booking_post_type' );
 
-/* ══════════════════════════════════════════════════
-   LOCATION (Branch) Custom Post Type — Phase 11
-   ══════════════════════════════════════════════════ */
+/*
+ * ======================================================================
+ * LOCATION (Branch) Custom Post Type - Phase 11
+ * ======================================================================
+ */
 
 /**
  * Branches are physical Obsidian Reserve stores (e.g. "Makati", "Cebu City").
@@ -127,7 +145,7 @@ function obsidian_register_location_post_type() {
 	$args = array(
 		'labels'              => $labels,
 		'description'         => __( 'Physical Obsidian Reserve branches with their own car inventory.', 'obsidian-booking' ),
-		'public'              => false,        // No front-end archive — branches surface via the fleet page + map block
+		'public'              => false,        // No front-end archive - branches surface via the fleet page + map block.
 		'publicly_queryable'  => false,
 		'show_ui'             => true,
 		'show_in_menu'        => true,

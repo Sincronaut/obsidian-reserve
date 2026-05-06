@@ -12,18 +12,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   Migration v2 — Multi-Location / Branches (Phase 11)
-   ══════════════════════════════════════════════════════════════
-   - Auto-creates a "Main Branch" Location post if none exist.
-   - Splits each car's `_car_color_variants` into the new per-branch
-     `_car_inventory` and shared `_car_galleries` meta fields.
-   - Backfills `_booking_location_id` on every existing booking,
-     pointing it at the Main Branch.
-
-   Old fields (`_car_color_variants`, `_booking_location`) are left
-   intact for one release as a fallback.
-   ══════════════════════════════════════════════════════════════ */
+/*
+ * ======================================================================
+ * Migration v2 - Multi-Location / Branches (Phase 11)
+ * ======================================================================
+ * - Auto-creates a "Main Branch" Location post if none exist.
+ * - Splits each car's `_car_color_variants` into the new per-branch
+ *   `_car_inventory` and shared `_car_galleries` meta fields.
+ * - Backfills `_booking_location_id` on every existing booking,
+ *   pointing it at the Main Branch.
+ *
+ * Old fields (`_car_color_variants`, `_booking_location`) are left
+ * intact for one release as a fallback.
+ */
 
 const OBSIDIAN_MIGRATION_V2_OPTION = 'obsidian_migration_v2_done';
 
@@ -71,45 +72,52 @@ add_action( 'admin_init', 'obsidian_run_migration_v2' );
  */
 function obsidian_migration_v2_ensure_main_branch() {
 
-	$existing = get_posts( array(
-		'post_type'      => 'location',
-		'post_status'    => 'publish',
-		'posts_per_page' => 1,
-		'fields'         => 'ids',
-		'orderby'        => 'date',
-		'order'          => 'ASC',
-		'meta_query'     => array(
-			array(
-				'key'     => 'location_status',
-				'value'   => 'active',
-				'compare' => '=',
+	$existing = get_posts(
+		array(
+			'post_type'      => 'location',
+			'post_status'    => 'publish',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			'orderby'        => 'date',
+			'order'          => 'ASC',
+			'meta_query'     => array(
+				array(
+					'key'     => 'location_status',
+					'value'   => 'active',
+					'compare' => '=',
+				),
 			),
-		),
-	) );
+		)
+	);
 
 	if ( ! empty( $existing ) ) {
 		return (int) $existing[0];
 	}
 
-	$any = get_posts( array(
-		'post_type'      => 'location',
-		'post_status'    => 'publish',
-		'posts_per_page' => 1,
-		'fields'         => 'ids',
-		'orderby'        => 'date',
-		'order'          => 'ASC',
-	) );
+	$any = get_posts(
+		array(
+			'post_type'      => 'location',
+			'post_status'    => 'publish',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			'orderby'        => 'date',
+			'order'          => 'ASC',
+		)
+	);
 
 	if ( ! empty( $any ) ) {
 		return (int) $any[0];
 	}
 
-	$branch_id = wp_insert_post( array(
-		'post_type'    => 'location',
-		'post_status'  => 'publish',
-		'post_title'   => __( 'Main Branch', 'obsidian-booking' ),
-		'post_content' => __( 'Auto-created during the multi-location migration. Please edit this branch to fill in its real address, contact details, and coordinates — or create new branches and reassign your inventory.', 'obsidian-booking' ),
-	), true );
+	$branch_id = wp_insert_post(
+		array(
+			'post_type'    => 'location',
+			'post_status'  => 'publish',
+			'post_title'   => __( 'Main Branch', 'obsidian-booking' ),
+			'post_content' => __( 'Auto-created during the multi-location migration. Please edit this branch to fill in its real address, contact details, and coordinates — or create new branches and reassign your inventory.', 'obsidian-booking' ),
+		),
+		true
+	);
 
 	if ( is_wp_error( $branch_id ) || ! $branch_id ) {
 		return 0;
@@ -123,11 +131,13 @@ function obsidian_migration_v2_ensure_main_branch() {
 	if ( $luzon && ! is_wp_error( $luzon ) ) {
 		wp_set_object_terms( $branch_id, array( (int) $luzon->term_id ), 'region', false );
 	} else {
-		$any_region = get_terms( array(
-			'taxonomy'   => 'region',
-			'hide_empty' => false,
-			'number'     => 1,
-		) );
+		$any_region = get_terms(
+			array(
+				'taxonomy'   => 'region',
+				'hide_empty' => false,
+				'number'     => 1,
+			)
+		);
 		if ( ! empty( $any_region ) && ! is_wp_error( $any_region ) ) {
 			wp_set_object_terms( $branch_id, array( (int) $any_region[0]->term_id ), 'region', false );
 		}
@@ -147,18 +157,20 @@ function obsidian_migration_v2_ensure_main_branch() {
  */
 function obsidian_migration_v2_migrate_cars( $branch_id ) {
 
-	$cars = get_posts( array(
-		'post_type'      => 'car',
-		'post_status'    => 'any',
-		'posts_per_page' => -1,
-		'fields'         => 'ids',
-		'meta_query'     => array(
-			array(
-				'key'     => '_migrated_v2',
-				'compare' => 'NOT EXISTS',
+	$cars = get_posts(
+		array(
+			'post_type'      => 'car',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'meta_query'     => array(
+				array(
+					'key'     => '_migrated_v2',
+					'compare' => 'NOT EXISTS',
+				),
 			),
-		),
-	) );
+		)
+	);
 
 	foreach ( $cars as $car_id ) {
 
@@ -217,40 +229,43 @@ function obsidian_migration_v2_migrate_cars( $branch_id ) {
  */
 function obsidian_migration_v2_migrate_bookings( $branch_id ) {
 
-	$bookings = get_posts( array(
-		'post_type'      => 'booking',
-		'post_status'    => 'any',
-		'posts_per_page' => -1,
-		'fields'         => 'ids',
-		'meta_query'     => array(
-			array(
-				'key'     => '_booking_location_id',
-				'compare' => 'NOT EXISTS',
+	$bookings = get_posts(
+		array(
+			'post_type'      => 'booking',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'meta_query'     => array(
+				array(
+					'key'     => '_booking_location_id',
+					'compare' => 'NOT EXISTS',
+				),
 			),
-		),
-	) );
+		)
+	);
 
 	foreach ( $bookings as $booking_id ) {
 		update_post_meta( $booking_id, '_booking_location_id', $branch_id );
 	}
 }
 
-/* ══════════════════════════════════════════════════════════════
-   Migration v3 — Per-Branch Status + Per-Branch Color Stocking
-   ══════════════════════════════════════════════════════════════
-   Wraps every legacy `_car_inventory` entry from the v2 shape:
-
-       { "12": { "blue": {"units":2}, "black": {"units":1} } }
-
-   into the v3 shape, which separates the branch's operational
-   status from the colors stocked there:
-
-       { "12": { "status": "available",
-                 "colors": { "blue": {"units":2}, "black": {"units":1} } } }
-
-   Existing v3-shaped entries are passed through untouched.
-   Each car gets a `_inventory_v3` flag so this is idempotent.
-   ══════════════════════════════════════════════════════════════ */
+/*
+ * ======================================================================
+ * Migration v3 - Per-Branch Status + Per-Branch Color Stocking
+ * ======================================================================
+ * Wraps every legacy `_car_inventory` entry from the v2 shape:
+ *
+ *     { "12": { "blue": {"units":2}, "black": {"units":1} } }
+ *
+ * Into the v3 shape, which separates the branch's operational
+ * status from the colors stocked there:
+ *
+ *     { "12": { "status": "available",
+ *         "colors": { "blue": {"units":2}, "black": {"units":1} } } }
+ *
+ * Existing v3-shaped entries are passed through untouched.
+ * Each car gets a `_inventory_v3` flag so this is idempotent.
+ */
 
 const OBSIDIAN_MIGRATION_V3_OPTION = 'obsidian_migration_v3_done';
 
@@ -267,18 +282,20 @@ function obsidian_run_migration_v3() {
 		return;
 	}
 
-	$cars = get_posts( array(
-		'post_type'      => 'car',
-		'post_status'    => 'any',
-		'posts_per_page' => -1,
-		'fields'         => 'ids',
-		'meta_query'     => array(
-			array(
-				'key'     => '_inventory_v3',
-				'compare' => 'NOT EXISTS',
+	$cars = get_posts(
+		array(
+			'post_type'      => 'car',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'meta_query'     => array(
+				array(
+					'key'     => '_inventory_v3',
+					'compare' => 'NOT EXISTS',
+				),
 			),
-		),
-	) );
+		)
+	);
 
 	foreach ( $cars as $car_id ) {
 
