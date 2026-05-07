@@ -1056,9 +1056,19 @@ function obsidian_api_upload_document( $request ) {
 
 	$file = $files['document'];
 
-	// Validate file type (security: only allow safe formats).
-	$allowed_types = array( 'image/jpeg', 'image/png', 'image/webp', 'application/pdf' );
-	if ( ! in_array( $file['type'], $allowed_types, true ) ) {
+	// Validate file type — server-side check using the actual file extension.
+	// The client-reported $file['type'] is easily spoofable, so we verify
+	// the extension independently with wp_check_filetype().
+	$allowed_mimes = array(
+		'jpg|jpeg' => 'image/jpeg',
+		'png'      => 'image/png',
+		'webp'     => 'image/webp',
+		'pdf'      => 'application/pdf',
+	);
+
+	$filetype = wp_check_filetype( $file['name'], $allowed_mimes );
+
+	if ( empty( $filetype['type'] ) ) {
 		return new WP_Error(
 			'invalid_file_type',
 			__( 'Only JPG, PNG, WebP, and PDF files are allowed.', 'obsidian-booking' ),

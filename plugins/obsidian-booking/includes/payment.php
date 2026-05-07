@@ -508,12 +508,63 @@ function obsidian_api_confirm_payment( $request ) {
  * POST /paymongo-webhook
  * Handles incoming PayMongo webhook events.
  *
+ * Security: Verifies the `Paymongo-Signature` header using HMAC-SHA256
+ * against the webhook secret key before processing any event. This
+ * prevents forged requests from auto-confirming unpaid bookings.
+ *
+ * Requires constant in wp-config.php:
+ *   define( 'PAYMONGO_WEBHOOK_SECRET', 'whsk_...' );
+ *
  * @param WP_REST_Request $request REST request.
  * @return WP_REST_Response
  */
 function obsidian_api_paymongo_webhook( $request ) {
 
 	$body = $request->get_body();
+
+	// --- Verify webhook signature (Critical Security). ---
+	if ( defined( 'PAYMONGO_WEBHOOK_SECRET' ) && ! empty( PAYMONGO_WEBHOOK_SECRET ) ) {
+		$signature_header = $request->get_header( 'Paymongo-Signature' );
+
+		if ( empty( $signature_header ) ) {
+			return new WP_REST_Response( array( 'message' => 'Missing signature header.' ), 401 );
+		}
+
+		// PayMongo signature format: t=<timestamp>,te=<test_signature>,li=<live_signature>
+		// Parse the components from the header.
+		$sig_parts = array();
+		foreach ( explode( ',', $signature_header ) as $part ) {
+			$pair = explode( '=', $part, 2 );
+			if ( 2 === count( $pair ) ) {
+				$sig_parts[ $pair[0] ] = $pair[1];
+			}
+		}
+
+		$timestamp = $sig_parts['t'] ?? '';
+
+		// Use test signature (te) in test mode, live signature (li) in production.
+		// Check both — whichever is present.
+		$provided_signature = $sig_parts['li'] ?? ( $sig_parts['te'] ?? '' );
+
+		if ( empty( $timestamp ) || empty( $provided_signature ) ) {
+			return new WP_REST_Response( array( 'message' => 'Invalid signature format.' ), 401 );
+		}
+
+		// Reconstruct the signed payload: concatenate timestamp + '.' + raw body.
+		$signed_payload    = $timestamp . '.' . $body;
+		$expected_signature = hash_hmac( 'sha256', $signed_payload, PAYMONGO_WEBHOOK_SECRET );
+
+		if ( ! hash_equals( $expected_signature, $provided_signature ) ) {
+			return new WP_REST_Response( array( 'message' => 'Invalid webhook signature.' ), 401 );
+		}
+
+		// Optional: Reject webhooks older than 5 minutes to prevent replay attacks.
+		$webhook_age = time() - (int) $timestamp;
+		if ( $webhook_age > 300 ) {
+			return new WP_REST_Response( array( 'message' => 'Webhook timestamp too old.' ), 401 );
+		}
+	}
+
 	$data = json_decode( $body, true );
 
 	if ( empty( $data['data']['attributes']['type'] ) ) {
@@ -568,3 +619,4 @@ function obsidian_api_paymongo_webhook( $request ) {
 
 	return new WP_REST_Response( array( 'message' => 'Event type not handled.' ), 200 );
 }
+

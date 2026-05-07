@@ -280,7 +280,7 @@ function obsidian_unschedule_reminder_cron() {
 register_deactivation_hook( OBSIDIAN_BOOKING_FILE, 'obsidian_unschedule_reminder_cron' );
 
 /**
- * Send pickup reminder emails for bookings starting tomorrow.
+ * Send delivery reminder emails for bookings starting tomorrow.
  *
  * @return void
  */
@@ -289,7 +289,7 @@ function obsidian_send_pickup_reminders() {
 
 	$bookings = get_posts(
 		array(
-			'post_type'      => 'obsidian_booking',
+			'post_type'      => 'booking',
 			'posts_per_page' => -1,
 			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery
 			'relation' => 'AND',
@@ -312,7 +312,7 @@ function obsidian_send_pickup_reminders() {
 		}
 
 		$data    = obsidian_get_booking_email_data( $booking->ID );
-		$subject = sprintf( 'Your %s pickup is tomorrow!', $data['car_name'] );
+		$subject = sprintf( 'Your %s delivery is tomorrow!', $data['car_name'] );
 		$html    = obsidian_render_email_template( 'booking-reminder', $data );
 		obsidian_send_email( $data['user_email'], $subject, $html );
 
