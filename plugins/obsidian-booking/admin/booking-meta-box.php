@@ -96,6 +96,7 @@ function obsidian_render_booking_meta_box( $post ) {
 		'active'           => 'Active',
 		'completed'        => 'Completed',
 		'denied'           => 'Denied',
+		'cancelled'        => 'Cancelled',
 	);
 	if ( isset( $status_labels[ $status ] ) ) {
 		$status_label = $status_labels[ $status ];
@@ -113,8 +114,14 @@ function obsidian_render_booking_meta_box( $post ) {
 			<span class="obm-status-dot"></span>
 			<strong><?php echo esc_html( $status_label ); ?></strong>
 			<?php if ( 'denied' === $status && $denial_reason ) : ?>
-				<span class="obm-denial-reason">— <?php echo esc_html( $denial_reason ); ?></span>
-			<?php endif; ?>
+			<span class="obm-denial-reason">— <?php echo esc_html( $denial_reason ); ?></span>
+		<?php endif; ?>
+		<?php
+		$cancellation_reason = get_post_meta( $booking_id, '_booking_cancellation_reason', true );
+		if ( 'cancelled' === $status && $cancellation_reason ) :
+			?>
+			<span class="obm-denial-reason">— <?php echo esc_html( $cancellation_reason ); ?></span>
+		<?php endif; ?>
 		</div>
 
 		<!-- Two-column grid: Summary + Customer -->
@@ -433,6 +440,20 @@ function obsidian_render_booking_meta_box( $post ) {
 		</div>
 		<?php endif; ?>
 
+		<?php if ( 'awaiting_payment' === $status ) : ?>
+		<div class="obm-section obm-actions-section">
+			<h4 class="obm-section-title"><span class="dashicons dashicons-yes-alt"></span> Actions</h4>
+			<div class="obm-actions">
+				<div class="obm-deny-group">
+					<input type="text" id="obm-cancel-reason" class="regular-text" placeholder="Reason for cancellation (required)" />
+					<button type="button" id="obm-cancel" class="obm-btn obm-btn-deny" data-booking-id="<?php echo esc_attr( $booking_id ); ?>" disabled>
+						<span class="dashicons dashicons-no"></span> Cancel Booking
+					</button>
+				</div>
+			</div>
+		</div>
+		<?php endif; ?>
+
 		<?php if ( 'confirmed' === $status ) : ?>
 		<div class="obm-section obm-actions-section">
 			<h4 class="obm-section-title"><span class="dashicons dashicons-yes-alt"></span> Actions</h4>
@@ -545,6 +566,27 @@ function obsidian_handle_booking_action() {
 			$notes = sanitize_textarea_field( $_POST['notes'] ?? '' );
 			update_post_meta( $booking_id, '_booking_admin_notes', $notes );
 			wp_send_json_success( array( 'message' => 'Notes saved.' ) );
+			break;
+
+		case 'cancel':
+			if ( ! in_array( $current_status, array( 'pending_review', 'awaiting_payment' ), true ) ) {
+				wp_send_json_error( array( 'message' => 'Booking cannot be cancelled in its current status.' ) );
+			}
+			$reason = sanitize_text_field( $_POST['reason'] ?? '' );
+			if ( empty( $reason ) ) {
+				wp_send_json_error( array( 'message' => 'A cancellation reason is required.' ) );
+			}
+			update_post_meta( $booking_id, '_booking_status', 'cancelled' );
+			update_post_meta( $booking_id, '_booking_cancelled_by', 'admin' );
+			update_post_meta( $booking_id, '_booking_cancellation_reason', $reason );
+			update_post_meta( $booking_id, '_booking_cancellation_date', current_time( 'mysql' ) );
+			do_action( 'obsidian_booking_status_changed', $booking_id, $current_status, 'cancelled' );
+			wp_send_json_success(
+				array(
+					'message'    => 'Booking cancelled. Customer has been notified.',
+					'new_status' => 'cancelled',
+				)
+			);
 			break;
 
 		default:

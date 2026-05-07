@@ -403,6 +403,12 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 										class="opd-btn opd-btn-payment">Proceed to Payment</a>
 								<?php endif; ?>
 
+								<?php if ( in_array( $first_res['status'], array( 'pending_review', 'awaiting_payment' ), true ) ) : ?>
+									<button type="button" class="opd-btn opd-btn-outline opd-btn-cancel-booking"
+										data-booking-id="<?php echo esc_attr( $first_res['id'] ); ?>"
+										data-car-name="<?php echo esc_attr( $first_res['car_name'] ); ?>">Cancel Booking</button>
+								<?php endif; ?>
+
 								<a href="#" class="opd-btn opd-btn-outline opd-btn-agreement">View Rental Agreement</a>
 							</div>
 						</div>
@@ -615,6 +621,12 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 										<a href="<?php echo esc_url( $txn['payment_url'] ); ?>" class="opd-btn opd-btn-small"
 											style="margin-top:8px;">Proceed to Payment</a>
 									<?php endif; ?>
+									<?php if ( in_array( $txn['status'], array( 'pending_review', 'awaiting_payment' ), true ) ) : ?>
+										<button type="button" class="opd-btn opd-btn-small opd-btn-cancel-booking"
+											data-booking-id="<?php echo esc_attr( $txn['id'] ); ?>"
+											data-car-name="<?php echo esc_attr( $txn['car_name'] ); ?>"
+											style="margin-top:8px; background:transparent; border:1px solid #95A5A6; color:#95A5A6;">Cancel</button>
+									<?php endif; ?>
 								</div>
 								<?php if ( $txn['car_image'] ) : ?>
 									<div class="opd-txn-img-wrap">
@@ -632,6 +644,31 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 		</div>
 	</div>
 </section>
+
+<!-- ═══════════════════════════════════════════════
+CANCEL BOOKING CONFIRMATION MODAL
+═══════════════════════════════════════════════ -->
+<div class="opd-modal" id="opd-cancel-modal" aria-hidden="true">
+	<div class="opd-modal-overlay"></div>
+	<div class="opd-modal-panel" role="dialog" aria-modal="true" aria-label="Cancel Booking" style="max-width:440px;">
+		<button class="opd-modal-close" id="opd-cancel-close" aria-label="Close">&times;</button>
+		<h2 class="opd-modal-title" style="color:#cc4444;">Cancel Booking</h2>
+		<p style="color:#aaa; margin:0 0 20px; font-size:14px; line-height:1.5;">
+			Are you sure you want to cancel your reservation for
+			<strong id="opd-cancel-car-name" style="color:#fff;"></strong>?
+			This action cannot be undone.
+		</p>
+		<input type="hidden" id="opd-cancel-booking-id" value="" />
+		<div class="opd-edit-actions">
+			<button type="button" class="opd-btn opd-btn-cancel" id="opd-cancel-dismiss">Keep Booking</button>
+			<button type="button" class="opd-btn" id="opd-cancel-confirm" style="background:#cc4444; border-color:#cc4444; color:#fff;">
+				<span class="opd-cancel-text">Yes, Cancel</span>
+				<span class="opd-cancel-spinner" style="display:none;"></span>
+			</button>
+		</div>
+		<div id="opd-cancel-message" style="display:none; margin-top:12px; padding:10px; border-radius:6px; font-size:13px;"></div>
+	</div>
+</div>
 
 <script>
 	(function () {
@@ -669,6 +706,7 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 			if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') closeModal();
 			if (e.key === 'Escape' && historyModal.getAttribute('aria-hidden') === 'false') closeHistoryModal();
 			if (e.key === 'Escape' && upcomingModal.getAttribute('aria-hidden') === 'false') closeUpcomingModal();
+			if (e.key === 'Escape' && cancelModal && cancelModal.getAttribute('aria-hidden') === 'false') closeCancelModal();
 		});
 
 		// ── Transaction History modal ──
@@ -716,6 +754,94 @@ $logout_url = wp_logout_url( home_url( '/' ) );
 		}
 		if (upcomingClose) upcomingClose.addEventListener('click', closeUpcomingModal);
 		if (upcomingOverlay) upcomingOverlay.addEventListener('click', closeUpcomingModal);
+
+		// ── Cancel Booking modal ──
+		const cancelModal = document.getElementById('opd-cancel-modal');
+		const cancelClose = document.getElementById('opd-cancel-close');
+		const cancelDismiss = document.getElementById('opd-cancel-dismiss');
+		const cancelOverlay = cancelModal ? cancelModal.querySelector('.opd-modal-overlay') : null;
+		const cancelConfirm = document.getElementById('opd-cancel-confirm');
+		const cancelBookingIdInput = document.getElementById('opd-cancel-booking-id');
+		const cancelCarName = document.getElementById('opd-cancel-car-name');
+		const cancelMessage = document.getElementById('opd-cancel-message');
+		const cancelText = cancelConfirm ? cancelConfirm.querySelector('.opd-cancel-text') : null;
+		const cancelSpinner = cancelConfirm ? cancelConfirm.querySelector('.opd-cancel-spinner') : null;
+
+		function openCancelModal(bookingId, carName) {
+			if (!cancelModal) return;
+			cancelBookingIdInput.value = bookingId;
+			cancelCarName.textContent = carName;
+			cancelMessage.style.display = 'none';
+			cancelConfirm.disabled = false;
+			cancelModal.setAttribute('aria-hidden', 'false');
+			document.body.classList.add('opd-modal-open');
+			document.documentElement.classList.add('opd-modal-open');
+		}
+
+		function closeCancelModal() {
+			if (!cancelModal) return;
+			cancelModal.setAttribute('aria-hidden', 'true');
+			document.body.classList.remove('opd-modal-open');
+			document.documentElement.classList.remove('opd-modal-open');
+		}
+
+		// Attach click handlers to all cancel buttons (main card + modal list).
+		document.querySelectorAll('.opd-btn-cancel-booking').forEach(function (btn) {
+			btn.addEventListener('click', function (e) {
+				e.preventDefault();
+				openCancelModal(this.dataset.bookingId, this.dataset.carName);
+			});
+		});
+
+		if (cancelClose) cancelClose.addEventListener('click', closeCancelModal);
+		if (cancelDismiss) cancelDismiss.addEventListener('click', closeCancelModal);
+		if (cancelOverlay) cancelOverlay.addEventListener('click', closeCancelModal);
+
+		if (cancelConfirm) {
+			cancelConfirm.addEventListener('click', async function () {
+				const bookingId = cancelBookingIdInput.value;
+				if (!bookingId) return;
+
+				cancelConfirm.disabled = true;
+				if (cancelText) cancelText.style.display = 'none';
+				if (cancelSpinner) cancelSpinner.style.display = 'inline-block';
+
+				try {
+					const res = await fetch(restBase + 'obsidian-booking/v1/bookings/' + bookingId + '/cancel', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							'X-WP-Nonce': restNonce,
+						},
+					});
+					const data = await res.json();
+
+					if (res.ok && data.success) {
+						cancelMessage.textContent = 'Booking cancelled successfully. Refreshing...';
+						cancelMessage.style.background = '#1a2a1a';
+						cancelMessage.style.color = '#5CB85C';
+						cancelMessage.style.display = '';
+						setTimeout(function () { window.location.reload(); }, 1200);
+					} else {
+						cancelMessage.textContent = data.message || 'Failed to cancel booking.';
+						cancelMessage.style.background = '#2a1a1a';
+						cancelMessage.style.color = '#cc4444';
+						cancelMessage.style.display = '';
+						cancelConfirm.disabled = false;
+						if (cancelText) cancelText.style.display = '';
+						if (cancelSpinner) cancelSpinner.style.display = 'none';
+					}
+				} catch (err) {
+					cancelMessage.textContent = 'An error occurred. Please try again.';
+					cancelMessage.style.background = '#2a1a1a';
+					cancelMessage.style.color = '#cc4444';
+					cancelMessage.style.display = '';
+					cancelConfirm.disabled = false;
+					if (cancelText) cancelText.style.display = '';
+					if (cancelSpinner) cancelSpinner.style.display = 'none';
+				}
+			});
+		}
 
 		// ── Avatar upload with cropper ──
 		const avatarTrigger = document.getElementById('opd-avatar-trigger');

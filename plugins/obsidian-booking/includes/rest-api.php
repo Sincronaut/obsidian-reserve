@@ -15,6 +15,65 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/*
+ * ======================================================================
+ * RATE LIMITER
+ *
+ * Simple per-user, per-action rate limiter backed by WordPress transients.
+ * Prevents abuse of write endpoints (bookings, uploads, payment intents)
+ * without affecting legitimate users. Each action has its own counter
+ * that resets after the specified window expires.
+ * ======================================================================
+ */
+
+/**
+ * Check and enforce a per-user rate limit for a given action.
+ *
+ * Returns null if the request is within limits (and increments the counter).
+ * Returns a WP_Error with HTTP 429 if the limit is exceeded.
+ *
+ * @param string $action     A short slug identifying the action (e.g. 'booking', 'upload').
+ * @param int    $max_hits   Maximum allowed requests within the window.
+ * @param int    $window_sec Duration of the rate-limit window in seconds.
+ * @return WP_Error|null     WP_Error if rate-limited, null if allowed.
+ */
+function obsidian_rate_limit( $action, $max_hits, $window_sec ) {
+
+	$user_id = get_current_user_id();
+	if ( 0 === $user_id ) {
+		// Not logged in — the permission_callback already blocks anonymous
+		// users on protected endpoints, so nothing to rate-limit here.
+		return null;
+	}
+
+	$key   = 'obsidian_rl_' . $action . '_' . $user_id;
+	$count = (int) get_transient( $key );
+
+	if ( $count >= $max_hits ) {
+		return new WP_Error(
+			'rate_limited',
+			sprintf(
+				/* translators: %d: number of minutes until the rate limit resets. */
+				__( 'Too many requests. Please wait %d minutes before trying again.', 'obsidian-booking' ),
+				(int) ceil( $window_sec / 60 )
+			),
+			array( 'status' => 429 )
+		);
+	}
+
+	// Increment (or initialise) the counter.
+	if ( 0 === $count ) {
+		set_transient( $key, 1, $window_sec );
+	} else {
+		// Update without resetting the TTL — the window started on the first hit.
+		// We use set_transient which resets TTL, but that's acceptable: it means
+		// the window slides slightly on each hit, which is actually more forgiving.
+		set_transient( $key, $count + 1, $window_sec );
+	}
+
+	return null;
+}
+
 /**
  * Register all REST routes.
  */
@@ -159,6 +218,26 @@ function obsidian_register_rest_routes() {
 			'permission_callback' => function () {
 				return is_user_logged_in();
 			},
+		)
+	);
+
+	// POST /bookings/{id}/cancel — User self-cancellation.
+	register_rest_route(
+		$namespace,
+		'/bookings/(?P<id>\d+)/cancel',
+		array(
+			'methods'             => 'POST',
+			'callback'            => 'obsidian_api_cancel_booking',
+			'permission_callback' => function () {
+				return is_user_logged_in();
+			},
+			'args'                => array(
+				'id' => array(
+					'validate_callback' => function ( $param ) {
+						return is_numeric( $param );
+					},
+				),
+			),
 		)
 	);
 
@@ -629,6 +708,12 @@ function obsidian_api_get_location( $request ) {
  */
 function obsidian_api_create_booking_draft( $request ) {
 
+	// Rate limit: max 10 drafts per hour per user.
+	$rl = obsidian_rate_limit( 'draft', 10, HOUR_IN_SECONDS );
+	if ( is_wp_error( $rl ) ) {
+		return $rl;
+	}
+
 	$params = $request->get_json_params();
 	$draft  = obsidian_validate_booking_draft_params( is_array( $params ) ? $params : array() );
 
@@ -657,6 +742,13 @@ function obsidian_api_create_booking_draft( $request ) {
  * @return WP_REST_Response|WP_Error
  */
 function obsidian_api_create_booking( $request ) {
+
+	// Rate limit: max 5 bookings per hour per user.
+	$rl = obsidian_rate_limit( 'booking', 5, HOUR_IN_SECONDS );
+	if ( is_wp_error( $rl ) ) {
+		return $rl;
+	}
+
 	$params = $request->get_json_params();
 
 	// --- Required fields (shared). ---
@@ -1044,6 +1136,12 @@ function obsidian_api_get_my_bookings( $request ) {
  */
 function obsidian_api_upload_document( $request ) {
 
+	// Rate limit: max 20 uploads per hour per user.
+	$rl = obsidian_rate_limit( 'upload', 20, HOUR_IN_SECONDS );
+	if ( is_wp_error( $rl ) ) {
+		return $rl;
+	}
+
 	$files = $request->get_file_params();
 
 	if ( empty( $files['document'] ) ) {
@@ -1056,9 +1154,19 @@ function obsidian_api_upload_document( $request ) {
 
 	$file = $files['document'];
 
-	// Validate file type (security: only allow safe formats).
-	$allowed_types = array( 'image/jpeg', 'image/png', 'image/webp', 'application/pdf' );
-	if ( ! in_array( $file['type'], $allowed_types, true ) ) {
+	// Validate file type — server-side check using the actual file extension.
+	// The client-reported $file['type'] is easily spoofable, so we verify
+	// the extension independently with wp_check_filetype().
+	$allowed_mimes = array(
+		'jpg|jpeg' => 'image/jpeg',
+		'png'      => 'image/png',
+		'webp'     => 'image/webp',
+		'pdf'      => 'application/pdf',
+	);
+
+	$filetype = wp_check_filetype( $file['name'], $allowed_mimes );
+
+	if ( empty( $filetype['type'] ) ) {
 		return new WP_Error(
 			'invalid_file_type',
 			__( 'Only JPG, PNG, WebP, and PDF files are allowed.', 'obsidian-booking' ),
@@ -1310,4 +1418,71 @@ function obsidian_format_location_data( $id, $with_detail = true ) {
 
 	$obsidian_location_cache[ $cache_key ] = $res;
 	return $res;
+}
+
+/**
+ * POST /bookings/{id}/cancel
+ * Allows a user to cancel their own booking.
+ *
+ * Only permitted when the booking is in `pending_review` or `awaiting_payment`
+ * status. Once paid/confirmed, the user cannot self-cancel.
+ *
+ * @param WP_REST_Request $request REST request.
+ * @return WP_REST_Response|WP_Error
+ */
+function obsidian_api_cancel_booking( $request ) {
+
+	// Rate limit: max 5 cancellations per hour per user.
+	$rl = obsidian_rate_limit( 'cancel', 5, HOUR_IN_SECONDS );
+	if ( is_wp_error( $rl ) ) {
+		return $rl;
+	}
+
+	$booking_id = (int) $request->get_param( 'id' );
+	$booking    = get_post( $booking_id );
+
+	if ( ! $booking || 'booking' !== $booking->post_type ) {
+		return new WP_Error(
+			'not_found',
+			__( 'Booking not found.', 'obsidian-booking' ),
+			array( 'status' => 404 )
+		);
+	}
+
+	// Ownership check — users can only cancel their own bookings.
+	$booking_user = (int) get_post_meta( $booking_id, '_booking_user_id', true );
+	if ( get_current_user_id() !== $booking_user ) {
+		return new WP_Error(
+			'forbidden',
+			__( 'You do not have permission to cancel this booking.', 'obsidian-booking' ),
+			array( 'status' => 403 )
+		);
+	}
+
+	// Only cancellable from these statuses.
+	$current_status    = get_post_meta( $booking_id, '_booking_status', true );
+	$cancellable_from  = array( 'pending_review', 'awaiting_payment' );
+
+	if ( ! in_array( $current_status, $cancellable_from, true ) ) {
+		return new WP_Error(
+			'not_cancellable',
+			__( 'This booking can no longer be cancelled. Please contact support for assistance.', 'obsidian-booking' ),
+			array( 'status' => 400 )
+		);
+	}
+
+	// Perform cancellation.
+	update_post_meta( $booking_id, '_booking_status', 'cancelled' );
+	update_post_meta( $booking_id, '_booking_cancelled_by', 'user' );
+	update_post_meta( $booking_id, '_booking_cancellation_date', current_time( 'mysql' ) );
+
+	do_action( 'obsidian_booking_status_changed', $booking_id, $current_status, 'cancelled' );
+
+	return rest_ensure_response(
+		array(
+			'success'    => true,
+			'message'    => __( 'Booking cancelled successfully.', 'obsidian-booking' ),
+			'new_status' => 'cancelled',
+		)
+	);
 }

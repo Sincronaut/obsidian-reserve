@@ -4,6 +4,12 @@
  * Reads payment data from sessionStorage (set by payment-form.js),
  * populates the payment info section, and on "Confirm Reservation"
  * attaches the Payment Method to the Payment Intent to process the charge.
+ *
+ * Also handles the 3D Secure / bank redirect return flow:
+ * When the user returns from a bank authentication page, sessionStorage
+ * is empty (cleared during the cross-domain redirect). In that case,
+ * we check the PayMongo payment_intent_id URL parameter, verify the
+ * intent status, confirm server-side, and reload to show "RESERVED".
  */
 (function () {
 	'use strict';
@@ -13,7 +19,7 @@
 	const { publicKey, confirmationUrl, restUrl, nonce } = obsidianPayment;
 	const PAYMONGO_API = 'https://api.paymongo.com/v1';
 
-	const wrap      = document.getElementById( 'obsidian-confirmation-wrap' );
+	const wrap       = document.getElementById( 'obsidian-confirmation-wrap' );
 	const confirmBtn = document.getElementById( 'obc-confirm-btn' );
 
 	if ( ! wrap || ! confirmBtn ) return;
@@ -25,7 +31,63 @@
 	/* ── Read session data ── */
 
 	const raw = sessionStorage.getItem( 'obPayment' );
+
 	if ( ! raw ) {
+		// After a 3D Secure or bank redirect, sessionStorage is cleared
+		// because the browser left this origin. Check the payment intent
+		// status via the URL query parameter that PayMongo appends on return.
+		const urlParams = new URLSearchParams( window.location.search );
+		const intentId  = urlParams.get( 'payment_intent_id' );
+
+		if ( intentId ) {
+			// User just returned from 3D Secure / bank authentication.
+			// Verify the intent status and confirm server-side.
+			(async function () {
+				try {
+					const verifyRes = await fetch( PAYMONGO_API + '/payment_intents/' + intentId, {
+						headers: { 'Authorization': 'Basic ' + btoa( publicKey + ':' ) },
+					});
+					const verifyData = await verifyRes.json();
+					const status     = verifyData?.data?.attributes?.status;
+
+					if ( status === 'succeeded' ) {
+						// Extract booking ID from the intent metadata.
+						const bookingId = verifyData?.data?.attributes?.metadata?.booking_id;
+
+						if ( bookingId ) {
+							await fetch( restUrl + 'confirm-payment', {
+								method: 'POST',
+								headers: {
+									'Content-Type': 'application/json',
+									'X-WP-Nonce':   nonce,
+								},
+								body: JSON.stringify({
+									booking_id: parseInt( bookingId, 10 ),
+									intent_id:  intentId,
+								}),
+							});
+						}
+
+						// Reload without query params to show the "RESERVED" success page.
+						window.location.replace( window.location.pathname );
+						return;
+					}
+
+					if ( paymentInfoEl ) {
+						paymentInfoEl.innerHTML = '<p style="color:#cc4444;">Payment was not completed. Please try again from the payment page.</p>';
+					}
+					confirmBtn.disabled = true;
+				} catch ( e ) {
+					if ( paymentInfoEl ) {
+						paymentInfoEl.innerHTML = '<p style="color:#cc4444;">Could not verify payment status. Please check your email for confirmation or contact support.</p>';
+					}
+					confirmBtn.disabled = true;
+				}
+			})();
+			return;
+		}
+
+		// No session data and no intent ID — genuinely missing.
 		if ( paymentInfoEl ) {
 			paymentInfoEl.innerHTML = '<p style="color:#cc4444;">Payment data not found. Please go back to the payment page.</p>';
 		}
