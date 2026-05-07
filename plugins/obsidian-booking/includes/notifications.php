@@ -29,8 +29,13 @@ function obsidian_get_booking_email_data( $booking_id ) {
 	$user_id = (int) $get_meta( '_booking_user_id' );
 	$user    = get_userdata( $user_id );
 
+	$booking_reference = function_exists( 'obsidian_get_booking_reference' )
+		? obsidian_get_booking_reference( $booking_id )
+		: '#' . $booking_id;
+
 	return array(
 		'booking_id'       => $booking_id,
+		'booking_reference' => $booking_reference,
 		'car_id'           => $car_id,
 		'car_name'         => get_the_title( $car_id ),
 		'user'             => $user,
@@ -451,9 +456,11 @@ function obsidian_expire_awaiting_payment_bookings() {
 		}
 
 		if ( $awaiting_at && $awaiting_at <= $cutoff ) {
-			update_post_meta( $booking_id, '_booking_denial_reason', 'Payment window expired.' );
-			$notes  = 'Auto-denied: payment window expired.';
-			$result = obsidian_update_booking_status( $booking_id, 'denied', $notes );
+			update_post_meta( $booking_id, '_booking_cancellation_reason', 'Payment window expired.' );
+			update_post_meta( $booking_id, '_booking_cancelled_by', 'admin' );
+			update_post_meta( $booking_id, '_booking_cancellation_date', current_time( 'mysql' ) );
+			$notes  = 'Auto-cancelled: payment window expired.';
+			$result = obsidian_update_booking_status( $booking_id, 'cancelled', $notes );
 
 			if ( ! is_wp_error( $result ) ) {
 				obsidian_finalize_payment_session_by_booking( $booking_id );

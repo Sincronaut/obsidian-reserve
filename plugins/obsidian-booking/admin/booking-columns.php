@@ -21,6 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 function obsidian_booking_columns( $columns ) {
 	return array(
 		'cb'               => $columns['cb'],
+		'booking_reference' => __( 'Reference', 'obsidian-booking' ),
 		'booking_car'      => __( 'Car', 'obsidian-booking' ),
 		'booking_customer' => __( 'Customer', 'obsidian-booking' ),
 		'booking_location' => __( 'Branch', 'obsidian-booking' ),
@@ -44,6 +45,14 @@ add_filter( 'manage_booking_posts_columns', 'obsidian_booking_columns' );
 function obsidian_booking_column_content( $column, $post_id ) {
 
 	switch ( $column ) {
+
+		case 'booking_reference':
+			if ( function_exists( 'obsidian_get_booking_reference' ) ) {
+				echo '<strong>' . esc_html( obsidian_get_booking_reference( $post_id ) ) . '</strong>';
+			} else {
+				echo '<strong>#' . esc_html( $post_id ) . '</strong>';
+			}
+			break;
 
 		case 'booking_car':
 			$car_id = (int) get_post_meta( $post_id, '_booking_car_id', true );

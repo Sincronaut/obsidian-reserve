@@ -3,7 +3,7 @@
  * Email: Booking Submitted — sent to ADMIN.
  *
  * Available variables:
- *   $booking_id, $car_name, $first_name, $last_name,
+ *   $booking_reference, $car_name, $first_name, $last_name,
  *   $start_date, $end_date, $color, $customer_type,
  *   $total_price, $admin_url
  *
@@ -29,7 +29,7 @@ A new reservation request has been submitted and is awaiting your review.
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
 <tr>
 	<td style="padding:6px 0;font-size:13px;color:#888888;width:140px;">Booking ID</td>
-	<td style="padding:6px 0;font-size:14px;color:#ffffff;font-weight:600;">#<?php echo esc_html( $booking_id ); ?></td>
+	<td style="padding:6px 0;font-size:14px;color:#ffffff;font-weight:600;"><?php echo esc_html( $booking_reference ); ?></td>
 </tr>
 <tr>
 	<td style="padding:6px 0;font-size:13px;color:#888888;">Customer</td>
