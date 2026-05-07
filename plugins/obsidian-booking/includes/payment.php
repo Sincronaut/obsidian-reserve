@@ -373,6 +373,12 @@ add_action( 'rest_api_init', 'obsidian_register_payment_routes' );
  */
 function obsidian_api_create_payment_intent( $request ) {
 
+	// Rate limit: max 5 payment intents per hour per user.
+	$rl = obsidian_rate_limit( 'payment', 5, HOUR_IN_SECONDS );
+	if ( is_wp_error( $rl ) ) {
+		return $rl;
+	}
+
 	$params         = $request->get_json_params();
 	$session_id     = sanitize_key( $params['payment_session_id'] ?? '' );
 	$payment_option = sanitize_text_field( $params['payment_option'] ?? 'full' );
