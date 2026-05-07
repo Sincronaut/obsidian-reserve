@@ -91,6 +91,36 @@ function obsidian_get_status_color( $status ) {
 }
 
 /**
+ * Get or create a human-friendly booking reference.
+ *
+ * Format: OBR-YYYY-XXXX (booking ID zero-padded to 4+ digits).
+ *
+ * @param int $booking_id Booking post ID.
+ * @return string
+ */
+function obsidian_get_booking_reference( $booking_id ) {
+	$booking_id = (int) $booking_id;
+	if ( ! $booking_id ) {
+		return '';
+	}
+
+	$existing = get_post_meta( $booking_id, '_booking_reference', true );
+	if ( is_string( $existing ) && '' !== $existing ) {
+		return $existing;
+	}
+
+	$year = get_post_time( 'Y', true, $booking_id );
+	if ( ! $year ) {
+		$year = current_time( 'Y' );
+	}
+
+	$ref = sprintf( 'OBR-%s-%s', $year, str_pad( (string) $booking_id, 4, '0', STR_PAD_LEFT ) );
+	update_post_meta( $booking_id, '_booking_reference', $ref );
+
+	return $ref;
+}
+
+/**
  * Update a booking's status with validation.
  *
  * This is the ONLY function that should change a booking's status.
@@ -228,6 +258,7 @@ function obsidian_get_booking_summary( $booking_id ) {
 
 	return array(
 		'booking_id'      => $booking_id,
+		'booking_reference' => obsidian_get_booking_reference( $booking_id ),
 		'car_id'          => $car_id,
 		'car_name'        => get_the_title( $car_id ),
 		'car_image'       => get_the_post_thumbnail_url( $car_id, 'medium' ),

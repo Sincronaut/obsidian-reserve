@@ -491,15 +491,20 @@ function obsidian_api_confirm_payment( $request ) {
 	// Payment verified - update booking.
 	$amount_paid = ( $verify_body['data']['attributes']['amount'] ?? 0 ) / 100;
 
-	update_post_meta( $booking_id, '_booking_status', 'paid' );
 	update_post_meta( $booking_id, '_booking_payment_status', 'paid' );
 	update_post_meta( $booking_id, '_booking_payment_amount', $amount_paid );
 
-	do_action( 'obsidian_booking_status_changed', $booking_id, 'awaiting_payment', 'paid' );
+	$paid_result = obsidian_update_booking_status( $booking_id, 'paid' );
+	if ( is_wp_error( $paid_result ) ) {
+		return new WP_Error( 'status_error', $paid_result->get_error_message(), array( 'status' => 409 ) );
+	}
 
 	// Auto-transition to confirmed.
-	update_post_meta( $booking_id, '_booking_status', 'confirmed' );
-	do_action( 'obsidian_booking_status_changed', $booking_id, 'paid', 'confirmed' );
+	$confirmed_result = obsidian_update_booking_status( $booking_id, 'confirmed' );
+	if ( is_wp_error( $confirmed_result ) ) {
+		return new WP_Error( 'status_error', $confirmed_result->get_error_message(), array( 'status' => 409 ) );
+	}
+
 	obsidian_finalize_payment_session_by_booking( $booking_id );
 
 	return rest_ensure_response(
@@ -609,15 +614,19 @@ function obsidian_api_paymongo_webhook( $request ) {
 		if ( 'awaiting_payment' === $current_status ) {
 			$amount_paid = ( $payment_data['attributes']['amount'] ?? 0 ) / 100;
 
-			update_post_meta( $booking_id, '_booking_status', 'paid' );
 			update_post_meta( $booking_id, '_booking_payment_status', 'paid' );
 			update_post_meta( $booking_id, '_booking_payment_amount', $amount_paid );
 
-			do_action( 'obsidian_booking_status_changed', $booking_id, 'awaiting_payment', 'paid' );
+			$paid_result = obsidian_update_booking_status( $booking_id, 'paid' );
+			if ( is_wp_error( $paid_result ) ) {
+				return new WP_REST_Response( array( 'message' => $paid_result->get_error_message() ), 409 );
+			}
 
-			// Auto-transition to confirmed.
-			update_post_meta( $booking_id, '_booking_status', 'confirmed' );
-			do_action( 'obsidian_booking_status_changed', $booking_id, 'paid', 'confirmed' );
+			$confirmed_result = obsidian_update_booking_status( $booking_id, 'confirmed' );
+			if ( is_wp_error( $confirmed_result ) ) {
+				return new WP_REST_Response( array( 'message' => $confirmed_result->get_error_message() ), 409 );
+			}
+
 			obsidian_finalize_payment_session_by_booking( $booking_id );
 		}
 		return new WP_REST_Response( array( 'message' => 'Payment processed.' ), 200 );

@@ -3,7 +3,7 @@
  * Email: Pickup Reminder — sent to USER 24h before start date.
  *
  * Available variables:
- *   $booking_id, $car_name, $first_name,
+ *   $booking_reference, $car_name, $first_name,
  *   $start_date, $end_date, $color, $location,
  *   $delivery_dropoff, $delivery_date, $delivery_time
  *
@@ -28,7 +28,7 @@ Hello <?php echo esc_html( $first_name ); ?>, just a friendly reminder that your
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
 <tr>
 	<td style="padding:6px 0;font-size:13px;color:#888888;width:140px;">Booking ID</td>
-	<td style="padding:6px 0;font-size:14px;color:#ffffff;font-weight:600;">#<?php echo esc_html( $booking_id ); ?></td>
+	<td style="padding:6px 0;font-size:14px;color:#ffffff;font-weight:600;"><?php echo esc_html( $booking_reference ); ?></td>
 </tr>
 <tr>
 	<td style="padding:6px 0;font-size:13px;color:#888888;">Vehicle</td>

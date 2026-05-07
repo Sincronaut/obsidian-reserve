@@ -1054,6 +1054,10 @@ function obsidian_api_create_booking( $request ) {
 		)
 	);
 
+	if ( function_exists( 'obsidian_get_booking_reference' ) ) {
+		obsidian_get_booking_reference( $booking_id );
+	}
+
 	do_action( 'obsidian_booking_status_changed', $booking_id, '', 'pending_review' );
 
 	if ( $draft_id ) {
@@ -1105,6 +1109,9 @@ function obsidian_api_get_my_bookings( $request ) {
 
 		$data[] = array(
 			'booking_id'      => $booking->ID,
+			'booking_reference' => function_exists( 'obsidian_get_booking_reference' )
+				? obsidian_get_booking_reference( $booking->ID )
+				: '#' . $booking->ID,
 			'car_id'          => $car_id,
 			'car_name'        => get_the_title( $car_id ),
 			'car_image'       => get_the_post_thumbnail_url( $car_id, 'medium' ),

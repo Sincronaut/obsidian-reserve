@@ -25,6 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 function obsidian_register_booking_meta() {
 
 	$fields = array(
+		'_booking_reference'       => 'string',     // Human-friendly booking reference (e.g., OBR-2026-0247).
 		'_booking_car_id'          => 'integer',    // ID of the Car post.
 		'_booking_user_id'         => 'integer',    // ID of the WP user who booked.
 		'_booking_start_date'      => 'string',     // Format: Y-m-d.
