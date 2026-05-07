@@ -110,6 +110,23 @@ function obsidian_notify_on_status_change( $booking_id, $old_status, $new_status
 add_action( 'obsidian_booking_status_changed', 'obsidian_notify_on_status_change', 10, 3 );
 
 /**
+ * Track when a booking enters awaiting payment status.
+ *
+ * @param int    $booking_id Booking post ID.
+ * @param string $old_status Previous status.
+ * @param string $new_status New status.
+ * @return void
+ */
+function obsidian_record_awaiting_payment_timestamp( $booking_id, $old_status, $new_status ) {
+	if ( 'awaiting_payment' !== $new_status ) {
+		return;
+	}
+
+	update_post_meta( $booking_id, '_booking_awaiting_payment_at', current_time( 'timestamp', true ) );
+}
+add_action( 'obsidian_booking_status_changed', 'obsidian_record_awaiting_payment_timestamp', 9, 3 );
+
+/**
  * The actual notification runner, called via WP-Cron.
  *
  * @param int    $booking_id Booking post ID.
@@ -363,3 +380,85 @@ function obsidian_send_pickup_reminders() {
 	}
 }
 add_action( 'obsidian_daily_pickup_reminders', 'obsidian_send_pickup_reminders' );
+
+// -------------------------------------------------------------------------
+// Awaiting payment expiry cron
+// -------------------------------------------------------------------------
+
+/**
+ * Schedule the daily payment expiry cron on plugin activation.
+ *
+ * @return void
+ */
+function obsidian_schedule_payment_expiry_cron() {
+	if ( ! wp_next_scheduled( 'obsidian_daily_payment_expiry' ) ) {
+		wp_schedule_event( time(), 'daily', 'obsidian_daily_payment_expiry' );
+	}
+}
+add_action( 'init', 'obsidian_schedule_payment_expiry_cron' );
+
+/**
+ * Unschedule the payment expiry cron on deactivation.
+ *
+ * @return void
+ */
+function obsidian_unschedule_payment_expiry_cron() {
+	$timestamp = wp_next_scheduled( 'obsidian_daily_payment_expiry' );
+	if ( $timestamp ) {
+		wp_unschedule_event( $timestamp, 'obsidian_daily_payment_expiry' );
+	}
+}
+register_deactivation_hook( OBSIDIAN_BOOKING_FILE, 'obsidian_unschedule_payment_expiry_cron' );
+
+/**
+ * Auto-deny awaiting payment bookings that have expired.
+ *
+ * @return void
+ */
+function obsidian_expire_awaiting_payment_bookings() {
+	$cutoff = time() - ( 48 * HOUR_IN_SECONDS );
+
+	$booking_ids = get_posts(
+		array(
+			'post_type'      => 'booking',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'meta_query'     => array(
+				array(
+					'key'   => '_booking_status',
+					'value' => 'awaiting_payment',
+				),
+			),
+		)
+	);
+
+	if ( empty( $booking_ids ) ) {
+		return;
+	}
+
+	foreach ( $booking_ids as $booking_id ) {
+		$awaiting_at = (int) get_post_meta( $booking_id, '_booking_awaiting_payment_at', true );
+
+		if ( ! $awaiting_at ) {
+			$booking = get_post( $booking_id );
+			if ( $booking ) {
+				$awaiting_at = strtotime( $booking->post_date_gmt );
+				if ( ! $awaiting_at ) {
+					$awaiting_at = strtotime( $booking->post_date );
+				}
+			}
+		}
+
+		if ( $awaiting_at && $awaiting_at <= $cutoff ) {
+			update_post_meta( $booking_id, '_booking_denial_reason', 'Payment window expired.' );
+			$notes  = 'Auto-denied: payment window expired.';
+			$result = obsidian_update_booking_status( $booking_id, 'denied', $notes );
+
+			if ( ! is_wp_error( $result ) ) {
+				obsidian_finalize_payment_session_by_booking( $booking_id );
+			}
+		}
+	}
+}
+add_action( 'obsidian_daily_payment_expiry', 'obsidian_expire_awaiting_payment_bookings' );
