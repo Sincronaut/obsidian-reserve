@@ -263,6 +263,8 @@
 .obsidian-status-completed::before { background: #ba68c8; }
 .obsidian-status-denied { background: rgba(198,40,40,.12); color: #ef5350; }
 .obsidian-status-denied::before { background: #ef5350; }
+.obsidian-status-cancelled { background: rgba(149,165,166,.12); color: #95a5a6; }
+.obsidian-status-cancelled::before { background: #95a5a6; }
 
 /* ============================================================
    Booking Detail Meta Box

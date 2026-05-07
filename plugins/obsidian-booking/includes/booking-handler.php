@@ -25,13 +25,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function obsidian_get_status_transitions() {
 	return array(
-		'pending_review'   => array( 'awaiting_payment', 'denied' ),
-		'awaiting_payment' => array( 'paid', 'denied' ),
+		'pending_review'   => array( 'awaiting_payment', 'denied', 'cancelled' ),
+		'awaiting_payment' => array( 'paid', 'denied', 'cancelled' ),
 		'paid'             => array( 'confirmed' ),
 		'confirmed'        => array( 'active', 'denied' ),  // Denied = emergency override only.
 		'active'           => array( 'completed' ),
 		'completed'        => array(),     // Terminal state — no further changes.
 		'denied'           => array(),     // Terminal state — no further changes.
+		'cancelled'        => array(),     // Terminal state — no further changes.
 	);
 }
 
@@ -52,6 +53,7 @@ function obsidian_get_status_label( $status ) {
 		'active'           => __( 'Active', 'obsidian-booking' ),
 		'completed'        => __( 'Completed', 'obsidian-booking' ),
 		'denied'           => __( 'Denied', 'obsidian-booking' ),
+		'cancelled'        => __( 'Cancelled', 'obsidian-booking' ),
 	);
 
 	if ( isset( $labels[ $status ] ) ) {
@@ -78,6 +80,7 @@ function obsidian_get_status_color( $status ) {
 		'active'           => '#5BC0DE',  // Teal — car is currently rented out.
 		'completed'        => '#777777',  // Gray — trip is done.
 		'denied'           => '#D9534F',  // Red — rejected.
+		'cancelled'        => '#95A5A6',  // Muted gray — user/admin cancelled.
 	);
 
 	if ( isset( $colors[ $status ] ) ) {

@@ -322,5 +322,36 @@
 			});
 		});
 
+		/* ── Admin Cancel Booking ── */
+
+		$(document).on('input', '#obm-cancel-reason', function() {
+			$('#obm-cancel').prop('disabled', !$(this).val().trim());
+		});
+
+		$(document).on('click', '#obm-cancel', function() {
+			const $btn = $(this);
+			const bookingId = $btn.data('booking-id');
+			const reason = $('#obm-cancel-reason').val().trim();
+
+			if (!reason) return;
+
+			if (!window.confirm('Are you sure you want to cancel this booking? The customer will be notified.')) return;
+
+			$btn.prop('disabled', true).html('<span class="dashicons dashicons-update ob-spin"></span> Cancelling...');
+
+			bookingAction('cancel', bookingId, { reason: reason }).done(function(res) {
+				if (res.success) {
+					showFeedback(res.data.message, 'success');
+					setTimeout(function() { location.reload(); }, 1200);
+				} else {
+					showFeedback(res.data.message, 'error');
+					$btn.prop('disabled', false).html('<span class="dashicons dashicons-no"></span> Cancel Booking');
+				}
+			}).fail(function() {
+				showFeedback('Request failed. Please try again.', 'error');
+				$btn.prop('disabled', false).html('<span class="dashicons dashicons-no"></span> Cancel Booking');
+			});
+		});
+
 	});
 })(jQuery);

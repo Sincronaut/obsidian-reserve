@@ -221,6 +221,26 @@ function obsidian_register_rest_routes() {
 		)
 	);
 
+	// POST /bookings/{id}/cancel — User self-cancellation.
+	register_rest_route(
+		$namespace,
+		'/bookings/(?P<id>\d+)/cancel',
+		array(
+			'methods'             => 'POST',
+			'callback'            => 'obsidian_api_cancel_booking',
+			'permission_callback' => function () {
+				return is_user_logged_in();
+			},
+			'args'                => array(
+				'id' => array(
+					'validate_callback' => function ( $param ) {
+						return is_numeric( $param );
+					},
+				),
+			),
+		)
+	);
+
 	// POST /upload-document — Upload ID/passport.
 	register_rest_route(
 		$namespace,
@@ -1398,4 +1418,71 @@ function obsidian_format_location_data( $id, $with_detail = true ) {
 
 	$obsidian_location_cache[ $cache_key ] = $res;
 	return $res;
+}
+
+/**
+ * POST /bookings/{id}/cancel
+ * Allows a user to cancel their own booking.
+ *
+ * Only permitted when the booking is in `pending_review` or `awaiting_payment`
+ * status. Once paid/confirmed, the user cannot self-cancel.
+ *
+ * @param WP_REST_Request $request REST request.
+ * @return WP_REST_Response|WP_Error
+ */
+function obsidian_api_cancel_booking( $request ) {
+
+	// Rate limit: max 5 cancellations per hour per user.
+	$rl = obsidian_rate_limit( 'cancel', 5, HOUR_IN_SECONDS );
+	if ( is_wp_error( $rl ) ) {
+		return $rl;
+	}
+
+	$booking_id = (int) $request->get_param( 'id' );
+	$booking    = get_post( $booking_id );
+
+	if ( ! $booking || 'booking' !== $booking->post_type ) {
+		return new WP_Error(
+			'not_found',
+			__( 'Booking not found.', 'obsidian-booking' ),
+			array( 'status' => 404 )
+		);
+	}
+
+	// Ownership check — users can only cancel their own bookings.
+	$booking_user = (int) get_post_meta( $booking_id, '_booking_user_id', true );
+	if ( get_current_user_id() !== $booking_user ) {
+		return new WP_Error(
+			'forbidden',
+			__( 'You do not have permission to cancel this booking.', 'obsidian-booking' ),
+			array( 'status' => 403 )
+		);
+	}
+
+	// Only cancellable from these statuses.
+	$current_status    = get_post_meta( $booking_id, '_booking_status', true );
+	$cancellable_from  = array( 'pending_review', 'awaiting_payment' );
+
+	if ( ! in_array( $current_status, $cancellable_from, true ) ) {
+		return new WP_Error(
+			'not_cancellable',
+			__( 'This booking can no longer be cancelled. Please contact support for assistance.', 'obsidian-booking' ),
+			array( 'status' => 400 )
+		);
+	}
+
+	// Perform cancellation.
+	update_post_meta( $booking_id, '_booking_status', 'cancelled' );
+	update_post_meta( $booking_id, '_booking_cancelled_by', 'user' );
+	update_post_meta( $booking_id, '_booking_cancellation_date', current_time( 'mysql' ) );
+
+	do_action( 'obsidian_booking_status_changed', $booking_id, $current_status, 'cancelled' );
+
+	return rest_ensure_response(
+		array(
+			'success'    => true,
+			'message'    => __( 'Booking cancelled successfully.', 'obsidian-booking' ),
+			'new_status' => 'cancelled',
+		)
+	);
 }

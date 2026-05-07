@@ -43,8 +43,10 @@ function obsidian_get_booking_email_data( $booking_id ) {
 		'customer_type'    => $get_meta( '_booking_customer_type' ),
 		'total_price'      => (float) $get_meta( '_booking_total_price' ),
 		'location'         => $get_meta( '_booking_location' ),
-		'denial_reason'    => $get_meta( '_booking_denial_reason' ),
-		'payment_amount'   => (float) $get_meta( '_booking_payment_amount' ),
+		'denial_reason'        => $get_meta( '_booking_denial_reason' ),
+		'cancellation_reason'  => $get_meta( '_booking_cancellation_reason' ),
+		'cancelled_by'         => $get_meta( '_booking_cancelled_by' ),
+		'payment_amount'       => (float) $get_meta( '_booking_payment_amount' ),
 		'payment_option'   => $get_meta( '_booking_payment_option' ),
 		'delivery_dropoff' => $get_meta( '_booking_delivery_dropoff' ),
 		'delivery_date'    => $get_meta( '_booking_delivery_date' ),
@@ -145,6 +147,10 @@ function obsidian_run_async_notifications( $booking_id, $old_status, $new_status
 
 		case 'confirmed':
 			obsidian_notify_booking_confirmed( $data );
+			break;
+
+		case 'cancelled':
+			obsidian_notify_booking_cancelled( $data, $admin_email );
 			break;
 	}
 }
@@ -248,6 +254,43 @@ function obsidian_notify_booking_confirmed( $data ) {
 	$subject = sprintf( 'Your %s Reservation is Confirmed ✅', $data['car_name'] );
 	$html    = obsidian_render_email_template( 'booking-confirmed', $data );
 	obsidian_send_email( $data['user_email'], $subject, $html );
+}
+
+/**
+ * Booking cancelled - notify user + admin.
+ *
+ * Uses different email templates depending on whether the cancellation
+ * was user-initiated or admin-initiated (includes reason).
+ *
+ * @param array  $data        Email template data.
+ * @param string $admin_email Admin email.
+ * @return void
+ */
+function obsidian_notify_booking_cancelled( $data, $admin_email ) {
+
+	$cancelled_by = $data['cancelled_by'] ?? 'user';
+
+	if ( 'admin' === $cancelled_by ) {
+		// Admin-initiated cancellation — send email with reason to user.
+		$subject = 'Your Reservation Has Been Cancelled';
+		$html    = obsidian_render_email_template( 'booking-cancelled-admin', $data );
+		obsidian_send_email( $data['user_email'], $subject, $html );
+	} else {
+		// User-initiated cancellation — notify user of their own cancellation.
+		$subject = 'Your Reservation Has Been Cancelled';
+		$html    = obsidian_render_email_template( 'booking-cancelled', $data );
+		obsidian_send_email( $data['user_email'], $subject, $html );
+
+		// Also notify admin that a user cancelled.
+		$admin_subject = sprintf(
+			'[Booking Cancelled] %s %s — %s',
+			$data['first_name'],
+			$data['last_name'],
+			$data['car_name']
+		);
+		$admin_html = obsidian_render_email_template( 'booking-cancelled', $data );
+		obsidian_send_email( $admin_email, $admin_subject, $admin_html );
+	}
 }
 
 // -------------------------------------------------------------------------

@@ -162,6 +162,7 @@ function obsidian_booking_column_content( $column, $post_id ) {
 				'active'           => array( 'Active', 'active' ),
 				'completed'        => array( 'Completed', 'completed' ),
 				'denied'           => array( 'Denied', 'denied' ),
+				'cancelled'        => array( 'Cancelled', 'cancelled' ),
 			);
 
 			if ( isset( $map[ $status ] ) ) {
