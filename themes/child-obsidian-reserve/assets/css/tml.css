@@ -57,13 +57,13 @@ body.tml-action .wp-site-blocks::before {
 	background-color: #1a1a1a;
 	background-image: url('/wp-content/themes/child-obsidian-reserve/assets/images/logo.webp');
 	background-repeat: no-repeat;
-	background-position: center 42%;
-	background-size: 400px;
+	background-position: center 0px;
+	background-size: 900px;
 	flex-shrink: 0;
 	color: #ffffff;
 	font-size: 12px;
 	letter-spacing: 1px;
-	opacity: 0.5;
+	opacity: 1;
 	text-align: center;
 	box-sizing: border-box;
 	display: flex;
@@ -94,8 +94,8 @@ body.tml-action .wp-site-blocks > *:not(style):not(script):not(header):not(foote
 
 /* ── TML Container ── */
 body.tml-action .tml {
-	width: 100%;
-	max-width: 400px;
+	width: 550px !important;
+	max-width: 100% !important;
 	margin: 0;
 	padding: 0;
 	background: transparent;
@@ -304,8 +304,8 @@ body.tml-action .tml *::after {
 		width: 100%;
 		min-width: 100%;
 		min-height: 35vh;
-		background-position: center 38%;
-		background-size: 280px;
+		background-position: center 0px;
+		background-size: 550px;
 		padding: 24px 16px;
 	}
 

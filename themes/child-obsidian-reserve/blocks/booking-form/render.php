@@ -552,12 +552,12 @@ if ( $branch_query->have_posts() ) {
 				<label class="obsidian-bf-checkbox">
 					<input type="checkbox" name="agree_terms" required />
 					<span class="obf-check-box"></span>
-					<span>I confirm all details are accurate and I agree to the <strong><a href="#" data-modal="text" data-page-slug="terms-and-conditions" style="color: inherit; text-decoration: underline;">Obsidian Reserve Terms and Conditions</a></strong> prior to making my reservation.</span>
+					<span>I confirm all details are accurate and I agree to the <strong><a href="#" data-modal="text" data-page-slug="terms" style="color: inherit; text-decoration: underline;">Obsidian Reserve Terms and Conditions</a></strong> prior to making my reservation.</span>
 				</label>
 				<label class="obsidian-bf-checkbox">
 					<input type="checkbox" name="agree_privacy" required />
 					<span class="obf-check-box"></span>
-					<span>I have read and agree to the <strong><a href="#" data-modal="text" data-page-slug="privacy-policy" style="color: inherit; text-decoration: underline;">Obsidian Reserve Privacy Policy</a></strong> and consent to the processing of my personal data accordingly.</span>
+					<span>I have read and agree to the <strong><a href="#" data-modal="text" data-page-slug="privacy" style="color: inherit; text-decoration: underline;">Obsidian Reserve Privacy Policy</a></strong> and consent to the processing of my personal data accordingly.</span>
 				</label>
 			</div>
 
