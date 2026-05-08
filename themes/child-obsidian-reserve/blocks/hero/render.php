@@ -15,7 +15,7 @@ $button_text    = $attributes['buttonText'] ?? 'Explore Cars';
 $button_url     = ( empty( $attributes['buttonUrl'] ) || '#' === $attributes['buttonUrl'] ) ? home_url( '/fleet/' ) : $attributes['buttonUrl'];
 $image_url      = $attributes['imageUrl'] ?? '';
 $location_label = $attributes['locationLabel'] ?? 'Location';
-$date_label     = $attributes['dateLabel'] ?? 'Pick-up / Drop-off Dates';
+$date_label     = $attributes['dateLabel'] ?? 'Delivery / Return Dates';
 
 // Handle theme-relative paths (starting with /assets/).
 if ( ! empty( $image_url ) && 0 === strpos( $image_url, '/assets/' ) ) {

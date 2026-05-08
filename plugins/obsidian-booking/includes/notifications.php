@@ -316,11 +316,11 @@ function obsidian_notify_booking_cancelled( $data, $admin_email ) {
 }
 
 // -------------------------------------------------------------------------
-// Pickup reminder cron
+// Delivery reminder cron
 // -------------------------------------------------------------------------
 
 /**
- * Schedule the daily pickup reminder cron on plugin activation.
+ * Schedule the daily delivery reminder cron on plugin activation.
  *
  * @return void
  */
