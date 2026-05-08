@@ -1,0 +1,57 @@
+.obsidian-calendar-page {
+	max-width: 1400px;
+}
+
+.obsidian-calendar-toolbar {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	margin: 16px 0 20px;
+	flex-wrap: wrap;
+}
+
+.obsidian-calendar-toolbar select {
+	min-width: 200px;
+}
+
+#obsidian-booking-calendar {
+	background: #0f1115;
+	border: 1px solid #1c1f26;
+	border-radius: 12px;
+	padding: 16px;
+}
+
+#obsidian-booking-calendar .fc {
+	color: #e8eaed;
+}
+
+#obsidian-booking-calendar .fc .fc-scrollgrid,
+#obsidian-booking-calendar .fc .fc-scrollgrid-section > td {
+	border-color: #1c1f26;
+}
+
+#obsidian-booking-calendar .fc .fc-daygrid-day-number,
+#obsidian-booking-calendar .fc .fc-col-header-cell-cushion {
+	color: #c7cad1;
+}
+
+#obsidian-booking-calendar .fc .fc-button-primary {
+	background: #1c1f26;
+	border-color: #2b3038;
+	color: #e8eaed;
+}
+
+#obsidian-booking-calendar .fc .fc-button-primary:hover {
+	background: #2b3038;
+	border-color: #3a404a;
+}
+
+#obsidian-booking-calendar .fc .fc-button-primary:focus {
+	box-shadow: none;
+}
+
+#obsidian-booking-calendar .fc .fc-event {
+	border-radius: 8px;
+	padding: 2px 6px;
+	font-size: 12px;
+}
