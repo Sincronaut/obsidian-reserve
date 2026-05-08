@@ -41,7 +41,7 @@ function obsidian_create_audit_table() {
 		booking_id bigint(20) unsigned NOT NULL,
 		user_id bigint(20) unsigned DEFAULT NULL,
 		user_role varchar(100) DEFAULT NULL,
-		ip varchar(45) DEFAULT NULL,
+		source varchar(50) DEFAULT NULL,
 		action varchar(50) NOT NULL,
 		from_status varchar(50) DEFAULT NULL,
 		to_status varchar(50) DEFAULT NULL,
@@ -53,7 +53,7 @@ function obsidian_create_audit_table() {
 	) {$charset_collate};";
 
 	dbDelta( $sql );
-	update_option( 'obsidian_booking_audit_db_version', '1' );
+	update_option( 'obsidian_booking_audit_db_version', '2' );
 }
 
 /**
@@ -62,8 +62,20 @@ function obsidian_create_audit_table() {
  * @return void
  */
 function obsidian_maybe_create_audit_table() {
-	$version = get_option( 'obsidian_booking_audit_db_version' );
-	if ( '1' !== $version ) {
+	global $wpdb;
+
+	$version    = get_option( 'obsidian_booking_audit_db_version' );
+	$table_name = obsidian_get_audit_table_name();
+	$needs_upgrade = ( '2' !== $version );
+
+	if ( ! $needs_upgrade ) {
+		$column = $wpdb->get_var( $wpdb->prepare( "SHOW COLUMNS FROM {$table_name} LIKE %s", 'source' ) );
+		if ( empty( $column ) ) {
+			$needs_upgrade = true;
+		}
+	}
+
+	if ( $needs_upgrade ) {
 		obsidian_create_audit_table();
 	}
 }
@@ -74,20 +86,20 @@ add_action( 'init', 'obsidian_maybe_create_audit_table', 5 );
  *
  * @return string
  */
-function obsidian_get_client_ip() {
-	$ip = '';
-	if ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-		$forwarded = explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
-		$ip        = trim( $forwarded[0] );
-	} elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
-		$ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+function obsidian_get_audit_source() {
+	if ( wp_doing_cron() ) {
+		return 'cron';
 	}
 
-	if ( $ip && filter_var( $ip, FILTER_VALIDATE_IP ) ) {
-		return $ip;
+	if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+		return 'rest';
 	}
 
-	return '';
+	if ( is_admin() ) {
+		return 'admin';
+	}
+
+	return 'system';
 }
 
 /**
@@ -117,21 +129,37 @@ function obsidian_log_booking_audit( $booking_id, $old_status, $new_status ) {
 		}
 	}
 
-	$wpdb->insert(
-		$table_name,
-		array(
+	$has_source = $wpdb->get_var( $wpdb->prepare( "SHOW COLUMNS FROM {$table_name} LIKE %s", 'source' ) );
+	$created_at = current_time( 'mysql' );
+
+	if ( $has_source ) {
+		$data = array(
 			'booking_id'  => $booking_id,
 			'user_id'     => $user_id ? $user_id : null,
 			'user_role'   => $user_role,
-			'ip'          => obsidian_get_client_ip(),
+			'source'      => obsidian_get_audit_source(),
 			'action'      => 'status_change',
 			'from_status' => $old_status,
 			'to_status'   => $new_status,
 			'notes'       => null,
-			'created_at'  => current_time( 'mysql', true ),
-		),
-		array( '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s' )
-	);
+			'created_at'  => $created_at,
+		);
+		$formats = array( '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s' );
+	} else {
+		$data = array(
+			'booking_id'  => $booking_id,
+			'user_id'     => $user_id ? $user_id : null,
+			'user_role'   => $user_role,
+			'action'      => 'status_change',
+			'from_status' => $old_status,
+			'to_status'   => $new_status,
+			'notes'       => null,
+			'created_at'  => $created_at,
+		);
+		$formats = array( '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s' );
+	}
+
+	$wpdb->insert( $table_name, $data, $formats );
 }
 add_action( 'obsidian_booking_status_changed', 'obsidian_log_booking_audit', 20, 3 );
 
@@ -151,7 +179,7 @@ function obsidian_get_booking_audit_entries( $booking_id, $limit = 25 ) {
 
 	return $wpdb->get_results(
 		$wpdb->prepare(
-			"SELECT id, user_id, user_role, ip, action, from_status, to_status, notes, created_at
+			"SELECT id, user_id, user_role, source, action, from_status, to_status, notes, created_at
 			 FROM {$table_name}
 			 WHERE booking_id = %d
 			 ORDER BY created_at DESC, id DESC

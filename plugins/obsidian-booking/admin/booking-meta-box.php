@@ -439,7 +439,7 @@ function obsidian_render_booking_meta_box( $post ) {
 					<tr>
 						<th>Date</th>
 						<th>User</th>
-						<th>IP</th>
+						<th>Source</th>
 						<th>Change</th>
 					</tr>
 					<?php foreach ( $audit_entries as $entry ) : ?>
@@ -454,13 +454,16 @@ function obsidian_render_booking_meta_box( $post ) {
 
 							$from_status = $entry['from_status'] ? $entry['from_status'] : '—';
 							$to_status   = $entry['to_status'] ? $entry['to_status'] : '—';
-							$ip_label    = $entry['ip'] ? $entry['ip'] : '—';
-							$date_label  = $entry['created_at'] ? get_date_from_gmt( $entry['created_at'], 'M j, Y g:i A' ) : '—';
+							$source_label = $entry['source'] ? $entry['source'] : '—';
+							$entry_time = $entry['created_at']
+								? DateTime::createFromFormat( 'Y-m-d H:i:s', $entry['created_at'], wp_timezone() )
+								: false;
+							$date_label = $entry_time ? $entry_time->format( 'M j, Y g:i A' ) : '—';
 						?>
 						<tr>
 							<td><?php echo esc_html( $date_label ); ?></td>
 							<td><?php echo esc_html( $user_label ); ?></td>
-							<td><?php echo esc_html( $ip_label ); ?></td>
+							<td><?php echo esc_html( $source_label ); ?></td>
 							<td><?php echo esc_html( $from_status ); ?> → <?php echo esc_html( $to_status ); ?></td>
 						</tr>
 					<?php endforeach; ?>
