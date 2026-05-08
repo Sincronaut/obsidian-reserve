@@ -176,6 +176,19 @@ function obsidian_register_rest_routes() {
 		)
 	);
 
+	// GET /calendar — Admin booking calendar events.
+	register_rest_route(
+		$namespace,
+		'/calendar',
+		array(
+			'methods'             => 'GET',
+			'callback'            => 'obsidian_api_get_calendar_events',
+			'permission_callback' => function () {
+				return current_user_can( 'edit_posts' );
+			},
+		)
+	);
+
 	/*
 	 * ==================================================================
 	 * PROTECTED ENDPOINTS (login required)
@@ -1131,6 +1144,123 @@ function obsidian_api_get_my_bookings( $request ) {
 	}
 
 	return rest_ensure_response( $data );
+}
+
+/**
+ * GET /calendar
+ * Returns booking events for the admin calendar view.
+ *
+ * @param WP_REST_Request $request REST request.
+ * @return WP_REST_Response
+ */
+function obsidian_api_get_calendar_events( $request ) {
+	$start      = sanitize_text_field( $request->get_param( 'start' ) ?? '' );
+	$end        = sanitize_text_field( $request->get_param( 'end' ) ?? '' );
+	$status     = sanitize_text_field( $request->get_param( 'status' ) ?? '' );
+	$location_id = (int) ( $request->get_param( 'location_id' ) ?? 0 );
+
+	if ( empty( $start ) || empty( $end ) ) {
+		return rest_ensure_response( array() );
+	}
+
+	$meta_query = array(
+		'relation' => 'AND',
+		array(
+			'key'     => '_booking_start_date',
+			'value'   => $end,
+			'compare' => '<=',
+		),
+		array(
+			'key'     => '_booking_end_date',
+			'value'   => $start,
+			'compare' => '>=',
+		),
+	);
+
+	if ( $status ) {
+		$meta_query[] = array(
+			'key'   => '_booking_status',
+			'value' => $status,
+		);
+	}
+
+	if ( $location_id ) {
+		$meta_query[] = array(
+			'key'     => '_booking_location_id',
+			'value'   => $location_id,
+			'compare' => '=',
+			'type'    => 'NUMERIC',
+		);
+	}
+
+	$bookings = get_posts(
+		array(
+			'post_type'      => 'booking',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'meta_query'     => $meta_query,
+		)
+	);
+
+	if ( empty( $bookings ) ) {
+		return rest_ensure_response( array() );
+	}
+
+	$events = array();
+
+	foreach ( $bookings as $booking_id ) {
+		$start_date = get_post_meta( $booking_id, '_booking_start_date', true );
+		$end_date   = get_post_meta( $booking_id, '_booking_end_date', true );
+		$status_val = get_post_meta( $booking_id, '_booking_status', true );
+		$car_id     = (int) get_post_meta( $booking_id, '_booking_car_id', true );
+		$car_name   = $car_id ? get_the_title( $car_id ) : '';
+		$color      = get_post_meta( $booking_id, '_booking_color', true );
+		$first_name = get_post_meta( $booking_id, '_booking_first_name', true );
+		$last_name  = get_post_meta( $booking_id, '_booking_last_name', true );
+		$customer   = trim( $first_name . ' ' . $last_name );
+		$location   = '';
+
+		$loc_id = (int) get_post_meta( $booking_id, '_booking_location_id', true );
+		if ( $loc_id && get_post( $loc_id ) ) {
+			$location = get_the_title( $loc_id );
+		} else {
+			$legacy = get_post_meta( $booking_id, '_booking_location', true );
+			$location = $legacy ? $legacy : '';
+		}
+
+		if ( empty( $start_date ) || empty( $end_date ) ) {
+			continue;
+		}
+
+		$end_dt = DateTime::createFromFormat( 'Y-m-d', $end_date );
+		if ( $end_dt ) {
+			$end_date = $end_dt->modify( '+1 day' )->format( 'Y-m-d' );
+		}
+
+		$booking_reference = function_exists( 'obsidian_get_booking_reference' )
+			? obsidian_get_booking_reference( $booking_id )
+			: '#' . $booking_id;
+
+		$events[] = array(
+			'id'    => $booking_id,
+			'title' => trim( $booking_reference . ' • ' . $car_name ),
+			'start' => $start_date,
+			'end'   => $end_date,
+			'allDay' => true,
+			'url'   => get_edit_post_link( $booking_id, '' ),
+			'extendedProps' => array(
+				'status'            => $status_val,
+				'booking_reference' => $booking_reference,
+				'car_name'          => $car_name,
+				'color'             => $color,
+				'customer_name'     => $customer,
+				'location_label'    => $location,
+			),
+		);
+	}
+
+	return rest_ensure_response( $events );
 }
 
 /**

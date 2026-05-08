@@ -76,6 +76,7 @@ require_once OBSIDIAN_BOOKING_DIR . 'includes/locations-menu.php';
 if ( is_admin() ) {
 	require_once OBSIDIAN_BOOKING_DIR . 'admin/car-meta-box.php';
 	require_once OBSIDIAN_BOOKING_DIR . 'admin/booking-meta-box.php';
+	require_once OBSIDIAN_BOOKING_DIR . 'admin/booking-calendar.php';
 	require_once OBSIDIAN_BOOKING_DIR . 'admin/booking-columns.php';
 	require_once OBSIDIAN_BOOKING_DIR . 'admin/dashboard-widget.php';
 	require_once OBSIDIAN_BOOKING_DIR . 'admin/branch-utilization-widget.php';
@@ -243,8 +244,9 @@ function obsidian_booking_admin_assets( $hook ) {
 	// Load on our CPT screens + dashboard.
 	$is_our_cpt   = in_array( $post_type, array( 'car', 'booking', 'location' ), true );
 	$is_dashboard = ( 'index.php' === $hook );
+	$is_calendar  = ( 'booking_page_obsidian-booking-calendar' === $hook );
 
-	if ( ! $is_our_cpt && ! $is_dashboard ) {
+	if ( ! $is_our_cpt && ! $is_dashboard && ! $is_calendar ) {
 		return;
 	}
 
@@ -294,6 +296,45 @@ function obsidian_booking_admin_assets( $hook ) {
 			)
 		);
 	}
+
+	if ( $is_calendar ) {
+		wp_enqueue_style(
+			'obsidian-fullcalendar',
+			'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css',
+			array( 'obsidian-booking-admin' ),
+			'6.1.15'
+		);
+		wp_enqueue_style(
+			'obsidian-booking-calendar',
+			OBSIDIAN_BOOKING_URL . 'assets/css/admin-calendar.css',
+			array( 'obsidian-fullcalendar' ),
+			OBSIDIAN_BOOKING_VERSION
+		);
+
+		wp_enqueue_script(
+			'obsidian-fullcalendar',
+			'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js',
+			array(),
+			'6.1.15',
+			true
+		);
+		wp_enqueue_script(
+			'obsidian-booking-calendar',
+			OBSIDIAN_BOOKING_URL . 'assets/js/admin-calendar.js',
+			array( 'jquery', 'obsidian-fullcalendar' ),
+			OBSIDIAN_BOOKING_VERSION,
+			true
+		);
+
+		wp_localize_script(
+			'obsidian-booking-calendar',
+			'obsidianBookingCalendar',
+			array(
+				'restUrl' => esc_url_raw( rest_url( 'obsidian-booking/v1/' ) ),
+				'nonce'   => wp_create_nonce( 'wp_rest' ),
+			)
+		);
+	}
 }
 add_action( 'admin_enqueue_scripts', 'obsidian_booking_admin_assets' );
 
@@ -316,6 +357,9 @@ function obsidian_admin_body_class( $classes ) {
 	}
 	if ( 'dashboard' === $screen->id ) {
 		$classes .= ' obsidian-admin obsidian-dashboard';
+	}
+	if ( 'booking_page_obsidian-booking-calendar' === $screen->id ) {
+		$classes .= ' obsidian-admin obsidian-calendar';
 	}
 	return $classes;
 }
