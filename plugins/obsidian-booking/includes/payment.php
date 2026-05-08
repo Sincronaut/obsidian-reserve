@@ -490,9 +490,12 @@ function obsidian_api_confirm_payment( $request ) {
 
 	// Payment verified - update booking.
 	$amount_paid = ( $verify_body['data']['attributes']['amount'] ?? 0 ) / 100;
+	$total       = (float) get_post_meta( $booking_id, '_booking_total_price', true );
+	$balance     = max( 0, $total - $amount_paid );
 
 	update_post_meta( $booking_id, '_booking_payment_status', 'paid' );
 	update_post_meta( $booking_id, '_booking_payment_amount', $amount_paid );
+	update_post_meta( $booking_id, '_booking_balance_due', $balance );
 
 	$paid_result = obsidian_update_booking_status( $booking_id, 'paid' );
 	if ( is_wp_error( $paid_result ) ) {
@@ -613,9 +616,12 @@ function obsidian_api_paymongo_webhook( $request ) {
 
 		if ( 'awaiting_payment' === $current_status ) {
 			$amount_paid = ( $payment_data['attributes']['amount'] ?? 0 ) / 100;
+			$total       = (float) get_post_meta( $booking_id, '_booking_total_price', true );
+			$balance     = max( 0, $total - $amount_paid );
 
 			update_post_meta( $booking_id, '_booking_payment_status', 'paid' );
 			update_post_meta( $booking_id, '_booking_payment_amount', $amount_paid );
+			update_post_meta( $booking_id, '_booking_balance_due', $balance );
 
 			$paid_result = obsidian_update_booking_status( $booking_id, 'paid' );
 			if ( is_wp_error( $paid_result ) ) {

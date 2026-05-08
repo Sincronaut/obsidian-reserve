@@ -54,6 +54,9 @@ require_once OBSIDIAN_BOOKING_DIR . 'includes/availability.php';
 require_once OBSIDIAN_BOOKING_DIR . 'includes/booking-handler.php';
 require_once OBSIDIAN_BOOKING_DIR . 'includes/rest-api.php';
 
+// Audit log (Phase 16).
+require_once OBSIDIAN_BOOKING_DIR . 'includes/audit-log.php';
+
 // Notifications (Phase 7).
 require_once OBSIDIAN_BOOKING_DIR . 'includes/notifications.php';
 
@@ -78,6 +81,7 @@ if ( is_admin() ) {
 	require_once OBSIDIAN_BOOKING_DIR . 'admin/branch-utilization-widget.php';
 	require_once OBSIDIAN_BOOKING_DIR . 'admin/location-map-picker.php';
 }
+
 
 /*
  * ======================================================================
@@ -648,6 +652,11 @@ function obsidian_booking_activate() {
 	// Register booking page rewrite rules before flushing.
 	if ( function_exists( 'obsidian_register_booking_rewrites' ) ) {
 		obsidian_register_booking_rewrites();
+	}
+
+	// Create audit log table.
+	if ( function_exists( 'obsidian_create_audit_table' ) ) {
+		obsidian_create_audit_table();
 	}
 
 	flush_rewrite_rules();

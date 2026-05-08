@@ -422,6 +422,52 @@ function obsidian_render_booking_meta_box( $post ) {
 			<button type="button" id="obm-save-notes" class="button" data-booking-id="<?php echo esc_attr( $booking_id ); ?>">Save Notes</button>
 		</div>
 
+		<!-- Booking Activity -->
+		<div class="obm-section">
+			<h4 class="obm-section-title"><span class="dashicons dashicons-list-view"></span> Booking Activity</h4>
+			<?php
+			if ( function_exists( 'obsidian_get_booking_audit_entries' ) ) {
+				$audit_entries = obsidian_get_booking_audit_entries( $booking_id, 25 );
+			} else {
+				$audit_entries = array();
+			}
+			?>
+			<?php if ( empty( $audit_entries ) ) : ?>
+				<p class="obm-muted">No activity logged yet.</p>
+			<?php else : ?>
+				<table class="obm-table">
+					<tr>
+						<th>Date</th>
+						<th>User</th>
+						<th>IP</th>
+						<th>Change</th>
+					</tr>
+					<?php foreach ( $audit_entries as $entry ) : ?>
+						<?php
+							$user_label = 'System';
+							if ( ! empty( $entry['user_id'] ) ) {
+								$user = get_userdata( (int) $entry['user_id'] );
+								if ( $user ) {
+									$user_label = $user->display_name;
+								}
+							}
+
+							$from_status = $entry['from_status'] ? $entry['from_status'] : '—';
+							$to_status   = $entry['to_status'] ? $entry['to_status'] : '—';
+							$ip_label    = $entry['ip'] ? $entry['ip'] : '—';
+							$date_label  = $entry['created_at'] ? get_date_from_gmt( $entry['created_at'], 'M j, Y g:i A' ) : '—';
+						?>
+						<tr>
+							<td><?php echo esc_html( $date_label ); ?></td>
+							<td><?php echo esc_html( $user_label ); ?></td>
+							<td><?php echo esc_html( $ip_label ); ?></td>
+							<td><?php echo esc_html( $from_status ); ?> → <?php echo esc_html( $to_status ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+				</table>
+			<?php endif; ?>
+		</div>
+
 		<!-- Actions -->
 		<?php if ( 'pending_review' === $status ) : ?>
 		<div class="obm-section obm-actions-section">
