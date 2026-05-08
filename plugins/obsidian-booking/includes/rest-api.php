@@ -727,6 +727,15 @@ function obsidian_api_create_booking_draft( $request ) {
 		return $rl;
 	}
 
+	$blacklisted = (int) get_user_meta( get_current_user_id(), '_obsidian_blacklisted', true );
+	if ( $blacklisted ) {
+		return new WP_Error(
+			'blacklisted',
+			__( 'Your account is restricted from making bookings. Please contact support.', 'obsidian-booking' ),
+			array( 'status' => 403 )
+		);
+	}
+
 	$params = $request->get_json_params();
 	$draft  = obsidian_validate_booking_draft_params( is_array( $params ) ? $params : array() );
 
@@ -791,6 +800,14 @@ function obsidian_api_create_booking( $request ) {
 	$draft_id      = isset( $params['booking_draft_id'] ) ? sanitize_key( $params['booking_draft_id'] ) : '';
 	$user_id       = get_current_user_id();
 	$user          = wp_get_current_user();
+	$blacklisted   = (int) get_user_meta( $user_id, '_obsidian_blacklisted', true );
+	if ( $blacklisted ) {
+		return new WP_Error(
+			'blacklisted',
+			__( 'Your account is restricted from making bookings. Please contact support.', 'obsidian-booking' ),
+			array( 'status' => 403 )
+		);
+	}
 	// Contact and identity.
 	$first_name     = sanitize_text_field( $params['first_name'] );
 	$last_name      = sanitize_text_field( $params['last_name'] );
