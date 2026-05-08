@@ -1,6 +1,6 @@
 <?php
 /**
- * Email: Pickup Reminder — sent to USER 24h before start date.
+ * Email: Delivery Reminder — sent to USER 24h before start date.
  *
  * Available variables:
  *   $booking_reference, $car_name, $first_name,
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 require __DIR__ . '/email-header.php';
 ?>
 
-<h2 style="margin:0 0 8px;font-size:20px;color:#ffffff;text-align:center;">Your Pickup Is Tomorrow!</h2>
+<h2 style="margin:0 0 8px;font-size:20px;color:#ffffff;text-align:center;">Your Delivery Is Tomorrow!</h2>
 <p style="margin:0 0 24px;font-size:15px;color:#cccccc;line-height:1.6;text-align:center;">
 Hello <?php echo esc_html( $first_name ); ?>, just a friendly reminder that your <strong style="color:#ffffff;"><?php echo esc_html( $car_name ); ?></strong> reservation starts tomorrow.
 </p>
@@ -35,7 +35,7 @@ Hello <?php echo esc_html( $first_name ); ?>, just a friendly reminder that your
 	<td style="padding:6px 0;font-size:14px;color:#ffffff;"><?php echo esc_html( $car_name ); ?> (<?php echo esc_html( $color ); ?>)</td>
 </tr>
 <tr>
-	<td style="padding:6px 0;font-size:13px;color:#888888;">Pick-up Date</td>
+	<td style="padding:6px 0;font-size:13px;color:#888888;">Delivery Date</td>
 	<td style="padding:6px 0;font-size:14px;color:#c8a855;font-weight:600;"><?php echo esc_html( $start_date ); ?></td>
 </tr>
 <tr>

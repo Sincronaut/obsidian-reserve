@@ -833,7 +833,7 @@ function obsidian_api_create_booking( $request ) {
 	if ( $location_id <= 0 ) {
 		return new WP_Error(
 			'missing_field',
-			__( 'A pickup branch must be selected.', 'obsidian-booking' ),
+			__( 'A delivery branch must be selected.', 'obsidian-booking' ),
 			array( 'status' => 400 )
 		);
 	}

@@ -401,7 +401,7 @@ function obsidian_booking_render_modal() {
 				</div>
 				<div class="obsidian-modal-thumbs" id="obsidian-modal-thumbs"></div>
 
-				<!-- Pickup branch picker (Phase 11.13).
+				<!-- Delivery branch picker (Phase 11.13).
 					Lives above the color swatches because color stock is
 					branch-scoped — picking a branch is the gate that unlocks
 					everything downstream. The JS swaps between `.is-locked`
@@ -412,8 +412,8 @@ function obsidian_booking_render_modal() {
 					<button type="button"
 							class="branch-change"
 							id="obsidian-modal-branch-change"
-							aria-label="Change pickup location">✏️</button>
-					<select class="branch-select" id="obsidian-modal-branch-select" aria-label="Select pickup branch" hidden>
+							aria-label="Change delivery location">✏️</button>
+						<select class="branch-select" id="obsidian-modal-branch-select" aria-label="Select delivery branch" hidden>
 					<option value="">Select branch…</option>
 					</select>
 				</div>

@@ -40,7 +40,7 @@ Hello <?php echo esc_html( $first_name ); ?>, your reservation has been confirme
 	<td style="padding:6px 0;font-size:14px;color:#ffffff;"><?php echo esc_html( $car_name ); ?> (<?php echo esc_html( $color ); ?>)</td>
 </tr>
 <tr>
-	<td style="padding:6px 0;font-size:13px;color:#888888;">Pick-up Date</td>
+	<td style="padding:6px 0;font-size:13px;color:#888888;">Delivery Date</td>
 	<td style="padding:6px 0;font-size:14px;color:#ffffff;"><?php echo esc_html( $start_date ); ?></td>
 </tr>
 <tr>
@@ -86,7 +86,7 @@ Hello <?php echo esc_html( $first_name ); ?>, your reservation has been confirme
 </tr>
 <?php if ( 'down' === $payment_option ) : ?>
 <tr>
-	<td style="padding:6px 0;font-size:14px;color:#cccccc;">Balance Due at Pickup</td>
+	<td style="padding:6px 0;font-size:14px;color:#cccccc;">Balance Due on Delivery</td>
 	<td style="padding:6px 0;font-size:14px;color:#ff9800;text-align:right;">₱<?php echo esc_html( number_format( $total_price - $payment_amount, 2 ) ); ?></td>
 </tr>
 <?php endif; ?>
